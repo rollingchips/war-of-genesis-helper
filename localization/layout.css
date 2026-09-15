@@ -1,0 +1,7 @@
+/* Allow longer Traditional Chinese labels without changing layout on wide screens. */
+.player-identity { min-width: 0; max-width: 100%; }
+.player-name-wrap { min-width: 0; max-width: 100%; }
+.player-name-wrap > div:first-child { flex-wrap: wrap !important; }
+.player-name { white-space: normal !important; overflow-wrap: anywhere; }
+.player-meta { white-space: normal; overflow-wrap: anywhere; }
+.lang-btn { white-space: nowrap; }

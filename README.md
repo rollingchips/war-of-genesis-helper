@@ -1,3 +1,20 @@
+# Traditional Chinese Edition
+
+This fork provides a Traditional Chinese (`zh-Hant`) frontend. Download `index.html` from this repository and open it locally. No translation service or runtime package installation is required. The GitHub Pages link below belongs to the original upstream project, not this localized fork.
+
+Upstream attribution and MIT licensing are retained. Game identifiers, calculations, assets and automation behavior are preserved. The localization was verified offline; live game automation was not exercised.
+
+## Localization maintenance
+
+- `npm ci` installs development-only tooling.
+- `npm run build` regenerates the standalone HTML from the pinned upstream Git commit and the `localization/` sources.
+- `npx playwright install chromium` installs the browser for verification.
+- `npm test` runs the offline localization, data-preservation and UI checks without connecting to the game.
+
+See DESIGN.md for scope and CHANGELOG.md for verification details.
+
+---
+
 # ⚔️ War of Genesis: Idle Loot — All-in-One Companion & Database Explorer
 
 > **The ultimate web-based companion, database explorer, and optimization suite for *The War of Genesis: Idle Loot* (Steam / PC).**  

@@ -1,0 +1,398 @@
+[
+  [
+    "Gây {}% sát thương và trong {} giây, đòn đánh thường khi trúng có {}% tỉ lệ áp dụng Thiên Phạt. Thiên Phạt: gây thêm sát thương bằng {}% HP hiện tại của mục tiêu.",
+    "造成 {0}% 傷害；在 {1} 秒內，普通攻擊命中時有 {2}% 機率施加天罰。天罰：額外造成相當於目標目前 HP {3}% 的傷害。"
+  ],
+  [
+    "Gây {}% sát thương cho kẻ địch trong phạm vi rộng. Trong {} giây, khi xảy ra chí mạng, tăng {}% sát thương chí mạng trong {} giây. (tối đa {} lớp)",
+    "對大範圍敵人造成 {0}% 傷害。在 {1} 秒內觸發暴擊時，暴擊傷害提高 {2}%，持續 {3} 秒。（最多 {4} 層）"
+  ],
+  [
+    "Gây {}% sát thương cho kẻ địch xung quanh. Trong {} giây, khi Sét kích hoạt, giảm {}% sát thương phải nhận trong {} giây. (tối đa {} lớp)",
+    "對周圍敵人造成 {0}% 傷害。在 {1} 秒內觸發雷電時，受到的傷害降低 {2}%，持續 {3} 秒。（最多 {4} 層）"
+  ],
+  [
+    "Gây {}% sát thương và gây choáng {}% cho mục tiêu trong {} giây và tăng {}% công lực, {}% tốc đánh trong {} giây.",
+    "造成 {0}% 傷害，對目標施加 {1}% 暈眩效果，持續 {2} 秒；攻擊力提高 {3}%、攻擊速度提高 {4}%，持續 {5} 秒。"
+  ],
+  [
+    "Gây {}% sát thương. Trong {} giây, mỗi đòn đánh thường tăng {}% sát thương trong {} giây. (Tối đa {} cộng dồn)",
+    "造成 {0}% 傷害。在 {1} 秒內，每次普通攻擊使傷害提高 {2}%，持續 {3} 秒。（最多疊加 {4} 次）"
+  ],
+  [
+    "Khi HP giảm dưới {}%, tỷ lệ chí mạng tăng {} và sát thương chí mạng tăng {}% trong {} giây. ({} lần mỗi trận)",
+    "HP 降至 {0}% 以下時，暴擊率提高 {1}、暴擊傷害提高 {2}%，持續 {3} 秒。（每場戰鬥 {4} 次）"
+  ],
+  [
+    "Gây {}% sát thương. Trong {} giây, mỗi lần Lửa xảy ra, tăng {} tỷ lệ chí mạng trong {} giây. (tối đa {} lớp)",
+    "造成 {0}% 傷害。在 {1} 秒內，每次觸發火焰使暴擊率提高 {2}，持續 {3} 秒。（最多 {4} 層）"
+  ],
+  [
+    "Gây {}% sát thương. Trong {} giây, mỗi lần tấn công Độc tăng {} né tránh trong {} giây. (tối đa {} lớp)",
+    "造成 {0}% 傷害。在 {1} 秒內，每次毒屬性攻擊使閃避提高 {2}，持續 {3} 秒。（最多 {4} 層）"
+  ],
+  [
+    "Gây {}% sát thương và giảm {} trúng đích chí mạng, {}% sát thương chí mạng của mục tiêu trong {} giây.",
+    "造成 {0}% 傷害，並使目標暴擊命中降低 {1}、暴擊傷害降低 {2}%，持續 {3} 秒。"
+  ],
+  [
+    "Khi HP giảm xuống dưới {}%, tăng {} né tránh trong {} giây để né đòn tấn công. ({} lần mỗi trận)",
+    "HP 降至 {0}% 以下時，閃避提高 {1}，持續 {2} 秒，以閃避攻擊。（每場戰鬥 {3} 次）"
+  ],
+  [
+    "Mỗi {} đòn đánh vào cùng mục tiêu, sát thương tăng {}% trong {} giây. (Tối đa {} cộng dồn)",
+    "每攻擊同一目標 {0} 次，傷害提高 {1}%，持續 {2} 秒。（最多疊加 {3} 次）"
+  ],
+  [
+    "Khi HP giảm xuống còn {}% hoặc thấp hơn, trở nên bất tử trong {} giây. ({} lần mỗi trận)",
+    "HP 降至 {0}% 或更低時，獲得無敵 {1} 秒。（每場戰鬥 {2} 次）"
+  ],
+  [
+    "Mỗi {} lần tấn công cùng một mục tiêu, tăng {}% tốc đánh trong {} giây. (tối đa {} lớp)",
+    "每攻擊同一目標 {0} 次，攻擊速度提高 {1}%，持續 {2} 秒。（最多 {3} 層）"
+  ],
+  [
+    "Khi bắt đầu trận đấu, tăng {}% công lực, {}% tốc đánh và {}% tốc chạy trong {} giây.",
+    "戰鬥開始時，攻擊力提高 {0}%、攻擊速度提高 {1}%、移動速度提高 {2}%，持續 {3} 秒。"
+  ],
+  [
+    "Mỗi {} giây, giảm {}% hiệu quả hồi phục nhận được của toàn bộ kẻ địch trong {} giây.",
+    "每 {0} 秒使全體敵人受到的治療效果降低 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và giảm {}% công lực, {}% tốc đánh của mục tiêu trong {} giây.",
+    "造成 {0}% 傷害，並使目標攻擊力降低 {1}%、攻擊速度降低 {2}%，持續 {3} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và giảm {}% tốc đánh, {}% tốc chạy của mục tiêu trong {} giây.",
+    "造成 {0}% 傷害，使目標攻擊速度降低 {1}%、移動速度降低 {2}%，持續 {3} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} trúng đích sét, {}% sát thương sét trong {} giây.",
+    "造成 {0}% 傷害，使雷電命中提高 {1}、雷電傷害提高 {2}%，持續 {3} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} trúng đích độc, {}% sát thương độc trong {} giây.",
+    "造成 {0}% 傷害，使毒命中提高 {1}、毒傷害提高 {2}%，持續 {3} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} trúng đích lửa, {}% sát thương lửa trong {} giây.",
+    "造成 {0}% 傷害，使火焰命中提高 {1}、火焰傷害提高 {2}%，持續 {3} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và giảm {} giây thời gian hồi của mọi kỹ năng của bản thân.",
+    "造成 {0}% 傷害，使自身所有技能的冷卻時間減少 {1} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tạo khiên bằng {}% HP tối đa của bản thân trong {} giây.",
+    "造成 {0}% 傷害，產生相當於自身最大 HP {1}% 的護盾，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và giảm {}% phòng thủ, {} chặn của mục tiêu trong {} giây.",
+    "造成 {0}% 傷害，使目標防禦降低 {1}%、格擋降低 {2}，持續 {3} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {}% sát thương của mọi đòn tấn công trong {} giây.",
+    "造成 {0}% 傷害，使所有攻擊造成的傷害提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Trong {} giây sau khi bắt đầu trận, sát thương lên kẻ địch có khiên tăng {}%.",
+    "戰鬥開始後的 {0} 秒內，對有護盾的敵人造成的傷害提高 {1}%。"
+  ],
+  [
+    "Sau khi tiêu diệt kẻ địch, tăng {}% tốc chạy trong {} giây. (không cộng dồn)",
+    "擊殺敵人後，移動速度提高 {0}%，持續 {1} 秒。（不可疊加）"
+  ],
+  [
+    "Khi kẻ địch đỡ đòn, bỏ qua đỡ đòn tăng {}% trong {} giây. (Không cộng dồn)",
+    "敵人格擋時，無視格擋提高 {0}%，持續 {1} 秒。（不可疊加）"
+  ],
+  [
+    "Gây {}% sát thương trong phạm vi rộng và giảm {}% phòng thủ của mục tiêu.",
+    "對大範圍目標造成 {0}% 傷害，並使其防禦降低 {1}%。"
+  ],
+  [
+    "Khi dùng kỹ năng, có {}% xác suất giảm hồi chiêu của mọi kỹ năng {} giây.",
+    "使用技能時，有 {0}% 機率使所有技能冷卻時間減少 {1} 秒。"
+  ],
+  [
+    "Khi gây sát thương sét, tăng {}% công lực trong {} giây. (không cộng dồn)",
+    "造成雷電傷害時，攻擊力提高 {0}%，持續 {1} 秒。（不可疊加）"
+  ],
+  [
+    "Gây {}% sát thương cho kẻ địch trong phạm vi rộng và áp dụng Choáng {}%.",
+    "對大範圍敵人造成 {0}% 傷害，並施加 {1}% 暈眩效果。"
+  ],
+  [
+    "Khi nhận đòn chí mạng, tăng {}% Tốc đánh trong {} giây. (Không cộng dồn)",
+    "受到暴擊時，攻擊速度提高 {0}%，持續 {1} 秒。（不可疊加）"
+  ],
+  [
+    "Khi đánh chí mạng, tăng {} trúng đích độc trong {} giây. (tối đa {} lớp)",
+    "暴擊時，毒命中提高 {0}，持續 {1} 秒。（最多 {2} 層）"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} giây thời gian hồi kỹ năng của mục tiêu.",
+    "造成 {0}% 傷害，使目標技能冷卻時間增加 {1} 秒。"
+  ],
+  [
+    "Khi chặn, giảm {}% sát thương nhận vào trong {} giây. (không cộng dồn)",
+    "格擋時，受到的傷害降低 {0}%，持續 {1} 秒。（不可疊加）"
+  ],
+  [
+    "Gây {}% sát thương và giảm {}% phòng thủ của mục tiêu trong {} giây.",
+    "造成 {0}% 傷害，使目標防禦降低 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Khi dùng kỹ năng, có {}% xác suất đặt lại hồi chiêu của kỹ năng đó.",
+    "使用技能時，有 {0}% 機率重置該技能的冷卻時間。"
+  ],
+  [
+    "Khi né tránh, tăng {}% sát thương gây cho mục tiêu. (tối đa {} lớp)",
+    "閃避時，對目標造成的傷害提高 {0}%。（最多 {1} 層）"
+  ],
+  [
+    "Khi tấn công độc, tăng {}% công lực trong {} giây. (Không cộng dồn)",
+    "進行毒屬性攻擊時，攻擊力提高 {0}%，持續 {1} 秒。（不可疊加）"
+  ],
+  [
+    "Khi kẻ địch bị choáng, sát thương gây ra tăng {}%. (Không cộng dồn)",
+    "敵人受到暈眩時，造成的傷害提高 {0}%。（不可疊加）"
+  ],
+  [
+    "Khi tấn công cùng một mục tiêu {} lần, tăng {} chặn trong {} giây.",
+    "攻擊同一目標 {0} 次後，格擋提高 {1}，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và giảm {}% sát thương nhận vào trong {} giây.",
+    "造成 {0}% 傷害，並使受到的傷害降低 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {}% sát thương lên Boss trong {} giây.",
+    "造成 {0}% 傷害，使對首領傷害提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Sau khi né tránh, tăng {}% sát thương của đòn tấn công tiếp theo.",
+    "閃避後，下一次攻擊的傷害提高 {0}%。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {}% sát thương chí mạng trong {} giây.",
+    "造成 {0}% 傷害，使暴擊傷害提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và gây choáng {}% cho mục tiêu trong {} giây.",
+    "造成 {0}% 傷害，並對目標施加 {1}% 暈眩效果，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} trúng đích chí mạng trong {} giây.",
+    "造成 {0}% 傷害，使暴擊命中提高 {1}，持續 {2} 秒。"
+  ],
+  [
+    "Mỗi {} giây, giảm kháng chí mạng của mục tiêu -{} trong {} giây.",
+    "每 {0} 秒使目標暴擊抗性降低 {1}，持續 {2} 秒。"
+  ],
+  [
+    "Khi dùng kỹ năng, có {}% tỉ lệ tăng {}% công lực trong {} giây.",
+    "使用技能時，有 {0}% 機率使攻擊力提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Khi tiêu diệt kẻ địch, tăng {}% sát thương Độc. (tối đa {} lớp)",
+    "擊殺敵人時，毒傷害提高 {0}%。（最多 {1} 層）"
+  ],
+  [
+    "Gây {}% sát thương và kích nổ mũi tên gây thêm {}% sát thương.",
+    "造成 {0}% 傷害，並引爆箭矢，額外造成 {1}% 傷害。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} kháng chí mạng trong {} giây.",
+    "造成 {0}% 傷害，使暴擊抗性提高 {1}，持續 {2} 秒。"
+  ],
+  [
+    "Khi dùng kỹ năng, có {}% xác suất gây {}% sát thương vụ nổ.",
+    "使用技能時，有 {0}% 機率造成 {1}% 爆炸傷害。"
+  ],
+  [
+    "Sau khi bắt đầu trận đấu, tăng {}% tốc chạy trong {} giây.",
+    "戰鬥開始後，移動速度提高 {0}%，持續 {1} 秒。"
+  ],
+  [
+    "Khi kẻ địch bị choáng, tăng {}% công lực. (không cộng dồn)",
+    "敵人受到暈眩時，攻擊力提高 {0}%。（不可疊加）"
+  ],
+  [
+    "Khi HP giảm xuống dưới {}%, hồi {}% HP. (Một lần mỗi trận)",
+    "HP 降至 {0}% 以下時，恢復 {1}% HP。（每場戰鬥一次）"
+  ],
+  [
+    "Mỗi {} giây, giảm {}% sát thương phải nhận trong {} giây.",
+    "每 {0} 秒使受到的傷害降低 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Khi HP giảm xuống dưới {}%, hồi {}% HP. ({} lần mỗi trận)",
+    "HP 降至 {0}% 以下時，恢復 {1}% HP。（每場戰鬥 {2} 次）"
+  ],
+  [
+    "Gây {}% sát thương và tăng {}% phòng thủ trong {} giây.",
+    "造成 {0}% 傷害，使防禦提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Khi HP giảm xuống dưới {}%, tăng {} chặn trong {} giây.",
+    "HP 降至 {0}% 以下時，格擋提高 {1}，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {}% tốc đánh trong {} giây.",
+    "造成 {0}% 傷害，使攻擊速度提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {}% công lực trong {} giây.",
+    "造成 {0}% 傷害，使攻擊力提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} né tránh trong {} giây.",
+    "造成 {0}% 傷害，使閃避提高 {1}，持續 {2} 秒。"
+  ],
+  [
+    "Khi HP dưới {}%, tăng {}% tốc đánh. (không cộng dồn)",
+    "HP 低於 {0}% 時，攻擊速度提高 {1}%。（不可疊加）"
+  ],
+  [
+    "Tiêu hao {}% HP và tăng {}% công lực trong {} giây.",
+    "消耗 {0}% HP，使攻擊力提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Mỗi {} giây, tăng {}% sát thương sét trong {} giây.",
+    "每 {0} 秒使雷電傷害提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Khi kẻ địch bị choáng, tăng {} trúng đích chí mạng.",
+    "敵人受到暈眩時，暴擊命中提高 {0}。"
+  ],
+  [
+    "Mỗi {} giây, tăng {}% sát thương độc trong {} giây.",
+    "每 {0} 秒使毒傷害提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Mỗi {} giây, sát thương lửa tăng {}% trong {} giây.",
+    "每 {0} 秒使火焰傷害提高 {1}%，持續 {2} 秒。"
+  ],
+  [
+    "Khi HP dưới {}%, tăng {} né tránh. (không cộng dồn)",
+    "HP 低於 {0}% 時，閃避提高 {1}。（不可疊加）"
+  ],
+  [
+    "Gây {}% sát thương và tăng {} chặn trong {} giây.",
+    "造成 {0}% 傷害，使格擋提高 {1}，持續 {2} 秒。"
+  ],
+  [
+    "Khi chết, hồi sinh với {}% HP. ({} lần mỗi trận)",
+    "死亡時，以 {0}% HP 復活。（每場戰鬥 {1} 次）"
+  ],
+  [
+    "Tăng {}% sát thương gây ra cho Boss.",
+    "對首領造成的傷害提高 {0}%。"
+  ],
+  [
+    "Giảm {} thời gian hồi phục tự nhiên.",
+    "自然回復間隔減少 {0}。"
+  ],
+  [
+    "Mỗi {} giây, sơ cứu và hồi {}% HP.",
+    "每 {0} 秒進行急救，恢復 {1}% HP。"
+  ],
+  [
+    "Khi bị choáng, tăng {}% phòng thủ.",
+    "受到暈眩時，防禦提高 {0}%。"
+  ],
+  [
+    "Tăng Chính Xác Điện Giật thêm {}.",
+    "感電命中提高 {0}。"
+  ],
+  [
+    "Gây {}% sát thương và hồi {}% HP.",
+    "造成 {0}% 傷害，恢復 {1}% HP。"
+  ],
+  [
+    "Tăng Chính Xác Trúng Độc thêm {}.",
+    "中毒命中提高 {0}。"
+  ],
+  [
+    "Giảm {}% thời gian hồi kỹ năng.",
+    "技能冷卻時間減少 {0}%。"
+  ],
+  [
+    "Giảm {}% sát thương phải nhận.",
+    "受到的傷害降低 {0}%。"
+  ],
+  [
+    "Tăng {}% sát thương chí mạng.",
+    "暴擊傷害提高 {0}%。"
+  ],
+  [
+    "Tăng {} trúng đích chí mạng.",
+    "暴擊命中提高 {0}。"
+  ],
+  [
+    "Sát thương gây ra tăng {}%.",
+    "造成的傷害提高 {0}%。"
+  ],
+  [
+    "Tăng {} hồi phục tự nhiên.",
+    "自然回復提高 {0}。"
+  ],
+  [
+    "Hồi {}% HP khi bị choáng.",
+    "受到暈眩時，恢復 {0}% HP。"
+  ],
+  [
+    "Tăng {} trúng đích sét.",
+    "雷電命中提高 {0}。"
+  ],
+  [
+    "Tăng {} trúng đích độc.",
+    "毒命中提高 {0}。"
+  ],
+  [
+    "Tăng tầm đánh thêm {}%.",
+    "攻擊範圍提高 {0}%。"
+  ],
+  [
+    "Hồi {}% HP mỗi {} giây.",
+    "每 {1} 秒恢復 {0}% HP。"
+  ],
+  [
+    "Tăng {} trúng đích lửa.",
+    "火焰命中提高 {0}。"
+  ],
+  [
+    "Gây {}% sát thương.",
+    "造成 {0}% 傷害。"
+  ],
+  [
+    "Tăng {}% phòng thủ.",
+    "防禦提高 {0}%。"
+  ],
+  [
+    "Tăng {} chính xác.",
+    "命中提高 {0}。"
+  ],
+  [
+    "Tăng {}% tốc đánh.",
+    "攻擊速度提高 {0}%。"
+  ],
+  [
+    "Tăng {}% công lực.",
+    "攻擊力提高 {0}%。"
+  ],
+  [
+    "Tăng {} né tránh.",
+    "閃避提高 {0}。"
+  ],
+  [
+    "Tăng {} chặn.",
+    "格擋提高 {0}。"
+  ],
+  [
+    "Tăng {}% HP.",
+    "HP 提高 {0}%。"
+  ]
+]

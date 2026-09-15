@@ -1,0 +1,12 @@
+{
+  "name": "war-of-genesis-helper-zh-hant",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-localization.cjs",
+    "test": "node scripts/verify-localization.cjs"
+  },
+  "devDependencies": {
+    "acorn": "8.18.0",
+    "playwright": "1.62.1"
+  }
+}

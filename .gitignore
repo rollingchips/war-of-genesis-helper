@@ -1,4 +1,4 @@
-﻿# Operating System Files
+# Operating System Files
 Thumbs.db
 ehthumbs.db
 Desktop.ini
@@ -21,3 +21,6 @@ Desktop.ini
 # Archives (don't commit zip files to repo)
 *.zip
 
+
+# Localization development dependencies
+node_modules/
