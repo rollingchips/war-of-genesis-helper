@@ -1175,12 +1175,12 @@ body {
       <div class="stage-control-group">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
           <label style="margin-bottom:0;">⚡ DPS Chiến Đấu:</label>
-          <button class="small-btn" style="padding:2px 8px; font-size:11px; background:#1f6feb; color:#fff;" onclick="applyRealDps()">Dùng DPS Thực (3,415)</button>
+          <button class="small-btn" style="padding:2px 8px; font-size:11px; background:#1f6feb; color:#fff;" onclick="applyRealDps()">Dùng DPS Thực (16,637)</button>
         </div>
-        <input type="range" class="level-slider" id="dpsSlider" min="1000" max="30000" step="1" value="3415" oninput="updateDps(this.value)">
+        <input type="range" class="level-slider" id="dpsSlider" min="1000" max="50000" step="1" value="16637" oninput="updateDps(this.value)">
         <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b949e; margin-top:4px;">
-          <span id="dpsLabel" style="color:#ff7b72; font-weight:bold;">DPS Mô Phỏng</span>
-          <span>Max 30,000 DPS</span>
+          <span id="dpsLabel" style="color:#ff7b72; font-weight:bold;">16,637 DPS</span>
+          <span>Max 50,000 DPS</span>
         </div>
       </div>
 
@@ -12559,17 +12559,17 @@ const stageData = [
   }
 ];
 const userLevelsData = {"1": {"level": 1, "req_exp": 252, "rewards": [], "reward_counts": [], "max_equip_tier": 1}, "2": {"level": 2, "req_exp": 578, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 2}, "3": {"level": 3, "req_exp": 1218, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 2}, "4": {"level": 4, "req_exp": 2178, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 2}, "5": {"level": 5, "req_exp": 3678, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "6": {"level": 6, "req_exp": 5658, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "7": {"level": 7, "req_exp": 8394, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "8": {"level": 8, "req_exp": 12138, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "9": {"level": 9, "req_exp": 17178, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "10": {"level": 10, "req_exp": 21678, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "11": {"level": 11, "req_exp": 36748, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "12": {"level": 12, "req_exp": 52504, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "13": {"level": 13, "req_exp": 68960, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "14": {"level": 14, "req_exp": 86132, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 3}, "15": {"level": 15, "req_exp": 104360, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "16": {"level": 16, "req_exp": 123674, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "17": {"level": 17, "req_exp": 144104, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "18": {"level": 18, "req_exp": 168464, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "19": {"level": 19, "req_exp": 197615, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "20": {"level": 20, "req_exp": 238271, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "21": {"level": 21, "req_exp": 341011, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "22": {"level": 22, "req_exp": 490511, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "23": {"level": 23, "req_exp": 707838, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "24": {"level": 24, "req_exp": 1014975, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 4}, "25": {"level": 25, "req_exp": 1448325, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "26": {"level": 26, "req_exp": 2032115, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "27": {"level": 27, "req_exp": 2791491, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "28": {"level": 28, "req_exp": 3752518, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "29": {"level": 29, "req_exp": 4942177, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "30": {"level": 30, "req_exp": 6388369, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "31": {"level": 31, "req_exp": 8975804, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "32": {"level": 32, "req_exp": 12030940, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "33": {"level": 33, "req_exp": 15632473, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "34": {"level": 34, "req_exp": 19861637, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 5}, "35": {"level": 35, "req_exp": 24802205, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "36": {"level": 36, "req_exp": 30540486, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "37": {"level": 37, "req_exp": 37165328, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "38": {"level": 38, "req_exp": 44768117, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "39": {"level": 39, "req_exp": 53442777, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "40": {"level": 40, "req_exp": 63285771, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "41": {"level": 41, "req_exp": 78872993, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "42": {"level": 42, "req_exp": 96374889, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "43": {"level": 43, "req_exp": 115936252, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "44": {"level": 44, "req_exp": 137705329, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "45": {"level": 45, "req_exp": 161833825, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "46": {"level": 46, "req_exp": 188476899, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "47": {"level": 47, "req_exp": 217793167, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "48": {"level": 48, "req_exp": 249944702, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "49": {"level": 49, "req_exp": 285267563, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "50": {"level": 50, "req_exp": 324106451, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "51": {"level": 51, "req_exp": 381667156, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "52": {"level": 52, "req_exp": 444921657, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "53": {"level": 53, "req_exp": 514367879, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "54": {"level": 54, "req_exp": 590515222, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "55": {"level": 55, "req_exp": 673884561, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "56": {"level": 56, "req_exp": 765008246, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "57": {"level": 57, "req_exp": 864430102, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "58": {"level": 58, "req_exp": 972705430, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "59": {"level": 59, "req_exp": 1090681954, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "60": {"level": 60, "req_exp": 1219226524, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "61": {"level": 61, "req_exp": 1402318546, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "62": {"level": 62, "req_exp": 1601555554, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "63": {"level": 63, "req_exp": 1818143398, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "64": {"level": 64, "req_exp": 2053312678, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "65": {"level": 65, "req_exp": 2308318744, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "66": {"level": 66, "req_exp": 2584441696, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "67": {"level": 67, "req_exp": 2882986384, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "68": {"level": 68, "req_exp": 3205282408, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "69": {"level": 69, "req_exp": 3553485118, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "70": {"level": 70, "req_exp": 3929794414, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "71": {"level": 71, "req_exp": 4448803278, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "72": {"level": 72, "req_exp": 5009425048, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "73": {"level": 73, "req_exp": 5614631630, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "74": {"level": 74, "req_exp": 6267451223, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "75": {"level": 75, "req_exp": 6970968323, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "76": {"level": 76, "req_exp": 7728323719, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "77": {"level": 77, "req_exp": 8542714496, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "78": {"level": 78, "req_exp": 9417394035, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "79": {"level": 79, "req_exp": 10358436660, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "80": {"level": 80, "req_exp": 11372314092, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "81": {"level": 81, "req_exp": 12739286431, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "82": {"level": 82, "req_exp": 14213864997, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "83": {"level": 83, "req_exp": 15804594750, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "84": {"level": 84, "req_exp": 17520175450, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "85": {"level": 85, "req_exp": 19369461658, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "86": {"level": 86, "req_exp": 21361462733, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "87": {"level": 87, "req_exp": 23505342835, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "88": {"level": 88, "req_exp": 25810420924, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "89": {"level": 89, "req_exp": 28295087240, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "90": {"level": 90, "req_exp": 30976576184, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "91": {"level": 91, "req_exp": 34534008826, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "92": {"level": 92, "req_exp": 38376430046, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "93": {"level": 93, "req_exp": 42526111245, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "94": {"level": 94, "req_exp": 47034028422, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "95": {"level": 95, "req_exp": 51999625578, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "96": {"level": 96, "req_exp": 57572068712, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "97": {"level": 97, "req_exp": 63951499824, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "98": {"level": 98, "req_exp": 71438758915, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "99": {"level": 99, "req_exp": 80437891984, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}, "100": {"level": 100, "req_exp": 0, "rewards": [8000, 8100, 8200], "reward_counts": [1, 1, 1], "max_equip_tier": 6}};
-let userProfile = {"nickname": "Tân Thủ (Chưa nạp save)", "level": 1, "combatPower": 100, "stageTid": 11101, "clearStageTid": 11101, "maxUnlockedStageTid": 11101, "farmStageId": 11101, "currencies": {"1000": {"count": 0}, "2000": {"count": 0}, "6000": {"count": 0}, "7000": {"count": 0}}, "expInfo": {"curExp": 0, "maxExp": 1000}, "equippedGear": {}, "equippedGearEnriched": [], "inventoryCount": 0, "heroes": [], "trainingSkills": {}, "skillTreeAllocations": {}, "liveSkillLevels": {}, "jewelsData": {"jewels": [], "storageUsed": 0, "storageTotal": 42}, "combatStats": {"finalAttack": 1337.6, "finalAttackSpeed": 115.95, "finalCriticalRate": 23.6, "finalCriticalDamage": 192.7, "pveBonus": 32.5, "damageBonus": 19.7, "bossBonus": 22.7, "realDps": 3750}, "stats": {"finalAttack": 1337.6, "finalAttackSpeed": 115.95, "finalCriticalRate": 23.6, "finalCriticalDamage": 192.7, "pveBonus": 32.5, "damageBonus": 19.7, "bossBonus": 22.7}};
+let userProfile = {"nickname": "Tân Thủ (Chưa nạp save)", "level": 1, "combatPower": 100, "stageTid": 11101, "clearStageTid": 11101, "maxUnlockedStageTid": 11101, "farmStageId": 11101, "currencies": {"1000": {"count": 0}, "2000": {"count": 0}, "6000": {"count": 0}, "7000": {"count": 0}}, "expInfo": {"curExp": 0, "maxExp": 1000}, "equippedGear": {}, "equippedGearEnriched": [], "inventoryCount": 0, "heroes": [], "trainingSkills": {}, "skillTreeAllocations": {}, "liveSkillLevels": {}, "jewelsData": {"jewels": [], "storageUsed": 0, "storageTotal": 42}, "combatStats": {"finalAttack": 1337.6, "finalAttackSpeed": 115.95, "finalCriticalRate": 23.6, "finalCriticalDamage": 192.7, "pveBonus": 32.5, "damageBonus": 19.7, "bossBonus": 22.7, "realDps": 16637}, "stats": {"finalAttack": 1337.6, "finalAttackSpeed": 115.95, "finalCriticalRate": 23.6, "finalCriticalDamage": 192.7, "pveBonus": 32.5, "damageBonus": 19.7, "bossBonus": 22.7}};
 window.userProfile = userProfile;
 window.stageData = stageData;
 
 let currentClass = 'Ranged';
 let currentDpsClass = 'Ranged';
-window.__lastTotalDps = 3355;
+window.__lastTotalDps = 16637;
 let dpsCombatMode = 'aoe'; // 'aoe' (Quét lính) or 'single' (Đánh Boss)
 let selectedSkill = null;
 let selectedLevel = 1;
-let currentDps = (userProfile.combatStats && userProfile.combatStats.realDps) ? userProfile.combatStats.realDps : 3415;
+let currentDps = (userProfile.combatStats && userProfile.combatStats.realDps) ? userProfile.combatStats.realDps : 16637;
 
 // REAL-TIME WEBSOCKET LIVE SYNC ENGINE (ROBUST PERSISTENT CONNECTION)
 let isLiveSyncActive = true;
@@ -15082,12 +15082,12 @@ function filterTree() {
 function applyRealDps() {
   // Prioritize live calculated DPS from renderCombatBreakdown
   const realDpsVal = (window.__lastTotalDps > 0) ? Math.round(window.__lastTotalDps)
-    : ((userProfile.combatStats && userProfile.combatStats.realDps) ? userProfile.combatStats.realDps : 3415);
+    : ((userProfile.combatStats && userProfile.combatStats.realDps) ? userProfile.combatStats.realDps : 16637);
   currentDps = realDpsVal;
   window.currentDps = realDpsVal;
   const slider = document.getElementById('dpsSlider');
   if (slider) {
-    if (currentDps > parseInt(slider.max || 30000)) slider.max = currentDps + 5000;
+    if (currentDps > parseInt(slider.max || 50000)) slider.max = currentDps + 5000;
     slider.value = currentDps;
   }
   const label = document.getElementById('dpsLabel');
@@ -15180,6 +15180,27 @@ function translateStageTag(tag) {
             .replace('Ải', 'Stage');
 }
 
+/* CALIBRATED STAGE CLEAR TIME ESTIMATION
+   Calibrated using real in-game measurements with player DPS 16,637:
+   - Stage 14209 (2-9 Ác mộng, 139,766 HP, mob def 612): ~112.15s, 145.5 Vàng/s, 365.1 EXP/s
+   - Stage 14301 (3-1 Ác mộng, 117,496 HP, mob def 770): ~116.20s, 143.1 Vàng/s, 360.5 EXP/s
+   Base physical floor: mob waves spawn/traversal (waves * 5.7s) + boss spawn & victory transition (7.7s)
+   Effective combat kill time: (total_hp / playerDps) * (1 + (def / 440)^2)
+*/
+function estimateStageClearTime(s, dps) {
+  if (!s) return 112;
+  const playerDps = Math.max(1, dps || (typeof currentDps !== 'undefined' ? currentDps : 16637));
+  const mobs = s.boss_req_mobs || 70;
+  const waves = mobs / 5.0;
+  // Baseline traversal, mob spawn animations, attack cadence GCD, boss spawn warning & victory transition
+  const baseTime = waves * 5.7 + 7.7;
+  // Effective combat kill time accounting for monster defense reduction (calibrated K_def = 440 against real player DPS 16,637)
+  const def = s.avg_mob_def || 0;
+  const defFactor = 1 + Math.pow(def / 440, 2);
+  const combatTime = ((s.total_hp || 100000) / playerDps) * defFactor;
+  return Math.max(baseTime, baseTime + combatTime);
+}
+
 function renderStageTable() {
   const tbody = document.getElementById('stageTableBody');
   if (!tbody) return;
@@ -15221,26 +15242,27 @@ function renderStageTable() {
     }
   } else {
     list = (stageData || []).map(function(s) {
-      if (historyMap.has(s.stage_id)) {
-        return historyMap.get(s.stage_id);
-      }
-      const mobWaves = s.boss_req_mobs / 4.5;
-      const spawnTime = mobWaves * 1.5 + 3.0;
-      const estSec = Math.max(10, (s.total_hp / (currentDps || 3415)) + spawnTime);
+      const hasHist = historyMap.has(s.stage_id);
+      const histObj = hasHist ? historyMap.get(s.stage_id) : null;
+      
+      const estSec = estimateStageClearTime(s, currentDps);
       const gps = s.total_gold / estSec;
       const gpm = gps * 60;
       const eps = (s.total_exp || 0) / estSec;
       const goldHp = s.total_hp > 0 ? (s.total_gold / s.total_hp) : 0;
 
+      // When user evaluates at real DPS, preserve exact measured historical run if available
+      const useHistoryValues = hasHist && Math.abs(currentDps - (userProfile.combatStats?.realDps || 16637)) < 50;
+
       return {
         ...s,
-        calc_sec: estSec,
-        calc_gps: gps,
-        calc_gpm: gpm,
-        calc_eps: eps,
+        calc_sec: useHistoryValues ? histObj.avg_sec : estSec,
+        calc_gps: useHistoryValues ? histObj.calc_gps : gps,
+        calc_gpm: useHistoryValues ? histObj.calc_gpm : gpm,
+        calc_eps: useHistoryValues ? histObj.calc_eps : eps,
         calc_gold_hp: goldHp,
-        clear_count: 0,
-        from_history: false
+        clear_count: hasHist ? histObj.clear_count : 0,
+        from_history: useHistoryValues
       };
     });
 
@@ -15275,9 +15297,7 @@ function renderStageTable() {
     curGps = currentStageObj.calc_gps;
     curEps = currentStageObj.calc_eps;
     if (curGps === undefined) {
-      const mobWaves = (currentStageObj.boss_req_mobs || 45) / 4.5;
-      const spawnTime = mobWaves * 1.5 + 3.0;
-      const curSec = Math.max(10, ((currentStageObj.total_hp || 50000) / (currentDps || 3415)) + spawnTime);
+      const curSec = estimateStageClearTime(currentStageObj, currentDps);
       curGps = ((currentStageObj.total_gold || 1000) / curSec);
       curEps = (((currentStageObj.total_exp || 0) || 1000) / curSec);
     }
@@ -15885,7 +15905,7 @@ function renderStageHistoryTable() {
     const stageLabel = isEn ? (translateStageTag(s.display_tag) || ('Stage ' + s.stage_id)) : (s.display_tag || ('Ải ' + s.stage_id));
     const areaName = (isEn && s.area_name === 'Chiến Trường') ? 'Battlefield' : s.area_name;
     const areaIcon = typeof getAreaIcon === 'function' ? getAreaIcon(s.area_name) : '🗺️';
-    const dur = r.duration > 0 ? r.duration : Math.max(10, (s.total_hp / ((typeof currentDps !== 'undefined' ? currentDps : 100000) || 100000)) + 5);
+    const dur = r.duration > 0 ? r.duration : estimateStageClearTime(s, currentDps);
     const calcGps = s.total_gold / dur;
     const calcGpm = calcGps * 60;
     const calcEps = (s.total_exp || 0) / dur;
