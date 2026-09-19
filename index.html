@@ -891,10 +891,10 @@ body {
     <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #1f6feb 0%, #238636 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 2px 10px rgba(31, 111, 235, 0.4);">⚡</div>
     <div>
       <div style="font-weight: bold; font-size: 15px; color: #f0f6fc; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <span>Cài Đặt LiveSync 1-Click (Khắc Phục Bản Update Game 18/9)</span>
-        <span style="background: #238636; color: #ffffff; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; box-shadow: 0 0 8px rgba(35, 134, 54, 0.5);">🔥 BẮT BUỘC ĐỂ ĐỒNG BỘ</span>
+        <span id="lsBannerTitle">Cài Đặt LiveSync 1-Click (Khắc Phục Bản Update Game 18/9)</span>
+        <span id="lsBannerBadge" style="background: #238636; color: #ffffff; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; box-shadow: 0 0 8px rgba(35, 134, 54, 0.5);">🔥 BẮT BUỘC ĐỂ ĐỒNG BỘ</span>
       </div>
-      <div style="font-size: 12.5px; color: #8b949e; margin-top: 3px; line-height: 1.4;">
+      <div id="lsBannerDesc" style="font-size: 12.5px; color: #8b949e; margin-top: 3px; line-height: 1.4;">
         Bản update 18/9 của game đã đóng port kết nối. Bạn cần tải file .bat này giải nén vào thư mục game để tự động kết nối Web Helper, auto Lò Rèn, Kho Ngọc, DPS &amp; Kỹ năng.
       </div>
     </div>
@@ -902,10 +902,10 @@ body {
   <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
     <a href="LiveSync_1Click.zip" download="LiveSync_1Click.zip" style="background: linear-gradient(180deg, #2ea043 0%, #238636 100%); color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 3px 12px rgba(35, 134, 54, 0.45); border: 1px solid #3fb950; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 5px 16px rgba(35, 134, 54, 0.6)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 12px rgba(35, 134, 54, 0.45)';">
       <span style="font-size: 16px;">📥</span>
-      <span>Tải Gói LiveSync 1-Click (.ZIP)</span>
+      <span id="lsBannerBtnZip">Tải Gói LiveSync 1-Click (.ZIP)</span>
     </a>
     <button onclick="openLiveSyncHelpModal()" style="background: #21262d; color: #58a6ff; border: 1px solid #388bfd; font-weight: 600; font-size: 13px; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(56, 139, 253, 0.15)'; this.style.borderColor='#58a6ff';" onmouseout="this.style.background='#21262d'; this.style.borderColor='#388bfd';">
-      <span>📖 Xem Hướng Dẫn &amp; Tải .BAT</span>
+      <span id="lsBannerBtnGuide">📖 Xem Hướng Dẫn &amp; Tải .BAT</span>
     </button>
   </div>
 </div>
@@ -922,8 +922,8 @@ body {
     </div>
   </div>
   <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-    <button class="small-btn" onclick="openLiveSyncHelpModal()" style="background:#1f6feb; color:#fff; font-weight:bold; padding:7px 14px; font-size:12px;" title="Tải file .bat để ép game chạy port 10998">📥 Hướng Dẫn LiveSync</button>
-    <button class="small-btn" onclick="triggerSteamRelaunch()" style="background:#238636; color:#fff; font-weight:bold; padding:7px 14px; font-size:12px;" title="Bấm để khởi động game qua Steam">🚀 Mở Game Qua Steam</button>
+    <button id="dcBannerBtnHelp" class="small-btn" onclick="openLiveSyncHelpModal()" style="background:#1f6feb; color:#fff; font-weight:bold; padding:7px 14px; font-size:12px;" title="Tải file .bat để ép game chạy port 10998">📥 Hướng Dẫn LiveSync</button>
+    <button id="dcBannerBtnLaunch" class="small-btn" onclick="triggerSteamRelaunch()" style="background:#238636; color:#fff; font-weight:bold; padding:7px 14px; font-size:12px;" title="Bấm để khởi động game qua Steam">🚀 Mở Game Qua Steam</button>
     <button onclick="dismissDisconnectBanner()" style="background:transparent; border:none; color:#8b949e; cursor:pointer; font-size:15px; padding:0 4px;" title="Đóng thông báo">✕</button>
   </div>
 </div>
@@ -3370,7 +3370,32 @@ const I18N_DICT = {
   'ReplaceFirst': 'ReplaceFirst',
   'QuoteReplacement': 'QuoteReplacement',
   'Pattern': 'Pattern',
-  'Compile': 'Compile'
+  'Compile': 'Compile',
+
+  // === LiveSync 1-Click Banner (top page) ===
+  'Cài Đặt LiveSync 1-Click (Khắc Phục Bản Update Game 18/9)': 'LiveSync 1-Click Setup (Fix for Game Update 18/9)',
+  '🔥 BẮT BUỘC ĐỂ ĐỒNG BỘ': '🔥 REQUIRED FOR SYNC',
+  'Bản update 18/9 của game đã đóng port kết nối. Bạn cần tải file .bat này giải nén vào thư mục game để tự động kết nối Web Helper, auto Lò Rèn, Kho Ngọc, DPS & Kỹ năng.': 'The 18/9 game update has closed the connection port. You need to download this .bat file and extract it to the game folder to auto-connect Web Helper, auto Forge, Jewel Vault, DPS & Skills.',
+  'Tải Gói LiveSync 1-Click (.ZIP)': 'Download LiveSync 1-Click (.ZIP)',
+  '📖 Xem Hướng Dẫn & Tải .BAT': '📖 View Guide & Download .BAT',
+
+  // === LiveSync 1-Click Modal (popup) ===
+  'Cài Đặt LiveSync 1-Click (Khắc Phục Update 18/09)': 'LiveSync 1-Click Setup (Fix for Update 18/09)',
+  'Dành cho tất cả người chơi sử dụng Web Helper & Tự Động': 'For all players using Web Helper & Automation',
+  'Đóng': 'Close',
+  'Lý Do Bản Update 18/09 Làm Mất LiveSync:': 'Why Update 18/09 Broke LiveSync:',
+  '🚀 Tải Bộ Cài Đặt LiveSync 1-Click (Đầy Đủ File Cần Thiết):': '🚀 Download LiveSync 1-Click Installer (All Required Files):',
+  '📦 TẢI TRỌN GÓI LIVESYNC 1-CLICK (.ZIP)': '📦 DOWNLOAD FULL LIVESYNC 1-CLICK PACKAGE (.ZIP)',
+  '⬇️ Tải Riêng cai_dat_livesync.bat': '⬇️ Download cai_dat_livesync.bat Only',
+  '📋 Bấm vào đây để sao chép mã nguồn file .BAT': '📋 Click here to copy the .BAT file source code',
+  '📖 Hướng Dẫn Cài Đặt (Chỉ Làm 1 Lần):': '📖 Installation Guide (One-Time Setup):',
+  '📋 Nội dung file cai_dat_livesync.bat:': '📋 Contents of cai_dat_livesync.bat:',
+  '📋 Sao Chép': '📋 Copy',
+  '📦 Tải File .ZIP Cài Đặt': '📦 Download .ZIP Installer',
+  'Yêu cầu:': 'Requirements:',
+  'Bước 1:': 'Step 1:',
+  'Bước 2:': 'Step 2:',
+  'Bước 3:': 'Step 3:'
 };
 
 // ===== TỪ ĐIỂN ĐA NGÔN NGỮ (thứ tự: en, pt, tr, th, id, zh, ru, es) =====
@@ -4561,7 +4586,7 @@ function getLangText(viText) {
     const idx = I18N_LANG_INDEX[lang];
     if (idx !== undefined && m[idx]) return m[idx];
   }
-  if (lang === 'en' && I18N_DICT[viText]) return I18N_DICT[viText];
+  if (I18N_DICT[viText]) return I18N_DICT[viText];
   return null;
 }
 function getLangTextOr(viText) {
@@ -4774,6 +4799,8 @@ function switchLanguage(lang) {
   // This prevents flicker: render functions write Vietnamese HTML first,
   // then we translate everything in one pass at the end.
   if (typeof renderCommunityBuildsList === 'function') renderCommunityBuildsList();
+  if (typeof updateLiveSyncI18n === 'function') updateLiveSyncI18n(lang);
+  if (typeof updateDonateModalI18n === 'function') updateDonateModalI18n(lang);
   updateDOMTranslations(lang);
 }
 
@@ -15735,6 +15762,8 @@ function dismissDisconnectBanner() {
 }
 
 function openWatchdogModal() {
+  const lang = localStorage.getItem('genesis_helper_lang') || 'vi';
+  updateLiveSyncI18n(lang);
   const modal = document.getElementById('watchdogModal');
   if (modal) modal.style.display = 'flex';
 }
@@ -15743,6 +15772,133 @@ function closeWatchdogModal() {
   const modal = document.getElementById('watchdogModal');
   if (modal) modal.style.display = 'none';
 }
+
+function updateLiveSyncI18n(lang) {
+  if (!lang) lang = localStorage.getItem('genesis_helper_lang') || 'vi';
+  const isEn = (lang !== 'vi');
+
+  // Top LiveSync Banner
+  const lsTitle = document.getElementById('lsBannerTitle');
+  if (lsTitle) lsTitle.innerText = isEn ? '1-Click LiveSync Setup (Fix for Game Update Sep 18)' : 'Cài Đặt LiveSync 1-Click (Khắc Phục Bản Update Game 18/9)';
+
+  const lsBadge = document.getElementById('lsBannerBadge');
+  if (lsBadge) lsBadge.innerText = isEn ? '🔥 REQUIRED FOR SYNC' : '🔥 BẮT BUỘC ĐỂ ĐỒNG BỘ';
+
+  const lsDesc = document.getElementById('lsBannerDesc');
+  if (lsDesc) {
+    lsDesc.innerText = isEn
+      ? 'The Sep 18 game update closed the default debug port. Download and extract this package into your game folder to automatically connect Web Helper, Auto Blacksmith, Jewels, DPS & Skills.'
+      : 'Bản update 18/9 của game đã đóng port kết nối. Bạn cần tải file .bat này giải nén vào thư mục game để tự động kết nối Web Helper, auto Lò Rèn, Kho Ngọc, DPS & Kỹ năng.';
+  }
+
+  const lsBtnZip = document.getElementById('lsBannerBtnZip');
+  if (lsBtnZip) lsBtnZip.innerText = isEn ? 'Download LiveSync 1-Click (.ZIP)' : 'Tải Gói LiveSync 1-Click (.ZIP)';
+
+  const lsBtnGuide = document.getElementById('lsBannerBtnGuide');
+  if (lsBtnGuide) lsBtnGuide.innerText = isEn ? '📖 Setup Guide & Download .BAT' : '📖 Xem Hướng Dẫn & Tải .BAT';
+
+  // Disconnect Alert Banner
+  const dcTitle = document.getElementById('dcBannerTitle');
+  if (dcTitle) dcTitle.innerText = isEn ? 'Lost connection to game!' : 'Mất kết nối tới game!';
+
+  const dcDesc = document.getElementById('dcBannerDesc');
+  if (dcDesc) {
+    dcDesc.innerText = isEn
+      ? 'Genesis.exe is closed or disconnected. Please relaunch the game when you want to resume syncing.'
+      : 'Game Genesis.exe đang tắt hoặc bị gián đoạn kết nối. Vui lòng mở lại game khi cần tiếp tục đồng bộ.';
+  }
+
+  const dcBtnHelp = document.getElementById('dcBannerBtnHelp');
+  if (dcBtnHelp) {
+    dcBtnHelp.innerText = isEn ? '📥 LiveSync Guide' : '📥 Hướng Dẫn LiveSync';
+    dcBtnHelp.title = isEn ? 'Setup script to force game on port 10998' : 'Tải file .bat để ép game chạy port 10998';
+  }
+
+  const dcBtnLaunch = document.getElementById('dcBannerBtnLaunch');
+  if (dcBtnLaunch) {
+    dcBtnLaunch.innerText = isEn ? '🚀 Launch Game via Steam' : '🚀 Mở Game Qua Steam';
+    dcBtnLaunch.title = isEn ? 'Click to launch game via Steam' : 'Bấm để khởi động game qua Steam';
+  }
+
+  // LiveSync Modal (watchdogModal)
+  const wdTitle = document.getElementById('wdModalTitle');
+  if (wdTitle) wdTitle.innerText = isEn ? '1-Click LiveSync Setup (Fix for Sep 18 Update)' : 'Cài Đặt LiveSync 1-Click (Khắc Phục Update 18/09)';
+
+  const wdSubtitle = document.getElementById('wdModalSubtitle');
+  if (wdSubtitle) wdSubtitle.innerText = isEn ? 'For all players using Web Helper & Automation' : 'Dành cho tất cả người chơi sử dụng Web Helper & Tự Động';
+
+  const wdCloseIcon = document.getElementById('wdModalCloseIcon');
+  if (wdCloseIcon) wdCloseIcon.title = isEn ? 'Close' : 'Đóng';
+
+  const wdWarningBox = document.getElementById('wdModalWarningBox');
+  if (wdWarningBox) {
+    if (isEn) {
+      wdWarningBox.innerHTML = '<b style="color:#e3b341; font-size:13.5px;">Why the Sep 18 Update Broke LiveSync:</b><br>' +
+        '<span style="color:#c9d1d9;">The <b>Sep 18, 2026</b> update for <i>War of Genesis: Idle Loot</i> removed the default debug port (Steam Launch Options flags no longer work).</span><br>' +
+        '<span style="color:#7ee787; font-weight:bold; margin-top:4px; display:inline-block;">👉 You need to use the 1-Click LiveSync package below to inject the real-time hook into the game and launch the LiveSync Bridge (port 10998). Web Helper will then detect the game automatically 100%!</span>';
+    } else {
+      wdWarningBox.innerHTML = '<b style="color:#e3b341; font-size:13.5px;">Lý Do Bản Update 18/09 Làm Mất LiveSync:</b><br>' +
+        '<span style="color:#c9d1d9;">Bản cập nhật ngày <b>18/09/2026</b> của game <i>War of Genesis: Idle Loot</i> đã loại bỏ hoàn toàn cổng debug mặc định (việc thêm cờ vào Steam Launch Options đều không còn tác dụng).</span><br>' +
+        '<span style="color:#7ee787; font-weight:bold; margin-top:4px; display:inline-block;">👉 Bạn cần sử dụng bộ cài đặt LiveSync 1-Click dưới đây để nạp Hook thời gian thực vào game và khởi chạy LiveSync Bridge (cổng 10998). Sau đó Web Helper sẽ tự động nhận diện game 100%!</span>';
+    }
+  }
+
+  const wdDlTitle = document.getElementById('wdModalDlTitle');
+  if (wdDlTitle) wdDlTitle.innerText = isEn ? '🚀 Download 1-Click LiveSync Package (All Required Files):' : '🚀 Tải Bộ Cài Đặt LiveSync 1-Click (Đầy Đủ File Cần Thiết):';
+
+  const wdDlDesc = document.getElementById('wdModalDlDesc');
+  if (wdDlDesc) {
+    wdDlDesc.innerHTML = isEn
+      ? 'Package includes <code style="color:#58a6ff;">cai_dat_livesync.bat</code> and 2 required companion files: <code style="color:#7ee787;">install_game_hook_v2.js</code> &amp; <code style="color:#7ee787;">livesync_bridge.js</code>.'
+      : 'Gói cài đặt gồm file <code style="color:#58a6ff;">cai_dat_livesync.bat</code> cùng 2 file đi kèm bắt buộc: <code style="color:#7ee787;">install_game_hook_v2.js</code> &amp; <code style="color:#7ee787;">livesync_bridge.js</code>.';
+  }
+
+  const wdZipBtnText = document.getElementById('wdModalZipBtnText');
+  if (wdZipBtnText) wdZipBtnText.innerText = isEn ? '📦 DOWNLOAD 1-CLICK LIVESYNC (.ZIP)' : '📦 TẢI TRỌN GÓI LIVESYNC 1-CLICK (.ZIP)';
+
+  const wdBatBtnText = document.getElementById('wdModalBatBtnText');
+  if (wdBatBtnText) wdBatBtnText.innerText = isEn ? '⬇️ Download cai_dat_livesync.bat Only' : '⬇️ Tải Riêng cai_dat_livesync.bat';
+
+  const btnCopyBat = document.getElementById('btnCopyBatScript');
+  if (btnCopyBat) btnCopyBat.innerText = isEn ? '📋 Click here to copy .BAT script code' : '📋 Bấm vào đây để sao chép mã nguồn file .BAT';
+
+  const wdStepsTitle = document.getElementById('wdModalStepsTitle');
+  if (wdStepsTitle) wdStepsTitle.innerText = isEn ? '📖 Setup Instructions (One-time Setup):' : '📖 Hướng Dẫn Cài Đặt (Chỉ Làm 1 Lần):';
+
+  const wdStepsList = document.getElementById('wdModalStepsList');
+  if (wdStepsList) {
+    if (isEn) {
+      wdStepsList.innerHTML = '<li><b>Prerequisite:</b> Computer has <b>Node.js</b> installed (if not, download free LTS at <a href="https://nodejs.org" target="_blank" rel="noopener" style="color:#58a6ff; text-decoration:underline;">nodejs.org</a>).</li>' +
+        '<li><b>Step 1:</b> Click the <b>"DOWNLOAD 1-CLICK LIVESYNC (.ZIP)"</b> button above.</li>' +
+        '<li><b>Step 2:</b> Open Steam ➔ Right-click <b>War of Genesis: Idle Loot</b> ➔ <b>Manage</b> ➔ <b>Browse local files</b>.<br>' +
+        'Extract all files from the zip into that game folder (where <code>Genesis.exe</code> is located).</li>' +
+        '<li><b>Step 3:</b> Double-click to run <code style="color:#7ee787; font-weight:bold;">cai_dat_livesync.bat</code>:<br>' +
+        '- A window will inject the Real-Time Hook and start LiveSync Bridge on port 10998.<br>' +
+        '- Return to Web Helper, the status light will turn to <b style="color:#7ee787;">🟢 Live</b>! All Auto Blacksmith, Jewels, and Tier 3 Fusion features will work automatically!</li>';
+    } else {
+      wdStepsList.innerHTML = '<li><b>Yêu cầu:</b> Máy tính đã cài <b>Node.js</b> (nếu chưa có, tải bản LTS miễn phí tại <a href="https://nodejs.org" target="_blank" rel="noopener" style="color:#58a6ff; text-decoration:underline;">nodejs.org</a>).</li>' +
+        '<li><b>Bước 1:</b> Bấm nút <b>"TẢI TRỌN GÓI LIVESYNC 1-CLICK (.ZIP)"</b> ở trên về máy.</li>' +
+        '<li><b>Bước 2:</b> Mở Steam ➔ Chuột phải game <b>War of Genesis: Idle Loot</b> ➔ <b>Quản lý (Manage)</b> ➔ <b>Duyệt tệp cục bộ (Browse local files)</b>.<br>' +
+        'Giải nén toàn bộ các file trong file zip vào thư mục game đó (nơi có file <code>Genesis.exe</code>).</li>' +
+        '<li><b>Bước 3:</b> Nhấp đúp chạy file <code style="color:#7ee787; font-weight:bold;">cai_dat_livesync.bat</code>:<br>' +
+        '- Cửa sổ tự động nạp Hook thời gian thực và khởi động LiveSync Bridge cổng 10998.<br>' +
+        '- Quay lại Web Helper, đèn trạng thái sẽ chuyển sang <b style="color:#7ee787;">🟢 Trực tiếp (Live)</b>! Mọi tính năng Lò Rèn, Kho Ngọc, Ghép Đồ Tier 3 sẽ tự động hoạt động!</li>';
+    }
+  }
+
+  const wdBatHeaderTitle = document.getElementById('wdModalBatHeaderTitle');
+  if (wdBatHeaderTitle) wdBatHeaderTitle.innerText = isEn ? '📋 Contents of cai_dat_livesync.bat:' : '📋 Nội dung file cai_dat_livesync.bat:';
+
+  const wdBatCopyBtn = document.getElementById('wdModalBatCopyBtn');
+  if (wdBatCopyBtn) wdBatCopyBtn.innerText = isEn ? '📋 Copy' : '📋 Sao Chép';
+
+  const wdFooterZipBtn = document.getElementById('wdModalFooterZipBtn');
+  if (wdFooterZipBtn) wdFooterZipBtn.innerText = isEn ? '📦 Download .ZIP Setup' : '📦 Tải File .ZIP Cài Đặt';
+
+  const wdFooterCloseBtn = document.getElementById('wdModalFooterCloseBtn');
+  if (wdFooterCloseBtn) wdFooterCloseBtn.innerText = isEn ? 'Close' : 'Đóng';
+}
+
 
 
 function updateDonateModalI18n(lang) {
@@ -16106,16 +16262,21 @@ function downloadLiveSyncBat() {
 }
 
 function copyBatScript(btn) {
+  const currentLang = localStorage.getItem('genesis_helper_lang') || 'vi';
+  const isEn = (currentLang !== 'vi');
+  const onCopied = () => {
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = isEn ? '✅ Copied!' : '✅ Đã Sao Chép!';
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    }
+  };
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(LIVESYNC_BAT_CONTENT).then(() => {
-      if (btn) {
-        const orig = btn.innerHTML;
-        btn.innerHTML = '✅ Đã Sao Chép!';
-        setTimeout(() => { btn.innerHTML = orig; }, 2000);
-      }
-    }).catch(() => fallbackCopy(LIVESYNC_BAT_CONTENT, btn));
+    navigator.clipboard.writeText(LIVESYNC_BAT_CONTENT)
+      .then(onCopied)
+      .catch(() => fallbackCopyText(LIVESYNC_BAT_CONTENT, onCopied));
   } else {
-    fallbackCopy(LIVESYNC_BAT_CONTENT, btn);
+    fallbackCopyText(LIVESYNC_BAT_CONTENT, onCopied);
   }
 }
 
@@ -22491,10 +22652,10 @@ if (isLiveSyncActive) {
         <span style="font-size:26px;">⚡</span>
         <div>
           <h3 style="margin:0; color:#58a6ff; font-size:18px;" id="wdModalTitle">Cài Đặt LiveSync 1-Click (Khắc Phục Update 18/09)</h3>
-          <div style="font-size:12.5px; color:#8b949e; margin-top:2px;">Dành cho tất cả người chơi sử dụng Web Helper &amp; Tự Động</div>
+          <div style="font-size:12.5px; color:#8b949e; margin-top:2px;" id="wdModalSubtitle">Dành cho tất cả người chơi sử dụng Web Helper &amp; Tự Động</div>
         </div>
       </div>
-      <button onclick="closeWatchdogModal()" style="background:transparent; border:none; color:#8b949e; font-size:22px; cursor:pointer; padding:4px 8px; border-radius:6px; line-height:1;" title="Đóng">✕</button>
+      <button id="wdModalCloseIcon" onclick="closeWatchdogModal()" style="background:transparent; border:none; color:#8b949e; font-size:22px; cursor:pointer; padding:4px 8px; border-radius:6px; line-height:1;" title="Đóng">✕</button>
     </div>
 
     <div style="font-size:13px; color:#c9d1d9; line-height:1.6; margin-bottom:16px;">
@@ -22502,7 +22663,7 @@ if (isLiveSyncActive) {
       <!-- CẢNH BÁO QUAN TRỌNG: UPDATE 18/09 -->
       <div style="background:#1f190e; border:1px solid #d29922; border-radius:8px; padding:14px; margin-bottom:16px; display:flex; align-items:flex-start; gap:12px;">
         <span style="font-size:24px; flex-shrink:0;">⚠️</span>
-        <div style="font-size:12.5px; line-height:1.6;">
+        <div id="wdModalWarningBox" style="font-size:12.5px; line-height:1.6;">
           <b style="color:#e3b341; font-size:13.5px;">Lý Do Bản Update 18/09 Làm Mất LiveSync:</b><br>
           <span style="color:#c9d1d9;">Bản cập nhật ngày <b>18/09/2026</b> của game <i>War of Genesis: Idle Loot</i> đã loại bỏ hoàn toàn cổng debug mặc định (việc thêm cờ vào Steam Launch Options đều không còn tác dụng).</span><br>
           <span style="color:#7ee787; font-weight:bold; margin-top:4px; display:inline-block;">👉 Bạn cần sử dụng bộ cài đặt LiveSync 1-Click dưới đây để nạp Hook thời gian thực vào game và khởi chạy LiveSync Bridge (cổng 10998). Sau đó Web Helper sẽ tự động nhận diện game 100%!</span>
@@ -22511,19 +22672,19 @@ if (isLiveSyncActive) {
 
       <!-- KHU VỰC TẢI FILE (1-CLICK DOWNLOAD) -->
       <div style="background:#0d1117; border:1px solid #238636; border-radius:8px; padding:18px; margin-bottom:16px; text-align:center;">
-        <div style="font-size:14.5px; font-weight:bold; color:#7ee787; margin-bottom:6px;">🚀 Tải Bộ Cài Đặt LiveSync 1-Click (Đầy Đủ File Cần Thiết):</div>
-        <div style="font-size:12px; color:#8b949e; margin-bottom:14px; line-height:1.5;">
+        <div id="wdModalDlTitle" style="font-size:14.5px; font-weight:bold; color:#7ee787; margin-bottom:6px;">🚀 Tải Bộ Cài Đặt LiveSync 1-Click (Đầy Đủ File Cần Thiết):</div>
+        <div id="wdModalDlDesc" style="font-size:12px; color:#8b949e; margin-bottom:14px; line-height:1.5;">
           Gói cài đặt gồm file <code style="color:#58a6ff;">cai_dat_livesync.bat</code> cùng 2 file đi kèm bắt buộc: <code style="color:#7ee787;">install_game_hook_v2.js</code> &amp; <code style="color:#7ee787;">livesync_bridge.js</code>.
         </div>
         
         <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
           <!-- Nút tải trọn gói ZIP (Khuyên dùng) -->
           <a href="LiveSync_1Click.zip" download="LiveSync_1Click.zip" style="background:#238636; color:#ffffff; font-size:14px; font-weight:bold; padding:11px 22px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(35,134,54,0.4);" onmouseover="this.style.background='#2ea043'" onmouseout="this.style.background='#238636'">
-            <span>📦 TẢI TRỌN GÓI LIVESYNC 1-CLICK (.ZIP)</span>
+            <span id="wdModalZipBtnText">📦 TẢI TRỌN GÓI LIVESYNC 1-CLICK (.ZIP)</span>
           </a>
           <!-- Nút tải riêng file .BAT -->
           <button onclick="downloadLiveSyncBat()" style="background:#1f6feb; border:none; color:#ffffff; font-size:13.5px; font-weight:bold; padding:11px 18px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:8px;" onmouseover="this.style.background='#388bfd'" onmouseout="this.style.background='#1f6feb'">
-            <span>⬇️ Tải Riêng cai_dat_livesync.bat</span>
+            <span id="wdModalBatBtnText">⬇️ Tải Riêng cai_dat_livesync.bat</span>
           </button>
         </div>
 
@@ -22535,9 +22696,9 @@ if (isLiveSyncActive) {
       <!-- HƯỚNG DẪN SỬ DỤNG 3 BƯỚC -->
       <div style="background:#0d1117; border:1px solid #30363d; border-radius:8px; padding:16px; margin-bottom:16px;">
         <div style="font-weight:bold; color:#58a6ff; font-size:13.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-          <span>📖 Hướng Dẫn Cài Đặt (Chỉ Làm 1 Lần):</span>
+          <span id="wdModalStepsTitle">📖 Hướng Dẫn Cài Đặt (Chỉ Làm 1 Lần):</span>
         </div>
-        <ol style="margin:0; padding-left:20px; font-size:12.5px; line-height:2.0;">
+        <ol id="wdModalStepsList" style="margin:0; padding-left:20px; font-size:12.5px; line-height:2.0;">
           <li><b>Yêu cầu:</b> Máy tính đã cài <b>Node.js</b> (nếu chưa có, tải bản LTS miễn phí tại <a href="https://nodejs.org" target="_blank" rel="noopener" style="color:#58a6ff; text-decoration:underline;">nodejs.org</a>).</li>
           <li><b>Bước 1:</b> Bấm nút <b>"TẢI TRỌN GÓI LIVESYNC 1-CLICK (.ZIP)"</b> ở trên về máy.</li>
           <li><b>Bước 2:</b> Mở Steam ➔ Chuột phải game <b>War of Genesis: Idle Loot</b> ➔ <b>Quản lý (Manage)</b> ➔ <b>Duyệt tệp cục bộ (Browse local files)</b>.<br>
@@ -22553,8 +22714,8 @@ if (isLiveSyncActive) {
       <!-- KHUNG HIỂN THỊ CODE .BAT -->
       <div style="background:#0d1117; border:1px solid #30363d; border-radius:8px; padding:14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-weight:bold; color:#f0f6fc; font-size:12.5px;">📋 Nội dung file cai_dat_livesync.bat:</span>
-          <button class="small-btn" onclick="copyBatScript(this)" style="font-size:11.5px; padding:3px 8px;">📋 Sao Chép</button>
+          <span id="wdModalBatHeaderTitle" style="font-weight:bold; color:#f0f6fc; font-size:12.5px;">📋 Nội dung file cai_dat_livesync.bat:</span>
+          <button id="wdModalBatCopyBtn" class="small-btn" onclick="copyBatScript(this)" style="font-size:11.5px; padding:3px 8px;">📋 Sao Chép</button>
         </div>
         <code id="batScriptDisplay" style="display:block; background:#161b22; padding:8px 10px; border-radius:6px; font-size:11px; color:#58a6ff; font-family:monospace; max-height:130px; overflow-y:auto; white-space:pre;">@echo off
 chcp 65001 &gt;nul
@@ -22572,8 +22733,8 @@ pause</code>
 
     <!-- Modal Footer -->
     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #30363d; padding-top:14px; gap:10px; flex-wrap:wrap;">
-      <a href="LiveSync_1Click.zip" download="LiveSync_1Click.zip" class="small-btn" style="background:#238636; color:#fff; font-weight:bold; padding:8px 16px; font-size:12.5px; text-decoration:none;">📦 Tải File .ZIP Cài Đặt</a>
-      <button class="small-btn" onclick="closeWatchdogModal()" style="padding:8px 16px; font-size:12.5px;">Đóng</button>
+      <a id="wdModalFooterZipBtn" href="LiveSync_1Click.zip" download="LiveSync_1Click.zip" class="small-btn" style="background:#238636; color:#fff; font-weight:bold; padding:8px 16px; font-size:12.5px; text-decoration:none;">📦 Tải File .ZIP Cài Đặt</a>
+      <button id="wdModalFooterCloseBtn" class="small-btn" onclick="closeWatchdogModal()" style="padding:8px 16px; font-size:12.5px;">Đóng</button>
     </div>
 
   </div>
