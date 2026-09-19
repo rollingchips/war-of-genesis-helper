@@ -17159,37 +17159,48 @@ function sendEvaluatePoll() {
           } else if (cmd.action === 'fuse' && sWorkshop) {
             sWorkshop.setFusionContentType(20);
             sWorkshop.setAutoRegisterIncludeStorage('Fusion', cmd.includeStorage !== false);
-            const targetTiers = cmd.allowedTiers || (cmd.tier ? [cmd.tier] : [1, 2, 3, 4, 5, 6, 7]);
-            const allItems = (nn.net && nn.net.data && nn.net.data.item && nn.net.data.item.getAllItemNotStack) ? nn.net.data.item.getAllItemNotStack() : [];
-            for (let t of targetTiers) {
-              // Pre-check: skip tier if less than 6 UNLOCKED jewels exist (avoid opening/spamming combine menu when jewels are locked)
-              const availUnlocked = allItems.filter(it => {
-                if (!it || it.isLock || it._isLock) return false;
-                if (it.location !== 1 && (!cmd.includeStorage || it.location !== 2)) return false;
-                const db = nn.db.item.get(it.itemTid);
-                return db && db.ItemType === 6 && db.RatingType === t;
-              }).length;
-              if (availUnlocked < 6) continue;
+            let targetTiers = [];
+            if (cmd.tier) {
+              targetTiers = [Number(cmd.tier)];
+            } else if (Array.isArray(cmd.allowedTiers) && cmd.allowedTiers.length > 0) {
+              targetTiers = cmd.allowedTiers.map(Number).filter(t => t >= 1 && t <= 6);
+            }
+            if (targetTiers.length > 0) {
+              const allItems = (nn.net && nn.net.data && nn.net.data.item && nn.net.data.item.getAllItemNotStack) ? nn.net.data.item.getAllItemNotStack() : [];
+              for (let t of targetTiers) {
+                // Pre-check: skip tier if less than 6 UNLOCKED jewels exist (avoid opening/spamming combine menu when jewels are locked)
+                const availUnlocked = allItems.filter(it => {
+                  if (!it || it.isLock || it._isLock) return false;
+                  if (it.location !== 1 && (!cmd.includeStorage || it.location !== 2)) return false;
+                  const db = nn.db.item.get(it.itemTid);
+                  return db && db.ItemType === 6 && db.RatingType === t;
+                }).length;
+                if (availUnlocked < 6) continue;
 
-              sWorkshop.setAutoRegisterRating('Fusion', t);
-              let loopGuard = 0;
-              while (loopGuard < 20) {
-                const regCnt = sWorkshop.autoRegisterFusion();
-                if (!regCnt || !sWorkshop.isFusionStagingFull()) {
-                  sWorkshop.clearFusionStaging();
-                  break;
-                }
-                const fusionRes = await sWorkshop.reqFusionStagedAsync();
-                if (fusionRes && fusionRes.length > 0) {
-                  loopGuard++;
-                  const rTid = fusionRes[0].tid;
-                  const rInfo = nn.db.item.get(rTid);
-                  const rLoc = nn.db.locale.get(rInfo?.ItemName);
-                  const rName = rLoc?.VI || rLoc?.EN || rInfo?.ItemName || ('TID ' + rTid);
-                  jewelData.fusedHistory.push(rName);
-                } else {
-                  sWorkshop.clearFusionStaging();
-                  break;
+                sWorkshop.setAutoRegisterRating('Fusion', t);
+                let loopGuard = 0;
+                while (loopGuard < 20) {
+                  const regCnt = sWorkshop.autoRegisterFusion();
+                  if (!regCnt || !sWorkshop.isFusionStagingFull()) {
+                    sWorkshop.clearFusionStaging();
+                    break;
+                  }
+                  const fusionRes = await sWorkshop.reqFusionStagedAsync();
+                  if (fusionRes && fusionRes.length > 0) {
+                    loopGuard++;
+                    const rTid = fusionRes[0].tid;
+                    const rInfo = nn.db.item.get(rTid);
+                    const rLoc = nn.db.locale.get(rInfo?.ItemName);
+                    const rName = rLoc?.VI || rLoc?.EN || rInfo?.ItemName || ('TID ' + rTid);
+                    jewelData.fusedHistory.push({
+                      sourceTier: t,
+                      rewardTier: t + 1,
+                      rewardName: rName
+                    });
+                  } else {
+                    sWorkshop.clearFusionStaging();
+                    break;
+                  }
                 }
               }
             }
@@ -18232,8 +18243,9 @@ function applyLiveGameData(data) {
 
     // Log any fusion events performed by game runtime
     if (data.jewelsData.fusedHistory && data.jewelsData.fusedHistory.length > 0) {
-      data.jewelsData.fusedHistory.forEach(function(rewardName) {
-        addJewelLog('🎉 Lò rèn đã ghép thành công 6 viên ngọc -> 1x [' + rewardName + ']!', 'success');
+      const curLang = localStorage.getItem('genesis_helper_lang') || 'vi';
+      data.jewelsData.fusedHistory.forEach(function(item) {
+        addJewelLog(formatJewelFuseLog(item, curLang), 'success');
       });
     }
 
@@ -21654,6 +21666,36 @@ function clearJewelLogs() {
   renderJewelLogs();
 }
 
+function formatJewelFuseLog(item, lang) {
+  if (!lang) {
+    try {
+      lang = (typeof localStorage !== 'undefined' && localStorage.getItem('genesis_helper_lang')) || 'vi';
+    } catch (e) {
+      lang = 'vi';
+    }
+  }
+  const isEn = (lang !== 'vi');
+
+  if (typeof item === 'object' && item !== null && (item.rewardName || item.rewardTier || item.sourceTier)) {
+    const rName = item.rewardName || 'Jewel';
+    const srcTierStr = item.sourceTier ? ('[Tier ' + item.sourceTier + ']') : '';
+    const rewTierStr = item.rewardTier ? (' (Tier ' + item.rewardTier + ')') : '';
+
+    if (isEn) {
+      const srcPart = item.sourceTier ? ('6x ' + srcTierStr + ' jewels') : '6 jewels';
+      return '🎉 Workshop fused ' + srcPart + ' ➔ Received 1x [' + rName + rewTierStr + ']!';
+    } else {
+      const srcPart = item.sourceTier ? ('6 viên ngọc ' + srcTierStr) : '6 viên ngọc';
+      return '🎉 Lò rèn đã ghép ' + srcPart + ' ➔ Nhận được 1x [' + rName + rewTierStr + ']!';
+    }
+  }
+
+  const nameStr = String(item || '');
+  return isEn
+    ? ('🎉 Workshop successfully fused 6 jewels ➔ Received 1x [' + nameStr + ']!')
+    : ('🎉 Lò rèn đã ghép thành công 6 viên ngọc ➔ Nhận được 1x [' + nameStr + ']!');
+}
+
 function renderJewelLogs() {
   const box = document.getElementById('jewelLogBox');
   if (!box) return;
@@ -21848,6 +21890,20 @@ function triggerManualClassSkillOpt() {
   queueJewelCmd({ action: 'equipClassSkills' });
   addJewelLog('🔮 Đã gửi lệnh trang bị bộ kỹ năng chuẩn cho Class hiện tại...', 'info');
   scheduleNextPoll(100);
+}
+
+function resolveTargetTiers(cmd) {
+  if (!cmd) return [];
+  if (cmd.tier !== undefined && cmd.tier !== null) {
+    const t = Number(cmd.tier);
+    return (!isNaN(t) && t >= 1 && t <= 6) ? [t] : [];
+  }
+  if (Array.isArray(cmd.allowedTiers) && cmd.allowedTiers.length > 0) {
+    return cmd.allowedTiers
+      .map(function(t) { return Number(t); })
+      .filter(function(t) { return !isNaN(t) && t >= 1 && t <= 6; });
+  }
+  return [];
 }
 
 function toggleAutoFuseJewels() {
