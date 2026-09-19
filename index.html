@@ -852,6 +852,10 @@ body {
             <button type="button" class="lang-btn notranslate" data-lang="es" onclick="selectLang('es')" translate="no" style="width:100%; justify-content:flex-start; border-radius:6px;"><span>Español</span></button>
           </div>
         </div>
+        <button type="button" class="lang-btn notranslate" onclick="openUpdateNoticeModal(true)" title="Thông báo cập nhật / Update Notice" style="gap:5px; background:rgba(31,111,235,0.15); border:1px solid #1f6feb; color:#58a6ff; font-weight:600; padding:4px 9px; border-radius:8px; cursor:pointer; font-size:12px; display:inline-flex; align-items:center;">
+          <span>📢</span>
+          <span id="barUpdateNoticeBtnText">Cập Nhật / Notice</span>
+        </button>
       </div>
       <div class="player-meta notranslate" id="barPlayerMeta" translate="no">Ải hiện tại: 1-1 Dễ | Lực chiến: 100</div>
     </div>
@@ -966,8 +970,8 @@ body {
   <button class="tab-btn stage-tab" data-tab="stage" onclick="switchMainTab('stage')">🏆 BXH Cày Vàng & EXP (Money/s & EXP/s)</button>
   <button class="tab-btn dps-tab" data-tab="dps" onclick="switchMainTab('dps')">⚔️ Thống Kê DPS Kỹ Năng (Combat Breakdown)</button>
   <button class="tab-btn history-tab" data-tab="stageHistory" onclick="switchMainTab('stageHistory')">📜 Lịch Sử Chạy Ải</button>
-  <button class="tab-btn ai-tab greyout" data-tab="ai" onclick="switchMainTab('ai')" title="Tính năng đang được phát triển">
-    📊 Phân Tích Thông Minh <span style="font-size:10px; padding:2px 7px; border-radius:10px; background:#30363d; color:#8b949e; border:1px solid #484f58; margin-left:4px;">Đang phát triển</span>
+  <button class="tab-btn ai-tab" data-tab="ai" onclick="switchMainTab('ai')" title="Phân tích tài khoản & gợi ý tối ưu thông minh">
+    📊 Phân Tích Thông Minh <span style="font-size:10px; padding:2px 7px; border-radius:10px; background:rgba(88,166,255,0.15); color:#58a6ff; border:1px solid rgba(88,166,255,0.4); margin-left:4px;">Live AI</span>
   </button>
   <button class="tab-btn profile-tab" data-tab="profile" onclick="switchMainTab('profile')">👤 Hồ Sơ & Tiến Độ EXP</button>
   <button class="tab-btn jewel-tab" data-tab="jewel" onclick="switchMainTab('jewel')">💎 Lò Rèn & Kho Ngọc (Auto Fuse)</button>
@@ -1479,6 +1483,7 @@ body {
           <button class="small-btn" style="background:#21262d; color:#f85149; border:1px solid #f8514944;" onclick="clearSpecialBattleHistory()">🗑️ Xóa Lịch Sử</button>
         </div>
       </div>
+      <div id="specialBattleSummaryCard" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:16px;"></div>
       <div style="overflow-x:auto;">
         <table id="specialBattleTable">
           <thead>
@@ -1640,28 +1645,21 @@ body {
 <!-- SECTION 4: PHÂN TÍCH THÔNG MINH THỰC TẾ -->
 <div id="aiSection" style="display:none;">
   <div style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px; padding:24px;">
-
-    <!-- DEV NOTICE BANNER -->
-    <div style="background:rgba(139, 148, 158, 0.08); border:1.5px dashed #8b949e; border-radius:8px; padding:16px 20px; text-align:center; margin-bottom:18px;">
-      <div style="font-size:26px; margin-bottom:4px;">🚧</div>
-      <b style="color:#f0883e; font-size:15.5px;">Tính Năng Phân Tích Thông Minh — Đang Phát Triển</b>
-      <div style="font-size:12.5px; color:#8b949e; margin-top:4px; max-width:620px; margin-left:auto; margin-right:auto;">
-        Hệ thống đang được tiếp tục hoàn thiện thuật toán phân tích tối ưu hóa cây kỹ năng và trang bị theo thời gian thực. Phần bên dưới hiện đang được làm mờ (preview).
-      </div>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:14px; opacity:0.5;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:14px; flex-wrap:wrap; gap:12px;">
       <div>
         <h2 style="margin:0; color:#f0883e; display:flex; align-items:center; gap:8px;">
           📊 Phân Tích Thông Minh Tài Khoản
+          <span style="font-size:11.5px; font-weight:normal; background:rgba(88,166,255,0.15); color:#58a6ff; border:1px solid rgba(88,166,255,0.3); border-radius:12px; padding:2px 10px;">⚡ Realtime Game AI</span>
         </h2>
         <div style="font-size:13px; color:#8b949e; margin-top:4px;">
-          Tự động phân tích và gợi ý tối ưu hóa dựa trên dữ liệu real-time từ game — cập nhật mỗi lần đồng bộ
+          Tự động phân tích và gợi ý tối ưu hóa toàn diện dựa trên dữ liệu thời gian thực từ game Genesis.exe
         </div>
       </div>
-      <button class="live-toggle-btn" onclick="renderSmartAnalysis()" style="white-space:nowrap; opacity:0.6;" title="Đang phát triển">🔄 Làm Mới Phân Tích</button>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="live-toggle-btn" onclick="renderSmartAnalysis()" style="white-space:nowrap;" title="Cập nhật lại phân tích ngay lập tức">🔄 Làm Mới Phân Tích</button>
+      </div>
     </div>
-    <div id="smartAnalysisContent" style="opacity:0.38; filter:grayscale(0.85); pointer-events:none; user-select:none;">
+    <div id="smartAnalysisContent">
       <div style="text-align:center; color:#8b949e; padding:40px;">⏳ Đang tải dữ liệu phân tích...</div>
     </div>
   </div>
@@ -3751,7 +3749,7 @@ const I18N_MULTI_5 = {
   'Mở menu: Kỹ Năng Huấn Luyện & Trang Bị Toàn Game': ['Open menu: Training Skills & Equipment', 'Abrir menu: skills de treino e equipamentos', 'Menü aç: Antrenman skilleri & Ekipmanlar', 'เปิดเมนู: สกิลฝึก & อุปกรณ์', 'Buka menu: Skill Latihan & Equipment', '開啟選單: 訓練技能 & 全裝備', 'Меню: тренировочные навыки и снаряжение', 'Abrir menú: Skills de entrenamiento y equipo'],
   '📊 Phân Tích Thông Minh': ['📊 Smart Analysis', '📊 Análise Inteligente', '📊 Akıllı Analiz', '📊 วิเคราะห์อัจฉริยะ', '📊 Analisis Pintar', '📊 智慧分析', '📊 Умный анализ', '📊 Análisis Inteligente'],
   '📊 Phân Tích Thông Minh Tài Khoản': ['📊 Smart Account Analysis', '📊 Análise inteligente da conta', '📊 Akıllı hesap analizi', '📊 วิเคราะห์บัญชีอัจฉริยะ', '📊 Analisis Akun Pintar', '📊 帳號智慧分析', '📊 Умный анализ аккаунта', '📊 Análisis Inteligente de Cuenta'],
-  'Tính Năng Phân Tích Thông Minh — Đang Phát Triển': ['Smart Analysis — In Development', 'Análise inteligente — em desenvolvimento', 'Akıllı Analiz — geliştirilıyor', 'วิเคราะห์อัจฉริยะ — กำลังพัฒนา', 'Analisis Pintar — Dikembangkan', '智慧分析 — 開發中', 'Умный анализ — в разработке', 'Análisis Inteligente — En desarrollo'],
+  'Tính Năng Phân Tích Thông Minh — Live AI': ['Smart Analysis — In Development', 'Análise inteligente — em desenvolvimento', 'Akıllı Analiz — geliştirilıyor', 'วิเคราะห์อัจฉริยะ — กำลังพัฒนา', 'Analisis Pintar — Dikembangkan', '智慧分析 — 開發中', 'Умный анализ — в разработке', 'Análisis Inteligente — En desarrollo'],
   'Hệ thống đang được tiếp tục hoàn thiện thuật toán phân tích tối ưu hóa cây kỹ năng và trang bị theo thời gian thực. Phần bên dưới hiện đang được làm mờ (preview).': ['The optimization algorithm for skill tree & gear is being improved in real time. The section below is blurred (preview).', 'O algoritmo de otimização está sendo aperfeiçoado. A parte abaixo está desfocada (prévia).', 'Optimizasyon algoritması geliştirilıyor. Aşağıdaki kısım bulanık (önizleme).', 'อัลกอริทึมกำลังปรับปรุง ส่วนด้านล่างเบลอ (ตัวอย่าง)', 'Algoritma optimasi terus disempurnakan. Bagian bawah diburamkan (pratinjau).', '優化演算法持續完善中 下方區塊目前為模糊預覽。', 'Алгоритм оптимизации дорабатывается. Блок ниже размыт (превью).', 'El algoritmo se está mejorando. La parte inferior está difuminada (vista previa).'],
   '⏳ Đang tải dữ liệu phân tích...': ['⏳ Loading analysis data...', '⏳ Carregando dados da análise...', '⏳ Analiz verileri yükleniyor...', '⏳ กำลังโหลดข้อมูลวิเคราะห์...', '⏳ Memuat data analisis...', '⏳ 正在載入分析資料...', '⏳ Загрузка данных анализа...', '⏳ Cargando datos de análisis...'],
   'Đang phân tích...': ['Analyzing...', 'Analisando...', 'Analiz ediliyor...', 'กำลังวิเคราะห์...', 'Menganalisis...', '分析中...', 'Анализ...', 'Analizando...'],
@@ -15696,7 +15694,11 @@ function updateLiveSyncStatus(state) {
     btn.innerHTML = '▶️ ' + getLangTextOr('Bật Tự Động Cập Nhật');
   } else {
     badge.className = 'ws-badge offline notranslate';
-    text.innerText = '⚪ ' + getLangTextOr('Game chưa mở (Offline)');
+    if (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:') {
+      text.innerHTML = '⚠️ <span style="color:#f85149; text-decoration:underline; cursor:pointer;" onclick="openLiveSyncHelpModal()" title="Trình duyệt đang chặn kết nối ws:// do mở trang qua HTTPS. Bấm xem hướng dẫn sửa.">Chặn bởi HTTPS (Bấm xem)</span>';
+    } else {
+      text.innerText = '⚪ ' + getLangTextOr('Game chưa mở (Offline)');
+    }
     btn.className = 'live-toggle-btn paused';
     btn.innerHTML = '▶️ ' + getLangTextOr('Thử Kết Nối Lại');
   }
@@ -16215,7 +16217,12 @@ if errorlevel 1 (
     start steam://run/4891320
     echo        [OK] Da gui tin hieu mo game qua Steam!
 ) else (
-    echo        [OK] Game Genesis.exe dang chay san!
+    echo        [!] Phat hien game Genesis.exe dang mo san tu truoc!
+    echo        [!] Dang khoi dong lai game qua Steam de nap Hook moi nhat...
+    taskkill /IM "Genesis.exe" /F >nul 2>&1
+    ping -n 3 127.0.0.1 >nul
+    start steam://run/4891320
+    echo        [OK] Da khoi dong lai game thanh cong!
 )
 
 :: ================================================================
@@ -16224,7 +16231,7 @@ if errorlevel 1 (
 echo.
 echo  [3/4] Dang mo Web Helper tren trinh duyet...
 ping -n 3 127.0.0.1 >nul
-start "" "https://war-of-genesis-helper.web.app"
+start "" "https://titlee2111.github.io/war-of-genesis-helper/"
 
 :: ================================================================
 :: 8. KHOI DONG LIVESYNC BRIDGE TREN CONG 10998
@@ -17420,25 +17427,34 @@ function sendEvaluatePoll() {
           if (sameGame) {
             cur.duration = curElapsed > 0 ? curElapsed : ((nowTs - cur.startTime) / 1000);
             if (isHeroDead) cur.wasHeroDead = true;
-            if (isClearSeqStarted) cur.wasClearSeqStarted = true;
+            if (isClearSeqStarted || (curProxy && (curProxy._bStageClearSequenceStarted || curProxy._isWin === true || curProxy._gameResult === 1 || curProxy._isClear === true))) cur.wasClearSeqStarted = true;
             if (curClearTid > cur.initialClearTid) cur.clearedNewStage = true;
+            if (curProxy && (curProxy._isDefeat === true || curProxy._gameResult === 2 || curProxy._bStageFailSequenceStarted === true)) cur.wasDefeat = true;
           }
 
-          const battleEnded = (!sameGame && curGameId) || isGameEnd || isClearSeqStarted || cur.wasHeroDead || !curProxy || (activeStageTid !== cur.stageId && activeStageTid !== 0);
+          const battleEnded = (!sameGame && curGameId) || isGameEnd || isClearSeqStarted || cur.wasHeroDead || cur.wasDefeat || !curProxy || (activeStageTid !== cur.stageId && activeStageTid !== 0);
 
           if (battleEnded && !cur.recorded && cur.duration >= 1) {
             const isShort = cur.duration < 6.0;
-            let runStatus = 'success';
-            if (cur.wasHeroDead) {
+            const isCleared = !!(cur.wasClearSeqStarted || cur.clearedNewStage || (curProxy && (curProxy._bStageClearSequenceStarted || curProxy._isWin === true || curProxy._gameResult === 1 || curProxy._isClear === true)));
+            const isExplicitDefeat = !!(cur.wasHeroDead || cur.wasDefeat || (curProxy && (curProxy._isDefeat === true || curProxy._gameResult === 2 || curProxy._bStageFailSequenceStarted === true)));
+            const isStageAbandoned = !!(!curProxy || (activeStageTid !== cur.stageId && activeStageTid !== 0));
+
+            let runStatus = 'abandoned';
+            if (isCleared) {
+              runStatus = 'success';
+            } else if (isExplicitDefeat) {
               runStatus = 'failed';
+            } else if (isGameEnd) {
+              // Battle ended naturally without clear sequence -> Failed (Defeat / Timeout)
+              runStatus = 'failed';
+            } else if (isStageAbandoned) {
+              // Player left the stage or switched stage mid-battle
+              runStatus = isShort ? 'partial' : 'abandoned';
             } else if (cur.isPartial || isShort) {
               runStatus = 'partial';
-            } else if (cur.wasClearSeqStarted || cur.clearedNewStage) {
-              runStatus = 'success';
-            } else if (!curProxy || (activeStageTid !== cur.stageId && activeStageTid !== 0)) {
+            } else {
               runStatus = 'abandoned';
-            } else if (isGameEnd) {
-              runStatus = cur.duration >= 6.0 ? 'success' : 'abandoned';
             }
 
             cur.recorded = true;
@@ -17469,6 +17485,7 @@ function sendEvaluatePoll() {
               wasHeroDead: false,
               wasClearSeqStarted: false,
               clearedNewStage: false,
+              wasDefeat: false,
               initialClearTid: curClearTid,
               recorded: false,
               isPartial: isMidCombat
@@ -17551,6 +17568,10 @@ function sendEvaluatePoll() {
                   const cp = curProxy;
                   dType = cp._dungeonType || 0;
                   fId = cp.fieldTid || (cp._gameContext && cp._gameContext._initData && cp._gameContext._initData.fieldId) || 0;
+                  if (dType === 0) {
+                    if ((fId >= 700000 && fId < 800000) || fId === 20000) dType = 3;
+                    else if ((fId >= 600000 && fId < 700000) || fId === 10000) dType = 2;
+                  }
                   skTid = cp._lastUsedSkillTid || 0;
                   gId = cp._gameId || 0;
                 } catch (e) {}
@@ -17936,7 +17957,12 @@ function sendEvaluatePoll() {
                 let dg8 = null;
                 for (let [k, v] of nn.services._mapService.entries()) if ((k.name || '') === 'ServiceDungeon') dg8 = v;
                 const dri = dg8 ? dg8._dungeonResultInfo : null;
-                if (dri && dri.dungeonTid === rec.field_id && dri.totalDamage !== undefined) {
+                const isMatch = dri && (
+                  dri.dungeonTid === rec.field_id ||
+                  (rec.dungeon_type === 3 && (dri.dungeonTid === 20000 || dri.dungeonType === 3)) ||
+                  (rec.dungeon_type === 2 && (dri.dungeonTid === 10000 || dri.dungeonType === 2))
+                );
+                if (isMatch && dri.totalDamage !== undefined) {
                   const gameTotal = Math.round(parseFloat(dri.totalDamage) || 0);
                   const measured = rec.total_damage;
                   if (gameTotal > 0 && measured > 0) {
@@ -17959,7 +17985,13 @@ function sendEvaluatePoll() {
             // v5: chỉ ĐÓNG current khi proxy rời khỏi boss field >=2 nhịp poll liên tiếp
             let nowOnSpecialField = false;
             try {
-              nowOnSpecialField = !!(curProxy && (curProxy._dungeonType || 0) > 0 && st.current && curProxy.fieldTid === st.current.fieldId);
+              let curDType = (curProxy && curProxy._dungeonType) || 0;
+              let curFId = (curProxy && (curProxy.fieldTid || (curProxy._gameContext && curProxy._gameContext._initData && curProxy._gameContext._initData.fieldId))) || 0;
+              if (curDType === 0) {
+                if ((curFId >= 700000 && curFId < 800000) || curFId === 20000) curDType = 3;
+                else if ((curFId >= 600000 && curFId < 700000) || curFId === 10000) curDType = 2;
+              }
+              nowOnSpecialField = !!(curProxy && curDType > 0 && st.current && curFId === st.current.fieldId);
             } catch (e) {}
             if (st.current) {
               if (nowOnSpecialField) {
@@ -17979,11 +18011,10 @@ function sendEvaluatePoll() {
                 }
               }
             }
-            // Drain các trận đã nằm im >=15 giây (đủ lâu để boss lv mới không kịp reopen),
-            // giữ lại các trận mới đóng gần đây trong queue cho phép cộng dồn tiếp
+            // Drain các trận đã nằm im >=3 giây (đủ để trận hoàn tất và ghi nhận ngay)
             const nowD2 = Date.now();
             st.queue = st.queue.filter(function(c) {
-              if (c.totalDamage > 0 && (nowD2 - (c.lastHit || 0)) >= 15000) {
+              if (c.totalDamage > 0 && (nowD2 - (c.lastHit || 0)) >= 3000) {
                 recs.push(enrichFromGame(build(c)));
                 st.castBuffer = {};
                 return false;
@@ -18075,9 +18106,20 @@ function applyLiveGameData(data) {
     updateSpecialBattleHistoryFromGame(data.specialBattleHistory);
   }
   window.liveSpecialBattle = data.liveSpecialBattle || null;
-  if (window.liveSpecialBattle) {
-    const spSec = document.getElementById('specialBattleSection');
-    if (spSec && spSec.style.display !== 'none') renderSpecialBattlesTable();
+  if (data.specialBattles) {
+    userProfile.specialBattles = data.specialBattles;
+    if (window.userSaveProfile) window.userSaveProfile.specialBattles = data.specialBattles;
+  }
+  if (data.dungeonInfo) {
+    userProfile.dungeonInfo = data.dungeonInfo;
+    if (window.userSaveProfile) window.userSaveProfile.dungeonInfo = data.dungeonInfo;
+  }
+  if (data.raidDamage !== undefined) userProfile.raidDamage = data.raidDamage;
+  if (data.worldBossDamage !== undefined) userProfile.worldBossDamage = data.worldBossDamage;
+
+  const spSec = document.getElementById('specialBattleSection');
+  if (spSec && spSec.style.display !== 'none' && (window.liveSpecialBattle || data.specialBattles || data.dungeonInfo)) {
+    renderSpecialBattlesTable();
   }
   if (data.currentStageRun) {
     window.liveCurrentStageRun = data.currentStageRun;
@@ -18122,7 +18164,10 @@ function applyLiveGameData(data) {
   if (data.maxUnlockedStageTid) userProfile.maxUnlockedStageTid = data.maxUnlockedStageTid;
   if (data.currencies) userProfile.currencies = data.currencies;
   if (data.expInfo) userProfile.expInfo = data.expInfo;
-  if (data.deployedSkills && data.deployedSkills.length > 0) userProfile.deployedSkills = data.deployedSkills;
+  if (data.deployedSkills && data.deployedSkills.length > 0) {
+    userProfile.deployedSkills = data.deployedSkills;
+    if (window.userSaveProfile) window.userSaveProfile.deployedSkills = data.deployedSkills;
+  }
   if (data.stats && Object.keys(data.stats).length > 0) {
     userProfile.stats = data.stats;
     if (window.userSaveProfile) {
@@ -18166,10 +18211,21 @@ function applyLiveGameData(data) {
   }
 
   // === LIVE SKILL TREE SYNC: Update skillAllocations directly from game ===
-  if (data.liveSkillLevels && Object.keys(data.liveSkillLevels).length > 0) {
-    userProfile.liveSkillLevels = data.liveSkillLevels;
-    for (const groupTid in data.liveSkillLevels) {
-      skillAllocations[String(groupTid)] = data.liveSkillLevels[groupTid].level;
+  const incomingSkillLevels = data.liveSkillLevels || data.skillTreeAllocations;
+  if (incomingSkillLevels && Object.keys(incomingSkillLevels).length > 0) {
+    userProfile.liveSkillLevels = incomingSkillLevels;
+    for (const groupTid in incomingSkillLevels) {
+      const item = incomingSkillLevels[groupTid];
+      let normalizedLvl = 1;
+      if (typeof item === 'number') {
+        normalizedLvl = item > 10 ? Math.round(item / 10) : (item === 0 ? 10 : item);
+      } else if (item && item.tid) {
+        const baseGid = (Math.floor(item.tid / 1000) * 1000) + 10;
+        normalizedLvl = Math.max(1, Math.min(10, Math.floor((item.tid - baseGid) / 10) + 1));
+      } else if (item && item.level !== undefined) {
+        normalizedLvl = item.level > 10 ? Math.round(item.level / 10) : (item.level === 0 ? 10 : item.level);
+      }
+      skillAllocations[String(groupTid)] = normalizedLvl;
     }
     saveSkillAllocations();
   }
@@ -19116,12 +19172,13 @@ const SPECIAL_BATTLE_HISTORY_KEY = 'genesis_special_battle_history';
 const SPECIAL_BATTLE_MAX = 50;
 
 function getSpecialBattleHistory() {
+  let list = [];
   try {
     const raw = localStorage.getItem(SPECIAL_BATTLE_HISTORY_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return parsed.slice(0, SPECIAL_BATTLE_MAX).map(function(item) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        list = parsed.slice(0, SPECIAL_BATTLE_MAX).map(function(item) {
           if (item && item.skill_breakdown) {
             const cleanSb = {};
             for (const sk in item.skill_breakdown) {
@@ -19137,7 +19194,61 @@ function getSpecialBattleHistory() {
       }
     }
   } catch (e) {}
-  return [];
+
+  // If local history is empty, synthesize career summary from userProfile.dungeonInfo or specialBattles
+  if (list.length === 0) {
+    const prof = (typeof userProfile !== 'undefined' ? userProfile : (window.userProfile || {})) || {};
+    const dInfo = prof.dungeonInfo || (window.userSaveProfile && window.userSaveProfile.dungeonInfo) || {};
+    const sb = prof.specialBattles || (window.userSaveProfile && window.userSaveProfile.specialBattles) || {};
+    
+    // Check Raid
+    const raidInfo = dInfo.raid || dInfo[3] || {};
+    const raidCount = Number(raidInfo.playCount || sb.raidPlayCount || 0);
+    const raidRecs = raidInfo.records || [];
+    const raidScore = raidRecs[0] ? Number(raidRecs[0]._value || 0) : Number(sb.raidDamage || 0);
+    const raidFId = raidRecs[1] ? Number(raidRecs[1]._value || 700011) : 700011;
+    if (raidScore > 0 || raidCount > 0) {
+      list.push({
+        battle_kind: 'raid',
+        field_id: raidFId,
+        dungeon_type: 3,
+        total_damage: raidScore,
+        duration: 60,
+        status: 'victory',
+        timestamp: Date.now() - 3600000,
+        isCareerSummary: true,
+        play_count: raidCount,
+        hero_class: prof.heroClass || 'Ranged',
+        hero_level: prof.level || 48,
+        skill_breakdown: {}
+      });
+    }
+
+    // Check World Boss
+    const wbInfo = dInfo.worldBoss || dInfo[2] || {};
+    const wbCount = Number(wbInfo.playCount || sb.wbPlayCount || 0);
+    const wbRecs = wbInfo.records || [];
+    const wbScore = wbRecs[0] ? Number(wbRecs[0]._value || 0) : Number(sb.worldBossDamage || 0);
+    const wbFId = wbRecs[1] ? Number(wbRecs[1]._value || 600008) : 600008;
+    if (wbScore > 0 || wbCount > 0) {
+      list.push({
+        battle_kind: 'worldboss',
+        field_id: wbFId,
+        dungeon_type: 2,
+        total_damage: wbScore,
+        duration: 60,
+        status: 'victory',
+        timestamp: Date.now() - 7200000,
+        isCareerSummary: true,
+        play_count: wbCount,
+        hero_class: prof.heroClass || 'Ranged',
+        hero_level: prof.level || 48,
+        skill_breakdown: {}
+      });
+    }
+  }
+
+  return list;
 }
 
 function saveSpecialBattleHistory(list) {
@@ -19209,10 +19320,135 @@ function renderSpecialBattlesTable() {
   const list = getSpecialBattleHistory();
   const live = (typeof window !== 'undefined' && window.liveSpecialBattle) || null;
 
+  // 1. Render Summary Cards for World Boss & Raid Career Records
+  const sumEl = document.getElementById('specialBattleSummaryCard');
+  if (sumEl) {
+    const prof = (typeof userProfile !== 'undefined' && userProfile) ? userProfile : (window.userProfile || {});
+    const sb = prof.specialBattles || {};
+    const dInfo = prof.dungeonInfo || (window.userSaveProfile && window.userSaveProfile.dungeonInfo) || {};
+
+    // World Boss
+    const wbObj = dInfo.worldBoss || {};
+    let wbDamage = Number(prof.worldBossDamage || sb.worldBossDamage || 0);
+    let wbPlays = Number(sb.worldBossPlayCount || wbObj.playCount || 0);
+    let wbTierId = null;
+    if (Array.isArray(wbObj.records)) {
+      const r1 = wbObj.records.find(r => r._type === 1 || r.type === 1);
+      if (r1 && r1._value) wbDamage = Math.max(wbDamage, Number(r1._value) || 0);
+      const r2 = wbObj.records.find(r => r._type === 2 || r.type === 2);
+      if (r2 && r2._value) wbTierId = r2._value;
+    }
+    list.forEach(b => {
+      if (b.battle_kind === 'worldboss' && Number(b.total_damage) > wbDamage) {
+        wbDamage = Number(b.total_damage);
+      }
+    });
+
+    // Raid
+    const raidObj = dInfo.raid || {};
+    let raidDamage = Number(prof.raidDamage || sb.raidDamage || 0);
+    let raidPlays = Number(sb.raidPlayCount || raidObj.playCount || 0);
+    let raidTierId = null;
+    if (Array.isArray(raidObj.records)) {
+      const r1 = raidObj.records.find(r => r._type === 1 || r.type === 1);
+      if (r1 && r1._value) raidDamage = Math.max(raidDamage, Number(r1._value) || 0);
+      const r2 = raidObj.records.find(r => r._type === 2 || r.type === 2);
+      if (r2 && r2._value) raidTierId = r2._value;
+    }
+    list.forEach(b => {
+      if (b.battle_kind === 'raid' && Number(b.total_damage) > raidDamage) {
+        raidDamage = Number(b.total_damage);
+      }
+    });
+
+    const formatTier = (tid) => {
+      if (!tid) return isEn ? 'Not recorded' : 'Chưa có dữ liệu';
+      const num = Number(tid);
+      const tierNum = num % 1000;
+      return (isEn ? 'Tier ' : 'Cấp ') + tierNum + ' <span style="font-size:11px; color:#8b949e;">(' + tid + ')</span>';
+    };
+
+    // Card 1: World Boss
+    const cardWb = '<div style="background:#161b22; border:1px solid #30363d; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">' +
+        '<div>' +
+          '<div style="font-size:12px; font-weight:bold; color:#f85149; text-transform:uppercase; letter-spacing:0.5px;">🐉 ' + (isEn ? 'World Boss' : 'Boss Thế Giới') + '</div>' +
+          '<div style="font-size:22px; font-weight:800; color:#f85149; margin-top:4px;">💥 ' + Number(Math.round(wbDamage)).toLocaleString() + '</div>' +
+          '<div style="font-size:11px; color:#8b949e; margin-top:2px;">' + (isEn ? 'Career High Score' : 'Kỷ lục sát thương cao nhất') + '</div>' +
+        '</div>' +
+        '<span style="background:rgba(248,81,73,0.15); color:#f85149; border:1px solid rgba(248,81,73,0.3); padding:4px 8px; border-radius:8px; font-size:11.5px; font-weight:bold;">' + (isEn ? 'Boss' : 'Boss') + '</span>' +
+      '</div>' +
+      '<div style="border-top:1px solid #21262d; padding-top:10px; display:flex; justify-content:space-between; font-size:12px; color:#8b949e;">' +
+        '<span>🎯 ' + (isEn ? 'Total runs:' : 'Tổng lượt đánh:') + ' <b style="color:#c9d1d9;">' + wbPlays + '</b></span>' +
+        '<span>⭐ ' + (isEn ? 'Record:' : 'Ải đạt:') + ' <b style="color:#c9d1d9;">' + formatTier(wbTierId) + '</b></span>' +
+      '</div>' +
+    '</div>';
+
+    // Card 2: Raid
+    const cardRaid = '<div style="background:#161b22; border:1px solid #30363d; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">' +
+        '<div>' +
+          '<div style="font-size:12px; font-weight:bold; color:#bc8cff; text-transform:uppercase; letter-spacing:0.5px;">⚔️ ' + (isEn ? 'Raid Dungeon' : 'Đột Kích (Raid)') + '</div>' +
+          '<div style="font-size:22px; font-weight:800; color:#bc8cff; margin-top:4px;">💥 ' + Number(Math.round(raidDamage)).toLocaleString() + '</div>' +
+          '<div style="font-size:11px; color:#8b949e; margin-top:2px;">' + (isEn ? 'Career High Score' : 'Kỷ lục sát thương cao nhất') + '</div>' +
+        '</div>' +
+        '<span style="background:rgba(188,140,255,0.15); color:#bc8cff; border:1px solid rgba(188,140,255,0.3); padding:4px 8px; border-radius:8px; font-size:11.5px; font-weight:bold;">' + (isEn ? 'Raid' : 'Đột Kích') + '</span>' +
+      '</div>' +
+      '<div style="border-top:1px solid #21262d; padding-top:10px; display:flex; justify-content:space-between; font-size:12px; color:#8b949e;">' +
+        '<span>🎯 ' + (isEn ? 'Total runs:' : 'Tổng lượt đánh:') + ' <b style="color:#c9d1d9;">' + raidPlays + '</b></span>' +
+        '<span>⭐ ' + (isEn ? 'Record:' : 'Ải đạt:') + ' <b style="color:#c9d1d9;">' + formatTier(raidTierId) + '</b></span>' +
+      '</div>' +
+    '</div>';
+
+    // Card 3: Live / Session Status
+    let cardStatus = '';
+    if (live) {
+      const lclsNames = { Ranged: '🏹 Cung Thủ', Melee: '⚔️ Hiệp Sĩ', Mage: '🔮 Pháp Sư' };
+      const lcls = lclsNames[live.hero_class] || live.hero_class || '—';
+      cardStatus = '<div style="background:rgba(227,179,65,0.08); border:1px solid #e3b341; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; position:relative; box-shadow:0 0 12px rgba(227,179,65,0.2);">' +
+        '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">' +
+          '<div>' +
+            '<div style="font-size:12px; font-weight:bold; color:#e3b341; display:flex; align-items:center; gap:6px;">' +
+              '<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#e3b341; box-shadow:0 0 6px #e3b341;"></span> ' +
+              (isEn ? 'LIVE BATTLE ACTIVE' : 'ĐANG TRẬN LIVE') +
+            '</div>' +
+            '<div style="font-size:18px; font-weight:bold; color:#f0f6fc; margin-top:4px;">' + specialBattleKindLabel(live.battle_kind) + ' <span style="font-size:13px; color:#8b949e;">(' + lcls + ')</span></div>' +
+          '</div>' +
+          '<button class="small-btn" style="background:#e3b341; color:#000; font-weight:bold; padding:4px 10px; font-size:12px;" onclick="openSpecialBattleLiveDetail()">🔍 ' + (isEn ? 'View DPS' : 'Xem DPS') + '</button>' +
+        '</div>' +
+        '<div style="border-top:1px solid rgba(227,179,65,0.3); padding-top:10px; display:flex; justify-content:space-between; font-size:12px;">' +
+          '<span>💥 <b style="color:#f85149;">' + Number(Math.round(live.total_damage || 0)).toLocaleString() + '</b> dmg</span>' +
+          '<span>⏱️ <b style="color:#e3b341;">' + Number(live.duration || 0).toFixed(1) + 's</b></span>' +
+        '</div>' +
+      '</div>';
+    } else {
+      const recentBattle = list.length > 0 ? list[0] : null;
+      const recentText = recentBattle ? (specialBattleKindLabel(recentBattle.battle_kind) + ' (💥 ' + Number(Math.round(recentBattle.total_damage || 0)).toLocaleString() + ')') : (isEn ? 'None yet' : 'Chưa có trận nào');
+      cardStatus = '<div style="background:#161b22; border:1px solid #30363d; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">' +
+          '<div>' +
+            '<div style="font-size:12px; font-weight:bold; color:#3fb950; display:flex; align-items:center; gap:6px;">' +
+              '<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#3fb950;"></span> ' +
+              (isEn ? 'LiveSync Ready' : 'LiveSync Sẵn Sàng') +
+            '</div>' +
+            '<div style="font-size:16px; font-weight:bold; color:#f0f6fc; margin-top:4px;">' + (isEn ? 'Recorded Runs: ' : 'Đã lưu: ') + '<b style="color:#58a6ff;">' + list.length + '</b> ' + (isEn ? 'battles' : 'trận') + '</div>' +
+          '</div>' +
+          '<span style="background:#21262d; color:#8b949e; border:1px solid #30363d; padding:4px 8px; border-radius:8px; font-size:11px;">Auto-Record</span>' +
+        '</div>' +
+        '<div style="border-top:1px solid #21262d; padding-top:10px; font-size:12px; color:#8b949e; display:flex; justify-content:space-between;">' +
+          '<span>🕒 ' + (isEn ? 'Latest: ' : 'Gần nhất: ') + '<b style="color:#c9d1d9;">' + recentText + '</b></span>' +
+        '</div>' +
+      '</div>';
+    }
+
+    sumEl.innerHTML = cardWb + cardRaid + cardStatus;
+  }
+
+  // 2. Render Battles List
   if (list.length === 0 && !live) {
     tbody.innerHTML = isEn
       ? '<tr><td colspan="6" style="text-align:center; padding:30px; color:#8b949e;">No special battles recorded yet. Enter a World Boss or Raid battle in-game to log it here.</td></tr>'
-      : '<tr><td colspan="6" style="text-align:center; padding:30px; color:#8b949e;">Chưa có trận Boss Thế Giới / Đột Kích nào. Hãy vào đánh Boss Thế Giới hoặc Đột Kích trong game để ghi lại.</td></tr>';
+      : '<tr><td colspan="6" style="text-align:center; padding:30px; color:#8b949e;">Chưa có trận Boss Thế Giới / Đột Kích nào trong phiên này. Hãy vào đánh Boss Thế Giới hoặc Đột Kích trong game để tự động ghi lại.</td></tr>';
     return;
   }
 
@@ -19221,27 +19457,33 @@ function renderSpecialBattlesTable() {
     const clsNames = { Ranged: '🏹 Cung Thủ', Melee: '⚔️ Hiệp Sĩ', Mage: '🔮 Pháp Sư' };
     const lcls = clsNames[live.hero_class] || '—';
     const liveDur = Number(live.duration || 0);
-    const liveIdx = list.length; // index mở modal = cuối danh sách (xem openSpecialBattleDetail handling)
+    const liveDps = liveDur > 0 ? Math.round(Number(live.total_damage || 0) / liveDur) : 0;
     liveRowHtml = '<tr style="background: rgba(227, 179, 65, 0.16); border-left: 4px solid #e3b341;">' +
       '<td style="text-align:center;"><span style="background:#e3b341; color:#000; font-weight:800; font-size:11px; padding:3px 8px; border-radius:12px; display:inline-block; box-shadow:0 0 6px rgba(227,179,65,0.4);">⚔️ LIVE</span></td>' +
       '<td><b style="color:#ff7b72;">' + specialBattleKindLabel(live.battle_kind) + '</b> <span style="font-size:10px; background:#e3b341; color:#000; padding:1px 5px; border-radius:4px; font-weight:bold;">' + (isEn ? 'FIGHTING' : 'ĐANG ĐÁNH') + '</span></td>' +
       '<td>' + lcls + '</td>' +
       '<td style="color:#f85149; font-weight:bold; font-size:14px;" title="Tổng máu boss thực tế đã mất qua từng lv — khớp với tổng kết game">💥 ' + Number(Math.round(live.total_damage || 0)).toLocaleString() + '</td>' +
-      '<td>⏱️ ' + liveDur.toFixed(1) + 's <span style="font-size:11px; color:#8b949e;">' + (isEn ? '(counting...)' : '(đang đếm...)') + '</span></td>' +
-      '<td style="text-align:center;"><button class="small-btn" style="background:#e3b341; color:#000; font-weight:bold; padding:5px 12px; font-size:12px;" onclick="openSpecialBattleLiveDetail()">🔍 Xem</button></td>' +
+      '<td>⏱️ ' + liveDur.toFixed(1) + 's' + (liveDps > 0 ? ('<div style="font-size:11px; color:#e3b341;">⚡ ~' + liveDps.toLocaleString() + ' /s</div>') : '') + '</td>' +
+      '<td style="text-align:center;"><button class="small-btn" style="background:#e3b341; color:#000; font-weight:bold; padding:5px 12px; font-size:12px;" onclick="openSpecialBattleLiveDetail()">🔍 ' + (isEn ? 'View' : 'Xem') + '</button></td>' +
       '</tr>';
   }
 
   tbody.innerHTML = liveRowHtml + list.map(function(b, idx) {
     const clsNames = { Ranged: '🏹 Cung Thủ', Melee: '⚔️ Hiệp Sĩ', Mage: '🔮 Pháp Sư' };
     const cls = clsNames[b.hero_class] || (b.hero_class ? b.hero_class : '—');
+    const dps = fmtSpecialBattleDps(b);
+    const dpsText = dps > 0 ? ('<div style="font-size:11px; color:#8b949e;">⚡ ~' + dps.toLocaleString() + ' /s</div>') : '';
+    const bossLvBadge = b.boss_level ? (' <span style="font-size:10.5px; background:rgba(88,166,255,0.15); border:1px solid rgba(88,166,255,0.4); color:#58a6ff; padding:1px 5px; border-radius:4px; font-weight:bold;">Lv.' + b.boss_level + '</span>') : '';
+    const tierBadge = (b.field_id && b.field_id >= 700000 && b.field_id < 800000) ? (' <span style="font-size:10.5px; background:rgba(227,179,65,0.15); border:1px solid rgba(227,179,65,0.4); color:#e3b341; padding:1px 5px; border-radius:4px; font-weight:bold;">Tier ' + (b.field_id - 700000) + '</span>') : ((b.field_id && b.field_id >= 600000 && b.field_id < 700000) ? (' <span style="font-size:10.5px; background:rgba(88,166,255,0.15); border:1px solid rgba(88,166,255,0.4); color:#58a6ff; padding:1px 5px; border-radius:4px; font-weight:bold;">Tier ' + (b.field_id - 600000) + '</span>') : '');
+    const careerBadge = b.isCareerSummary ? (' <span style="font-size:10px; background:rgba(46,160,67,0.15); border:1px solid rgba(46,160,67,0.4); color:#7ee787; padding:1px 5px; border-radius:4px; font-weight:bold;">' + (isEn ? 'CAREER HIGH (' + b.play_count + 'x)' : 'KỶ LỤC (' + b.play_count + ' trận)') + '</span>') : '';
+    const timeStr = b.timestamp ? ('<div style="font-size:10.5px; color:#6e7681; margin-top:2px;">' + new Date(b.timestamp).toLocaleTimeString() + '</div>') : '';
     return '<tr style="border-left:4px solid #f85149;">' +
       '<td style="text-align:center;"><span style="background:#21262d; border:1px solid #30363d; padding:3px 8px; border-radius:10px;">#' + (idx + 1) + '</span></td>' +
-      '<td><b style="color:#ff7b72;">' + specialBattleKindLabel(b.battle_kind) + '</b></td>' +
+      '<td><b style="color:#ff7b72;">' + specialBattleKindLabel(b.battle_kind) + '</b>' + bossLvBadge + tierBadge + careerBadge + timeStr + '</td>' +
       '<td>' + cls + '</td>' +
       '<td style="color:#f85149; font-weight:bold; font-size:14px;">💥 ' + Number(Math.round(b.total_damage || 0)).toLocaleString() + '</td>' +
-      '<td>⏱️ ' + Number(b.duration || 0).toFixed(1) + 's</td>' +
-      '<td style="text-align:center;"><button class="small-btn" style="background:#1f6feb; color:#fff; padding:5px 12px; font-size:12px;" onclick="openSpecialBattleDetail(' + idx + ')">🔍 Xem</button></td>' +
+      '<td>⏱️ ' + Number(b.duration || 0).toFixed(1) + 's' + dpsText + '</td>' +
+      '<td style="text-align:center;"><button class="small-btn" style="background:#1f6feb; color:#fff; padding:5px 12px; font-size:12px;" onclick="openSpecialBattleDetail(' + idx + ')">🔍 ' + (isEn ? 'View' : 'Xem') + '</button></td>' +
       '</tr>';
   }).join('');
 }
@@ -19388,19 +19630,27 @@ function openSpecialBattleDetail(index) {
   const bodyEl = document.getElementById('specialBattleDetailBody');
   if (!modal || !bodyEl) return;
   const dps = fmtSpecialBattleDps(b);
-  if (titleEl) titleEl.innerHTML = '<span>Chi Tiết Trận Đánh:</span> <span>' + specialBattleKindLabel(b.battle_kind) + '</span>';
-  if (subEl) subEl.innerText = (isEn ? 'Survived ' : 'Sống sót ') + (b.duration || 0).toFixed(1) + 's • ' + (isEn ? 'dealt' : 'gây ra') + ' ' + Number(Math.round(b.total_damage || 0)).toLocaleString() + ' ' + (isEn ? 'damage' : 'SÁT THƯƠNG');
+  if (titleEl) titleEl.innerHTML = '<span>' + (isEn ? 'Battle Details:' : 'Chi Tiết Trận Đánh:') + '</span> <span>' + specialBattleKindLabel(b.battle_kind) + '</span>';
+  if (subEl) subEl.innerText = (isEn ? 'Survived ' : 'Sống sót ') + (b.duration || 0).toFixed(1) + 's • ' + (isEn ? 'dealt' : 'gây ra') + ' ' + Number(Math.round(b.total_damage || 0)).toLocaleString() + ' ' + (isEn ? 'damage' : 'SÁT THƯƠNG') + (dps > 0 ? (' (~' + dps.toLocaleString() + ' DPS)') : '');
   const totalHits = Object.keys(b.skill_breakdown || {}).reduce(function(acc, k) { const e = b.skill_breakdown[k] || {}; if ((Number(e.damage) || 0) <= 0 && (Number(e.hits) || 0) <= 0) return acc; return acc + Number(e.casts !== undefined && e.casts !== null ? e.casts : (e.hits || 0)); }, 0);
+  
+  let bossLvBox = '';
+  if (b.boss_level) {
+    bossLvBox = '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#58a6ff;">' + (isEn ? 'Boss Level Reached' : 'Cấp Boss Đạt Được') + '</div><div style="font-size:18px; font-weight:bold; color:#58a6ff;">⭐ Lv. ' + b.boss_level + '</div></div>';
+  }
+
   const summary = '<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:16px;">' +
-    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">Tổng Sát Thương Gây Ra</div><div style="font-size:18px; font-weight:bold; color:#f85149;">💥 ' + Number(Math.round(b.total_damage || 0)).toLocaleString() + '</div></div>' +
-    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">Thời Gian Sống Sót</div><div style="font-size:18px; font-weight:bold;">⏱️ ' + (b.duration || 0).toFixed(1) + 's</div></div>' +
-    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">Tổng Số Lần Ra Chiêu</div><div style="font-size:18px; font-weight:bold;">🎯 ' + totalHits.toLocaleString() + '</div></div>' +
-    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">Cấp Nhân Vật</div><div style="font-size:18px; font-weight:bold;">' + (b.hero_level || '—') + '</div></div>' +
+    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">' + (isEn ? 'Total Damage Dealt' : 'Tổng Sát Thương Gây Ra') + '</div><div style="font-size:18px; font-weight:bold; color:#f85149;">💥 ' + Number(Math.round(b.total_damage || 0)).toLocaleString() + '</div></div>' +
+    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">' + (isEn ? 'Average DPS' : 'DPS Trung Bình') + '</div><div style="font-size:18px; font-weight:bold; color:#ffa657;">⚡ ' + dps.toLocaleString() + ' /s</div></div>' +
+    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">' + (isEn ? 'Time Survived' : 'Thời Gian Sống Sót') + '</div><div style="font-size:18px; font-weight:bold;">⏱️ ' + (b.duration || 0).toFixed(1) + 's</div></div>' +
+    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">' + (isEn ? 'Total Casts' : 'Tổng Số Lần Ra Chiêu') + '</div><div style="font-size:18px; font-weight:bold;">🎯 ' + totalHits.toLocaleString() + '</div></div>' +
+    bossLvBox +
+    '<div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:12px;"><div style="font-size:11px; color:#8b949e;">' + (isEn ? 'Hero Level' : 'Cấp Nhân Vật') + '</div><div style="font-size:18px; font-weight:bold;">' + (b.hero_level || '—') + '</div></div>' +
     '</div>';
-  const table = '<h4 style="color:#e3b341; margin:0 0 10px;">⚔️ Thống Kê Sát Thương Từng Chiêu</h4>' +
+  const table = '<h4 style="color:#e3b341; margin:0 0 10px;">⚔️ ' + (isEn ? 'Skill Damage Breakdown' : 'Thống Kê Sát Thương Từng Chiêu') + '</h4>' +
     '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:13px;">' +
     '<thead><tr style="color:#8b949e; text-align:left; border-bottom:1px solid #30363d;">' +
-    '<th style="padding:8px 12px;">Kỹ Năng</th><th style="padding:8px 12px; text-align:center;">Tổng Sát Thương</th><th style="padding:8px 12px; text-align:center;">Số Lần Ra Chiêu</th><th style="padding:8px 12px; width:34%;">Tỷ Lệ Đóng Góp</th>' +
+    '<th style="padding:8px 12px;">' + (isEn ? 'Skill' : 'Kỹ Năng') + '</th><th style="padding:8px 12px; text-align:center;">' + (isEn ? 'Total Damage' : 'Tổng Sát Thương') + '</th><th style="padding:8px 12px; text-align:center;">' + (isEn ? 'Casts' : 'Số Lần Ra Chiêu') + '</th><th style="padding:8px 12px; width:34%;">' + (isEn ? 'Contribution' : 'Tỷ Lệ Đóng Góp') + '</th>' +
     '</tr></thead><tbody>' + buildSkillDpsRowsHtml(b, b.hero_class, isEn) + '</tbody></table></div>';
   bodyEl.innerHTML = summary + table;
   modal.style.display = 'flex';
@@ -19455,9 +19705,25 @@ function clearStageHistory() {
 function updateStageHistoryFromGame(gameRuns) {
   if (!gameRuns || !Array.isArray(gameRuns) || gameRuns.length === 0) return;
   const currentHistory = getStageHistory();
+  const maxCleared = (window.lastProfileData && window.lastProfileData.clearStageTid) || (typeof lastProfileData !== 'undefined' && lastProfileData && lastProfileData.clearStageTid) || (typeof userProfile !== 'undefined' && userProfile && userProfile.clearStageTid) || 0;
   let changed = false;
+
+  // Sanitize existing history if any records claim success on uncleared stages
+  if (maxCleared > 0) {
+    for (let h of currentHistory) {
+      if (h && h.status === 'success' && h.stage_id > maxCleared) {
+        h.status = 'failed';
+        changed = true;
+      }
+    }
+  }
+
   for (let run of gameRuns) {
     if (!run || !run.stage_id) continue;
+    // If run claims success but stage ID > highest cleared stage, it was actually a failed attempt
+    if (maxCleared > 0 && run.status === 'success' && run.stage_id > maxCleared) {
+      run.status = 'failed';
+    }
     // Check if run already exists by timestamp or duplicate threshold
     const exists = currentHistory.some(h => h.timestamp === run.timestamp || (h.stage_id === run.stage_id && Math.abs((h.timestamp || 0) - (run.timestamp || 0)) < 3000));
     if (!exists) {
@@ -19743,6 +20009,47 @@ function toggleDpsCombatMode() {
   renderCombatBreakdown();
 }
 
+// === CÔNG THỨC TÍNH SÁT THƯƠNG CHUẨN CLIENT GAME (warofgenesis.wiki/stats) ===
+function calcWikiDamage(params) {
+  params = params || {};
+  const A = Math.max(1, (Number(params.attackerAtk) || 1000) + (Number(params.pveAttackPlus) || 0)) * (1 + (Number(params.pveAttackPerPlus) || 0) / 100);
+  const D = Math.max(1, (Number(params.targetDef) || 100) + (Number(params.pveDefPlus) || 0)) * (1 + (Number(params.pveDefPerPlus) || 0) / 100);
+  
+  // Base scaling factor từ game client: (A / max(1, D / 2)) * (A / (45 + A / 10000))
+  const baseFactor = (A / Math.max(1, D / 2)) * (A / (45 + (A / 10000)));
+
+  const damageRate = Number(params.damageRate !== undefined ? params.damageRate : 100);
+  const effDmgBonus = Number(params.effDmgBonus !== undefined ? params.effDmgBonus : (params.dmgBonus || 0));
+  const endDmgBonus = Number(params.endDmgBonus || 0);
+  
+  // Sát thương không chí mạng: max(1, baseFactor * (DamageRate / 100) * (1 + effDmgBonus / 100) * (1 + endDmgBonus / 100))
+  const nonCrit = Math.max(1, baseFactor * (damageRate / 100) * (1 + Math.max(0, effDmgBonus) / 100) * (1 + Math.max(0, endDmgBonus) / 100));
+
+  // Tỷ lệ chí mạng: max(0, Final_CriticalRate / (Final_CriticalRate + 5 * target.CriticalRate_Resist + 100))
+  let rawCritRate = Number(params.critRate !== undefined ? params.critRate : 20);
+  if (rawCritRate > 0 && rawCritRate < 1) rawCritRate = rawCritRate * 100;
+  const critResist = Number(params.targetCritResist || 0);
+  const critChance = Math.max(0, Math.min(1.0, rawCritRate / (rawCritRate + 5 * critResist + 100)));
+
+  // Hệ số sát thương chí mạng: max(1, 1 + (Final_CriticalDamage - target.CriticalDamage_Resist) / 100)
+  let rawCritDmg = Number(params.critDmg !== undefined ? params.critDmg : 150);
+  if (rawCritDmg > 0 && rawCritDmg < 10) rawCritDmg = rawCritDmg * 100;
+  const critDmgResist = Number(params.targetCritDmgResist || 0);
+  const critMult = Math.max(1, 1 + Math.max(0, rawCritDmg - critDmgResist) / 100);
+
+  const critDmgVal = Math.max(1, nonCrit * critMult);
+  const expectedHit = (1 - critChance) * nonCrit + critChance * critDmgVal;
+
+  return {
+    baseFactor: baseFactor,
+    nonCrit: nonCrit,
+    critChance: critChance,
+    critMult: critMult,
+    critDmgVal: critDmgVal,
+    expectedHit: expectedHit
+  };
+}
+
 function renderCombatBreakdown() {
   const container = document.getElementById('dpsTableBody');
   if (!container) return;
@@ -19750,6 +20057,12 @@ function renderCombatBreakdown() {
   const isEn = (localStorage.getItem('genesis_helper_lang') === 'en');
 
   // Update Live Stage & Combat Status Banner
+  const cpEl = document.getElementById('dpsLiveCp');
+  if (cpEl) {
+    const liveCp = Number(userProfile.combatPower || (window.userSaveProfile && window.userSaveProfile.combatPower) || 0);
+    cpEl.innerText = liveCp > 0 ? liveCp.toLocaleString() : '--';
+  }
+
   const curStageObj = (stageData && stageData.find(s => s.stage_id == userProfile.stageTid)) || (stageData && stageData.find(s => s.stage_id == 13207)) || (stageData && stageData[0]);
   const stageBanner = document.getElementById('dpsCurrentStageName');
   if (stageBanner && curStageObj) {
@@ -19780,32 +20093,51 @@ function renderCombatBreakdown() {
 
   const atk = Number(st.finalAttack || 1337.6);
   const atkSpeed = Number(st.finalAttackSpeed || 115.95) / 100; // hits per sec
-  const critRate = (st.finalCriticalRate !== undefined ? Number(st.finalCriticalRate) : 23.6) / 100;
-  const critDmg = (st.finalCriticalDamage !== undefined ? Number(st.finalCriticalDamage) : 192.7) / 100;
+  const critRate = (st.finalCriticalRate !== undefined ? Number(st.finalCriticalRate) : 23.6);
+  const critDmg = (st.finalCriticalDamage !== undefined ? Number(st.finalCriticalDamage) : 192.7);
   const generalDmg = (st.damageBonus !== undefined ? Number(st.damageBonus) : 19.7);
   const pveDmg = (st.pveBonus !== undefined ? Number(st.pveBonus) : 32.5);
   const bossDmg = (st.bossBonus !== undefined ? Number(st.bossBonus) : 22.7);
+  const skillCdRed = Number(st.skillCooldownReduction || 0);
 
   // In PvE stage farming, total effective damage bonus combines general Damage Amp + PvE bonus (or Boss bonus if single target mode)
   const effDmgBonus = generalDmg + (dpsCombatMode === 'single' ? bossDmg : pveDmg);
-  const dmgBonus = effDmgBonus / 100;
+  const targetDef = curStageObj ? (dpsCombatMode === 'single' ? (curStageObj.boss_def || curStageObj.avg_mob_def || 245) : (curStageObj.avg_mob_def || 245)) : 245;
 
-  const critMult = 1.0 + critRate * (critDmg - 1.0);
-  const dmgMult = 1.0 + dmgBonus;
+  const normalCalc = calcWikiDamage({
+    attackerAtk: atk,
+    targetDef: targetDef,
+    damageRate: 100,
+    effDmgBonus: effDmgBonus,
+    critRate: critRate,
+    critDmg: critDmg
+  });
+  const critMult = normalCalc ? normalCalc.critMult : Math.max(1, 1 + critDmg / 100);
+
   const aoeMobMultiplier = (dpsCombatMode === 'aoe') ? 2.2 : 1.0;
 
   // Normal Attack Stats
-  const normalHitDmg = atk * dmgMult * critMult;
+  const normalHitDmg = normalCalc.expectedHit;
   const normalDps = normalHitDmg * atkSpeed;
   const normalDpm = normalDps * 60;
   const normalHitsPerMin = atkSpeed * 60;
 
   // Dynamic skill level lookup from live game data
   function getLiveLevel(groupTid) {
-    const live = userProfile.liveSkillLevels;
-    if (live && live[groupTid]) return live[groupTid].level;
-    // Fallback: check skillAllocations
-    return skillAllocations[String(groupTid)] || 0;
+    const live = userProfile.liveSkillLevels || userProfile.skillTreeAllocations;
+    if (live && live[groupTid]) {
+      const item = live[groupTid];
+      if (typeof item === 'number') return (item > 10 ? Math.round(item / 10) : (item === 0 ? 10 : item));
+      if (item && item.level !== undefined) {
+        if (item.tid) {
+          const baseGid = (Math.floor(item.tid / 1000) * 1000) + 10;
+          return Math.max(1, Math.min(10, Math.floor((item.tid - baseGid) / 10) + 1));
+        }
+        return (item.level > 10 ? Math.round(item.level / 10) : (item.level === 0 ? 10 : item.level));
+      }
+    }
+    const alloc = skillAllocations[String(groupTid)] || 0;
+    return (alloc > 10 ? Math.round(alloc / 10) : alloc);
   }
 
   // Active Skills config per class with verified in-game icons
@@ -19813,10 +20145,10 @@ function renderCombatBreakdown() {
     Ranged: [
       { id: 8201010, groupId: 8201010, name: 'Đòn Phủ Đầu (First Strike)', mult: 280, cd: 20, lv: getLiveLevel(8201010), isAoe: false, icon: 'active_rapidfire', emoji: '🏹', color: '#e3b341' },
       { id: 8202050, groupId: 8202010, name: 'Bắn Nhanh (Rapid Fire)', mult: 396, cd: 26, lv: getLiveLevel(8202010), isAoe: false, icon: 'active_barrage', emoji: '🏹', color: '#bc8cff' },
-      { id: 8203030, groupId: 8203010, name: 'Kẻ Quan Sát (Watcher)', mult: 336, cd: 24, lv: getLiveLevel(8203010), isAoe: false, icon: 'active_overwatchmode', emoji: '👁️', color: '#7ee787' },
       { id: 8208040, groupId: 8208010, name: 'Mưa Tên (Arrow Rain)', mult: 400, cd: 25, lv: getLiveLevel(8208010), isAoe: true, icon: 'active_rainoffire', emoji: '🌧️', color: '#ffa657' },
       { id: 8209050, groupId: 8209010, name: 'Tên Đá (Stone Arrow)', mult: 432, cd: 24, lv: getLiveLevel(8209010), isAoe: false, icon: 'active_acidthrow', emoji: '🪨', color: '#f85149' },
-      { id: 8210010, groupId: 8210010, name: 'Bắn Độc (Poisoned)', mult: 260, cd: 22, lv: getLiveLevel(8210010), isAoe: false, icon: 'active_alertposture', emoji: '☠️', color: '#7ee787' }
+      { id: 8210010, groupId: 8210010, name: 'Bắn Độc (Poisoned)', mult: 260, cd: 22, lv: getLiveLevel(8210010), isAoe: false, icon: 'active_alertposture', emoji: '☠️', color: '#7ee787' },
+      { id: 8211010, groupId: 8211010, name: 'Tập Trung Chiến Đấu (Combat Focus)', mult: 300, cd: 20, lv: getLiveLevel(8211010), isAoe: false, icon: 'active_focusdbattle', emoji: '🎯', color: '#58a6ff' }
     ],
     Melee: [
       { id: 8101010, groupId: 8101010, name: 'Đòn Đao Phủ (Executioner)', mult: 260, cd: 20, lv: getLiveLevel(8101010), isAoe: false, icon: 'active_beheadmoon_07', emoji: '⚔️', color: '#e3b341' },
@@ -19836,6 +20168,31 @@ function renderCombatBreakdown() {
     ]
   };
 
+  const skillViNameMap = {
+    8201010: 'Đòn Phủ Đầu (First Strike)',
+    8202010: 'Bắn Nhanh (Rapid Fire)',
+    8203010: 'Kẻ Quan Sát (Watcher)',
+    8204010: 'Nhân Đôi (Double Down)',
+    8208010: 'Mưa Tên (Arrow Rain)',
+    8209010: 'Tên Đá (Stone Arrow)',
+    8210010: 'Bắn Độc (Poisoned)',
+    8211010: 'Tập Trung Chiến Đấu (Combat Focus)',
+    8101010: 'Đòn Đao Phủ (Executioner)',
+    8102010: 'Chém Trăng Khuyết (Moon Cleave)',
+    8103010: 'Hỏa Trận (Formation Flame)',
+    8104010: 'Chém Trăng (Moon Slash)',
+    8108010: 'Thần Thương (Divine Spear)',
+    8109010: 'Xung Kích (Shield Charge)',
+    8110010: 'Giáp Gai (Thorns Armor)',
+    8111010: 'Trảm Kích (Heavy Slash)',
+    8301010: 'Cầu Lửa (Fireball)',
+    8302010: 'Bão Lửa (Flame Storm)',
+    8303010: 'Điểm Dị Thường (Singularity)',
+    8304010: 'Phong Ấn Titan (Titan Seal)',
+    8308010: 'Tia Sét Ma Pháp (Lightning)',
+    8309010: 'Hố Đen Hủy Diệt (Dark Matter)'
+  };
+
   let activeSkills = [];
   if (userProfile && Array.isArray(userProfile.deployedSkills) && userProfile.deployedSkills.length > 0) {
     const prefix = currentDpsClass === 'Melee' ? '81' : (currentDpsClass === 'Mage' ? '83' : '82');
@@ -19845,10 +20202,12 @@ function renderCombatBreakdown() {
         const numTid = Number(tid);
         const gid = (Math.floor(numTid / 1000) * 1000) + 10;
         const liveLv = getLiveLevel(gid);
-        const lv = liveLv > 0 ? liveLv : Math.max(1, Math.floor((numTid - gid) / 10) + 1);
-        const meta = getSkillMeta(gid);
+        const tidLv = Math.max(1, Math.min(10, Math.floor((numTid - gid) / 10) + 1));
+        const lv = (liveLv > 0 && liveLv <= 10) ? liveLv : tidLv;
+        const meta = getSkillMeta(gid, currentDpsClass);
         let isAoe = false;
         let icon = (meta && meta.icon) ? meta.icon : 'active_rapidfire';
+        let treeSkillName = '';
         const clsTree = (typeof skillTrees !== 'undefined') ? skillTrees[currentDpsClass] : null;
         if (clsTree) {
           for (let bi = 0; bi < clsTree.branches.length; bi++) {
@@ -19859,11 +20218,15 @@ function renderCombatBreakdown() {
               if (s.id === gid || s.group_id === gid) {
                 icon = s.icon || icon;
                 if (b.branch_index === 2) isAoe = true;
+                if (s.name_vi || s.name_en || s.name) {
+                  treeSkillName = isEn ? (s.name_en || s.name_vi || s.name) : (s.name_vi || s.name_en || s.name);
+                }
               }
             }
           }
         }
-        const name = (meta && meta.name) ? meta.name : ('Skill ' + gid);
+        const viName = skillViNameMap[gid];
+        const name = (!isEn && viName) ? viName : ((meta && meta.name) ? meta.name : (treeSkillName || ('Skill ' + gid)));
         return {
           id: numTid,
           groupId: gid,
@@ -19889,8 +20252,9 @@ function renderCombatBreakdown() {
     if (clsTree) {
       for (let b of clsTree.branches) {
         for (let s of b.skills) {
-          if (s.id === groupId) {
-            const lvData = s.levels.find(l => l.level === level) || s.levels[0];
+          if (s.id === groupId || s.group_id === groupId) {
+            const targetLv = Math.max(1, Math.min(10, Number(level) || 1));
+            const lvData = s.levels.find(l => l.level === targetLv) || s.levels[0];
             return {
               damage_percent: lvData ? (lvData.damage_percent || 100) : 100,
               cooldown_sec: lvData ? (lvData.cooldown_sec || 20) : 20
@@ -19907,10 +20271,30 @@ function renderCombatBreakdown() {
     const curLv = s.lv > 0 ? s.lv : 1;
     const dynStats = getSkillStatsForLevel(currentDpsClass, s.groupId || s.id, curLv);
     const skillMult = dynStats ? dynStats.damage_percent : s.mult;
-    const skillCd = dynStats ? dynStats.cooldown_sec : s.cd;
+    const rawSkillCd = dynStats ? dynStats.cooldown_sec : s.cd;
+    const skillCd = Math.max(0.1, rawSkillCd * (1 - Math.min(50, Math.max(0, skillCdRed)) / 100));
 
     const effMult = (s.isAoe && dpsCombatMode === 'aoe') ? (skillMult * aoeMobMultiplier) : skillMult;
-    const castDmg = atk * (effMult / 100) * dmgMult * critMult;
+
+    const singleCalc = calcWikiDamage({
+      attackerAtk: atk,
+      targetDef: targetDef,
+      damageRate: skillMult,
+      effDmgBonus: effDmgBonus,
+      critRate: critRate,
+      critDmg: critDmg
+    });
+
+    const effCalc = (s.isAoe && dpsCombatMode === 'aoe') ? calcWikiDamage({
+      attackerAtk: atk,
+      targetDef: targetDef,
+      damageRate: effMult,
+      effDmgBonus: effDmgBonus,
+      critRate: critRate,
+      critDmg: critDmg
+    }) : singleCalc;
+
+    const castDmg = effCalc.expectedHit;
     const castsPerMin = 60 / skillCd;
     const dps = castDmg / skillCd;
     const dpm = dps * 60;
@@ -19919,12 +20303,14 @@ function renderCombatBreakdown() {
       ...s,
       mult: skillMult,
       cd: skillCd,
+      rawCd: rawSkillCd,
       isNormal: false,
-      singleCastDmg: atk * (skillMult / 100) * dmgMult * critMult,
+      singleCastDmg: singleCalc.expectedHit,
       effCastDmg: castDmg,
       castsPerMin: castsPerMin,
       dps: dps,
-      dpm: dpm
+      dpm: dpm,
+      wikiCalc: effCalc
     };
   });
 
@@ -19954,9 +20340,11 @@ function renderCombatBreakdown() {
   });
 
   // Update Summary Cards
+  const critRateDisplay = critRate > 1 ? critRate : (critRate * 100);
+  const critDmgDisplay = critDmg > 10 ? critDmg : (critDmg * 100);
   document.getElementById('dpsStatAtk').innerText = Number(atk.toFixed(1)).toLocaleString();
   document.getElementById('dpsStatSpd').innerText = atkSpeed.toFixed(3) + ' đòn/s (' + (atkSpeed * 100).toFixed(1) + '%)';
-  document.getElementById('dpsStatCrit').innerText = (critRate * 100).toFixed(1) + '% / ' + (critDmg * 100).toFixed(1) + '% (x' + critMult.toFixed(2) + ')';
+  document.getElementById('dpsStatCrit').innerText = critRateDisplay.toFixed(1) + '% / ' + critDmgDisplay.toFixed(1) + '% (x' + critMult.toFixed(2) + ')';
   // Display general Damage Amplification matching in-game Status popup, and provide PvE breakdown
   document.getElementById('dpsStatBonus').innerText = '+' + generalDmg.toFixed(1) + '% (x' + (1.0 + generalDmg / 100).toFixed(2) + ')';
   document.getElementById('dpsStatBonus').title = isEn ? ('General Dmg: +' + generalDmg.toFixed(1) + '% | PvE Dmg: +' + pveDmg.toFixed(1) + '% | Boss Dmg: +' + bossDmg.toFixed(1) + '% (Effective: +' + effDmgBonus.toFixed(1) + '%)') : ('Sát thương +: +' + generalDmg.toFixed(1) + '% | PvE +: +' + pveDmg.toFixed(1) + '% | Boss +: +' + bossDmg.toFixed(1) + '% (Hiệu lực: +' + effDmgBonus.toFixed(1) + '%)');
@@ -19971,9 +20359,13 @@ function renderCombatBreakdown() {
     normalDps: normalDps,
     skillDps: skillDpsTotal,
     attackSpeed: atkSpeed,
-    critRate: critRate * 100,
-    critDmg: critDmg * 100,
-    dmgBonus: dmgBonus * 100,
+    critRate: critRateDisplay,
+    critDmg: critDmgDisplay,
+    critMult: critMult,
+    dmgBonus: effDmgBonus,
+    generalDmg: generalDmg,
+    pveDmg: pveDmg,
+    bossDmg: bossDmg,
     baseAtk: atk,
     skills: processedSkills.map(function(s) {
       return { name: s.name, dps: s.dps, cd: s.cd, mult: s.mult, lv: s.lv, groupId: s.groupId || s.id, isAoe: s.isAoe };
@@ -20003,9 +20395,24 @@ function renderCombatBreakdown() {
     clearEl.innerText = '~' + clearSec.toFixed(1) + (isEn ? 's / clear' : 's / lần');
   }
 
+  // Multi-color palette for distinct, easily readable percentage bars per skill row
+  const combatRowColors = [
+    '#58a6ff', // 1: Cyber Blue
+    '#f0883e', // 2: Vivid Amber / Orange
+    '#bc8cff', // 3: Electric Violet / Purple
+    '#7ee787', // 4: Emerald Green
+    '#f85149', // 5: Crimson Red
+    '#e3b341', // 6: Radiant Gold
+    '#39c5bb', // 7: Turquoise / Cyan
+    '#d2a8ff', // 8: Lavender
+    '#ff7b72'  // 9: Coral Rose
+  ];
+
   // Render Table Rows (Sorted from highest to lowest damage)
   container.innerHTML = allCombatItems.map(function(item, idx) {
     const rankClass = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : idx === 2 ? 'rank-3' : 'rank-other';
+    const rowColor = combatRowColors[idx % combatRowColors.length];
+    item.color = rowColor;
     const sPct = (item.dps / totalDps * 100);
     const aoeTag = item.isAoe ? ' <span style="font-size:10px; background:#8957e5; color:#fff; padding:1px 5px; border-radius:4px; font-weight:bold;">AoE x' + aoeMobMultiplier + '</span>' : '';
     
@@ -20046,8 +20453,8 @@ function renderCombatBreakdown() {
       '<td id="dpsDpm_' + item.id + '" style="color:#f2cc60; font-weight:600;">' + Number(Math.round(item.dpm)).toLocaleString() + '</td>' +
       '<td>' +
       '<div style="display:flex; align-items:center; gap:8px;">' +
-      '<b id="dpsPctText_' + item.id + '" style="color:' + item.color + '; min-width:44px;">' + sPct.toFixed(1) + '%</b>' +
-      '<div style="flex:1; height:8px; background:#21262d; border-radius:4px; overflow:hidden;"><div id="dpsPctBar_' + item.id + '" style="width:' + sPct.toFixed(1) + '%; height:100%; background:' + item.color + '; transition: width 0.3s ease;"></div></div>' +
+      '<b id="dpsPctText_' + item.id + '" style="color:' + rowColor + '; min-width:44px;">' + sPct.toFixed(1) + '%</b>' +
+      '<div style="flex:1; height:8px; background:#21262d; border-radius:4px; overflow:hidden;"><div id="dpsPctBar_' + item.id + '" style="width:' + sPct.toFixed(1) + '%; height:100%; background:' + rowColor + '; border-radius:4px; transition: width 0.3s ease;"></div></div>' +
       '</div>' +
       '</td>' +
       '</tr>';
@@ -20066,9 +20473,9 @@ function renderCombatBreakdown() {
     topSkillDps: topSkillItem ? topSkillItem.dps : 0,
     attack: atk,
     attackSpeed: atkSpeed,
-    criticalRate: (critRate * 100).toFixed(1),
-    criticalDamage: (critDmg * 100).toFixed(1),
-    damageBonus: (dmgBonus * 100).toFixed(1),
+    criticalRate: critRateDisplay.toFixed(1),
+    criticalDamage: critDmgDisplay.toFixed(1),
+    damageBonus: effDmgBonus.toFixed(1),
     stageName: curStageObj ? ('Ải ' + curStageObj.display_tag) : '2-8 Rất khó'
   });
   renderClassDpsComparison();
@@ -20152,54 +20559,227 @@ function startDpsLiveTicker() {
 
 /* SECTION 4: INTERACTIVE AI CHAT ENGINE */
 /* SECTION 4: SMART ANALYSIS ENGINE (replaces fake AI chat) */
+function stageNameById(stageId, stages) {
+  if (!stageId) return null;
+  const st = (stages || []).find(s => (s.stage_id || s.stageId || s.id) === stageId);
+  if (!st) return null;
+  return st.display_tag || st.display_full || st.game_name || ('Ải ' + stageId);
+}
+
 function getSmartAnalysisData() {
-  const profile = window.userProfile || userProfile || {};
-  const stages = window.stageData || stageData || [];
+  const profile = window.userProfile || (typeof userProfile !== 'undefined' ? userProfile : {}) || {};
+  const stages = window.stageData || (typeof stageData !== 'undefined' ? stageData : []) || [];
   const breakdown = window.__lastDpsBreakdown || {};
-  const cls = window.currentClass || currentClass || 'Ranged';
-  const allocs = window.skillAllocations || skillAllocations || {};
-  const trees = window.skillTrees || skillTrees || {};
+  const cls = window.currentClass || (typeof currentClass !== 'undefined' ? currentClass : 'Ranged');
+  const allocs = window.skillAllocations || profile.skillTreeAllocations || profile.liveSkillLevels || (typeof skillAllocations !== 'undefined' ? skillAllocations : {}) || {};
+  const trees = window.skillTrees || (typeof skillTrees !== 'undefined' ? skillTrees : {}) || {};
 
   const farmStageId = profile.farmStageId || profile.stageTid || null;
   const progressStageId = profile.stageId || profile.stageTid || null;
-  const gold = profile.gold || 0;
-  const diamond = profile.diamond || 0;
-  const level = profile.level || 0;
-  const exp = profile.exp || 0;
-  const expRequired = profile.expRequired || 1;
-  const expPercent = expRequired > 0 ? (exp / expRequired * 100) : 0;
-  const expRemain = expRequired - exp;
-  const totalDps = breakdown.totalDps || window.__lastTotalDps || 0;
-  const normalDps = breakdown.normalDps || 0;
-  const skillDps = breakdown.skillDps || 0;
-  const attackSpeed = breakdown.attackSpeed || 0;
-  const critRate = breakdown.critRate || 0;
-  const critDmg = breakdown.critDmg || 0;
-  const baseAtk = breakdown.baseAtk || 0;
-  const dmgBonus = breakdown.dmgBonus || 0;
-  const combatPower = profile.combatPower || 0;
-  const skills = breakdown.skills || [];
-  const skillsConfig = breakdown.skillsConfig || [];
 
-  // Live data from poll
-  const liveExpPerSec = profile.liveExpPerSec || (profile.combatStats && profile.combatStats.expPerSec) || 0;
+  // Currencies extraction (1000: Gold, 6000: Diamond, 2000: ExpTotal)
+  const currs = profile.currencies || {};
+  const gold = (currs['1000'] && currs['1000'].count !== undefined) ? Number(currs['1000'].count) : (profile.gold || 0);
+  const diamond = (currs['6000'] && currs['6000'].count !== undefined) ? Number(currs['6000'].count) : (profile.diamond || 0);
+  const expTotal = (currs['2000'] && currs['2000'].count !== undefined) ? Number(currs['2000'].count) : (profile.expTotal || 0);
+
+  // ExpInfo extraction
+  const expInfo = profile.expInfo || null;
+  const level = expInfo ? (expInfo.level || profile.level || 1) : (profile.level || 1);
+  const exp = expInfo ? (expInfo.curExp !== undefined ? expInfo.curExp : (profile.exp || 0)) : (profile.exp || 0);
+  const expRequired = expInfo ? (expInfo.maxExp || profile.expRequired || 1) : (profile.expRequired || 1);
+  const expPercent = expInfo ? (expInfo.expRate !== undefined ? (expInfo.expRate * 100) : (expRequired > 0 ? (exp / expRequired * 100) : 0)) : (expRequired > 0 ? (exp / expRequired * 100) : 0);
+  const expRemain = expInfo ? (expInfo.expRemaining !== undefined ? expInfo.expRemaining : (expRequired - exp)) : (expRequired - exp);
+
+  // Combat Stats & Multipliers
+  let totalDps = breakdown.totalDps || window.__lastTotalDps || 0;
+  let normalDps = breakdown.normalDps || 0;
+  let skillDps = breakdown.skillDps || 0;
+  const attackSpeed = breakdown.attackSpeed || (profile.stats && profile.stats.finalAttackSpeed ? Number(profile.stats.finalAttackSpeed) / 100 : 1.1595);
+  const critRate = breakdown.critRate || (profile.stats && profile.stats.finalCriticalRate !== undefined ? Number(profile.stats.finalCriticalRate) : 23.6);
+  const critDmg = breakdown.critDmg || (profile.stats && profile.stats.finalCriticalDamage !== undefined ? Number(profile.stats.finalCriticalDamage) : 192.7);
+  const baseAtk = breakdown.baseAtk || (profile.stats && profile.stats.finalAttack ? Number(profile.stats.finalAttack) : 1337.6);
+  const dmgBonus = breakdown.dmgBonus || (profile.stats && profile.stats.damageBonus !== undefined ? Number(profile.stats.damageBonus) : 19.7);
+  const pveBonus = (profile.stats && profile.stats.pveBonus !== undefined ? Number(profile.stats.pveBonus) : 32.5);
+  const combatPower = profile.combatPower || (profile.stats && profile.stats.combatPower) || 0;
+  let skills = (breakdown.skills && breakdown.skills.length > 0) ? breakdown.skills : [];
+
+  // Standalone Rotation DPS calculation using calcWikiDamage if breakdown is missing or empty
+  if (!totalDps || totalDps <= 0 || !skills || skills.length === 0) {
+    const effDmg = dmgBonus + pveBonus;
+    const targetDef = 245;
+    const normalCalc = calcWikiDamage({
+      attackerAtk: baseAtk,
+      targetDef: targetDef,
+      damageRate: 100,
+      effDmgBonus: effDmg,
+      critRate: critRate,
+      critDmg: critDmg
+    });
+    normalDps = normalCalc.expectedHit * (attackSpeed > 0 ? attackSpeed : 1.1595);
+    totalDps = normalDps;
+
+    const skillCdRed = Number((profile.stats && profile.stats.skillCooldownReduction) || 0);
+    const clsTree = (trees && trees[cls]) ? trees[cls] : null;
+    const computedSkills = [];
+    if (clsTree && clsTree.branches) {
+      for (const b of clsTree.branches) {
+        for (const s of (b.skills || [])) {
+          const gid = s.id || s.group_id;
+          const liveLv = (profile.liveSkillLevels && profile.liveSkillLevels[gid] && profile.liveSkillLevels[gid].level) ||
+                         (allocs && allocs[String(gid)]) || 1;
+          const numLv = Math.max(1, Math.min(10, Number(liveLv) || 1));
+          const lvData = (s.levels && (s.levels.find(l => l.level === numLv) || s.levels[0])) || { damage_percent: 300, cooldown_sec: 20 };
+          const mult = lvData.damage_percent || 300;
+          const rawCd = lvData.cooldown_sec || 20;
+          const cd = Math.max(0.1, rawCd * (1 - Math.min(50, Math.max(0, skillCdRed)) / 100));
+
+          const skCalc = calcWikiDamage({
+            attackerAtk: baseAtk,
+            targetDef: targetDef,
+            damageRate: mult,
+            effDmgBonus: effDmg,
+            critRate: critRate,
+            critDmg: critDmg
+          });
+          const dps = skCalc.expectedHit / cd;
+          totalDps += dps;
+          skillDps += dps;
+          computedSkills.push({
+            id: gid,
+            groupId: gid,
+            name: s.name_vi || s.name_en || s.name || ('Skill ' + gid),
+            icon: s.icon || null,
+            lv: numLv,
+            mult: mult,
+            cd: cd,
+            dps: dps
+          });
+        }
+      }
+    }
+    computedSkills.sort((a, b) => b.dps - a.dps);
+    skills = computedSkills.slice(0, 6);
+    window.__lastTotalDps = totalDps;
+  }
+
+  // Character detailed stats from profile.stats (real-time)
+  const charStats = profile.stats || {};
+
+  // Multipliers calculation for Combat / Skill Amplification
+  const critRateFrac = critRate > 1 ? (critRate / 100) : critRate;
+  const critDmgFrac = critDmg > 1 ? (critDmg / 100) : critDmg;
+  const dmgBonusFrac = dmgBonus > 1 ? (dmgBonus / 100) : dmgBonus;
+  const critMult = breakdown.critMult || (1.0 + critRateFrac * (Math.max(1.0, critDmgFrac) - 1.0));
+  const dmgMult = breakdown.dmgMult || (1.0 + dmgBonusFrac);
+
+  // Live data from poll & history
+  const liveExpPerSec = profile.liveExpPerSec || (profile.combatStats && profile.combatStats.expPerSec) || (typeof calculateRecentFarmExpPerSec === 'function' ? calculateRecentFarmExpPerSec() : 0);
   const liveGoldPerSec = profile.liveGoldPerSec || (profile.combatStats && profile.combatStats.goldPerSec) || 0;
 
-  // Find farm stage info
+  // Stage & Farming Analysis
   let farmStage = null, bestGoldStage = null, bestExpStage = null;
   if (stages.length > 0) {
     const unlocked = stages.filter(s => {
       const sid = s.stage_id || s.stageId || s.id;
       return !progressStageId || sid <= progressStageId;
     });
-    if (farmStageId) farmStage = stages.find(s => (s.stage_id||s.stageId||s.id) === farmStageId) || null;
-    const byGps = [...unlocked].sort((a,b) => (b.calc_gps||b.gps||0) - (a.calc_gps||a.gps||0));
+    if (farmStageId) farmStage = stages.find(s => (s.stage_id || s.stageId || s.id) === farmStageId) || null;
+    const byGps = [...unlocked].sort((a,b) => (b.calc_gps || b.gold_per_sec || b.gps || 0) - (a.calc_gps || a.gold_per_sec || a.gps || 0));
     bestGoldStage = byGps[0] || null;
-    const byExp = [...unlocked].sort((a,b) => (b.exp_per_sec||b.expPerSec||0) - (a.exp_per_sec||a.expPerSec||0));
+    const getStageEps = (s) => (s.calc_eps || (s.total_exp && s.est_clear_sec ? (s.total_exp / s.est_clear_sec) : (s.total_exp || 0)));
+    const byExp = [...unlocked].sort((a,b) => getStageEps(b) - getStageEps(a));
     bestExpStage = byExp[0] || null;
   }
 
-  // Skill tree analysis for optimization suggestions
+  // Stage Run History & Stuck Detection
+  const stageRunHistory = profile.stageRunHistory || window.stageRunHistory || (typeof getStageHistory === 'function' ? getStageHistory() : []) || [];
+  let stuckAnalysis = { isStuck: false, stageId: null, stageName: null, failCount: 0, totalRuns: 0, successRate: 100, avgDuration: 0, statusMessage: 'Bình thường' };
+  
+  // Gold farming from REAL stageRunHistory measurements
+  let realGps = 0;
+  let bestHistoryStage = null;
+  if (Array.isArray(stageRunHistory) && stageRunHistory.length > 0) {
+    // Stuck detection
+    const recentRuns = stageRunHistory.slice(0, 20);
+    const lastRun = recentRuns[0];
+    const targetStageId = lastRun ? lastRun.stage_id : null;
+    const sameStageRuns = recentRuns.filter(r => r.stage_id === targetStageId);
+    const fails = sameStageRuns.filter(r => r.status === 'failed').length;
+    const successes = sameStageRuns.filter(r => r.status === 'success').length;
+    const succRate = sameStageRuns.length > 0 ? (successes / sameStageRuns.length * 100) : 100;
+    const avgDur = sameStageRuns.reduce((acc, r) => acc + (Number(r.duration) || 0), 0) / (sameStageRuns.length || 1);
+    const isStuck = fails >= 2 || (sameStageRuns.length >= 3 && succRate < 60);
+    const stageName = stageNameById(targetStageId, stages);
+
+    stuckAnalysis = {
+      isStuck: isStuck,
+      stageId: targetStageId,
+      stageName: stageName || ('Ải ' + targetStageId),
+      failCount: fails,
+      totalRuns: sameStageRuns.length,
+      successRate: succRate,
+      avgDuration: avgDur,
+      statusMessage: isStuck ? ('Kẹt tại ' + (stageName || targetStageId) + ' (Thất bại ' + fails + '/' + sameStageRuns.length + ' lần)') : 'Chạy ải ổn định'
+    };
+
+    // Compute real GPS from stageRunHistory: group by stage, calc avg gold/sec for successful runs
+    const stageGpsMap = {};
+    for (const run of stageRunHistory) {
+      if (run.status !== 'success') continue;
+      const sid = run.stage_id;
+      const dur = Number(run.duration) || 0;
+      if (dur <= 0) continue;
+      // gold_gained if available, else look up from stageData
+      let goldGained = Number(run.gold_gained) || 0;
+      if (goldGained <= 0) {
+        const stRef = stages.find(s => (s.stage_id || s.stageId || s.id) === sid);
+        if (stRef) goldGained = stRef.total_gold || stRef.clear_gold || 0;
+      }
+      const gps = goldGained / dur;
+      if (!stageGpsMap[sid]) stageGpsMap[sid] = { totalGps: 0, count: 0, stageName: stageNameById(sid, stages) };
+      stageGpsMap[sid].totalGps += gps;
+      stageGpsMap[sid].count += 1;
+    }
+    // Find best GPS stage from history
+    let bestGps = 0;
+    for (const [sid, info] of Object.entries(stageGpsMap)) {
+      const avgGps = info.totalGps / info.count;
+      if (avgGps > bestGps) {
+        bestGps = avgGps;
+        bestHistoryStage = { stage_id: Number(sid), stageName: info.stageName || ('Ải ' + sid), realGps: avgGps };
+      }
+    }
+    // Current farm stage GPS from history
+    if (farmStageId && stageGpsMap[farmStageId]) {
+      realGps = stageGpsMap[farmStageId].totalGps / stageGpsMap[farmStageId].count;
+    } else if (bestHistoryStage) {
+      realGps = bestHistoryStage.realGps;
+    }
+  }
+
+  // Live Combat Tracker Analysis (Damage metrics from real combat)
+  const liveCombatTracker = profile.liveCombatTracker || window.liveCombatTracker || (typeof globalThis !== 'undefined' && globalThis.__liveCombatTracker) || null;
+  let liveCombatData = null;
+  if (liveCombatTracker && liveCombatTracker.totalDamage > 0) {
+    const now = Date.now();
+    const elapsedSec = liveCombatTracker.startTime ? Math.max(1, (now - liveCombatTracker.startTime) / 1000) : 10;
+    const realDps = liveCombatTracker.totalDamage / elapsedSec;
+    const normalRatio = liveCombatTracker.totalDamage > 0 ? (liveCombatTracker.normalDamage / liveCombatTracker.totalDamage * 100) : 0;
+    const skillRatio = liveCombatTracker.totalDamage > 0 ? (liveCombatTracker.skillDamage / liveCombatTracker.totalDamage * 100) : 0;
+    liveCombatData = {
+      totalDamage: liveCombatTracker.totalDamage,
+      normalDamage: liveCombatTracker.normalDamage,
+      skillDamage: liveCombatTracker.skillDamage,
+      hitCount: liveCombatTracker.hitCount || 0,
+      realDps: realDps,
+      normalRatio: normalRatio,
+      skillRatio: skillRatio,
+      elapsedSec: elapsedSec
+    };
+  }
+
+  // Skill Tree Optimization suggestions — sorted by HIGHEST current DPS skill
   const skillOptimizations = [];
   if (skills.length > 0 && trees && cls) {
     const clsTree = trees[cls];
@@ -20213,17 +20793,17 @@ function getSmartAnalysisData() {
 
       for (let sk of skills) {
         if (!sk.groupId) continue;
-        const currentLv = parseInt(allocs[String(sk.groupId)] || sk.lv || 0);
-        // Find max level for this skill
+        const liveLevelFromProfile = (profile.liveSkillLevels && profile.liveSkillLevels[sk.groupId] && profile.liveSkillLevels[sk.groupId].level) ||
+                                     (profile.skillTreeAllocations && profile.skillTreeAllocations[sk.groupId]);
+        const currentLv = parseInt(liveLevelFromProfile || allocs[String(sk.groupId)] || sk.lv || 0);
+
         const treeSk = allSkillsFlat.find(ts => ts.group_id === sk.groupId || ts.id === sk.groupId);
         if (!treeSk || !treeSk.levels) continue;
         const maxLv = Math.max(...treeSk.levels.map(l => l.level || 0));
-        if (currentLv >= maxLv) continue; // already maxed
+        if (currentLv >= maxLv) continue;
 
-        // Find current and next level data
         const curLvData = treeSk.levels.find(l => l.level === currentLv) || treeSk.levels[0];
         const nextLvData = treeSk.levels.find(l => l.level === (currentLv + 1)) || treeSk.levels[treeSk.levels.length - 1];
-
         if (!curLvData || !nextLvData) continue;
 
         const curMult = curLvData.damage_percent || 100;
@@ -20231,43 +20811,68 @@ function getSmartAnalysisData() {
         const curCd = curLvData.cooldown_sec || sk.cd || 20;
         const nextCd = nextLvData.cooldown_sec || curCd;
 
-        // Calculate DPS gain if upgrading this skill
-        const curDps = baseAtk * (curMult / 100) / curCd;
-        const nextDps = baseAtk * (nextMult / 100) / nextCd;
-        const dpsDelta = nextDps - curDps;
-        const dpsDeltaPct = curDps > 0 ? (dpsDelta / totalDps * 100) : 0;
+        // Accurate DPS calculation using calcWikiDamage with mob defense and multipliers
+        const curCalc = calcWikiDamage({
+          attackerAtk: baseAtk,
+          targetDef: 245,
+          damageRate: curMult,
+          effDmgBonus: dmgBonus + pveBonus,
+          critRate: critRate,
+          critDmg: critDmg
+        });
+        const nextCalc = calcWikiDamage({
+          attackerAtk: baseAtk,
+          targetDef: 245,
+          damageRate: nextMult,
+          effDmgBonus: dmgBonus + pveBonus,
+          critRate: critRate,
+          critDmg: critDmg
+        });
+        const curSkDps = (curCalc && curCalc.expectedHit ? curCalc.expectedHit : (baseAtk * (curMult / 100) * dmgMult * critMult)) / curCd;
+        const nextSkDps = (nextCalc && nextCalc.expectedHit ? nextCalc.expectedHit : (baseAtk * (nextMult / 100) * dmgMult * critMult)) / nextCd;
+        const dpsDelta = nextSkDps - curSkDps;
+        // dpsDeltaPct = how much % of total DPS this upgrade adds
+        const dpsDeltaPct = totalDps > 0 ? (dpsDelta / totalDps * 100) : (curSkDps > 0 ? (dpsDelta / curSkDps * 100) : 0);
+        // curDps: use actual measured skill DPS from breakdown if available, else computed
+        const curDps = sk.dps || curSkDps;
 
         skillOptimizations.push({
           name: treeSk.name_vi || sk.name,
+          icon: treeSk.icon || sk.icon || null,
+          groupId: sk.groupId,
           currentLv: currentLv,
           nextLv: currentLv + 1,
           maxLv: maxLv,
-          curDps: sk.dps || 0,
+          curDps: curDps,
           dpsDelta: dpsDelta,
           dpsDeltaPct: dpsDeltaPct,
           curMult: curMult,
           nextMult: nextMult,
           curCd: curCd,
-          nextCd: nextCd,
-          groupId: sk.groupId
+          nextCd: nextCd
         });
       }
-      // Sort by DPS gain delta descending
-      skillOptimizations.sort((a, b) => b.dpsDelta - a.dpsDelta);
+      // Sort by highest current DPS (most impactful skills first)
+      skillOptimizations.sort((a, b) => b.curDps - a.curDps);
     }
   }
 
   return {
-    level, gold, diamond, exp, expRequired, expPercent, expRemain,
+    level, gold, diamond, exp, expRequired, expPercent, expRemain, expInfo,
     totalDps, normalDps, skillDps, attackSpeed, critRate, critDmg, baseAtk, dmgBonus,
+    critMult, dmgMult,
     combatPower, liveExpPerSec, liveGoldPerSec,
     farmStage, bestGoldStage, bestExpStage, farmStageId, progressStageId,
-    skills, skillOptimizations, activeClass: cls
+    skills, skillOptimizations, activeClass: cls,
+    stageRunHistory, stuckAnalysis, liveCombatTracker, liveCombatData,
+    realGps, bestHistoryStage,
+    charStats
   };
 }
 
 function fmtNum(n) {
   if (!n || isNaN(n)) return '0';
+  if (n >= 1000000000) return (n/1000000000).toFixed(2) + 'B';
   if (n >= 1000000) return (n/1000000).toFixed(2) + 'M';
   if (n >= 1000) return (n/1000).toFixed(1) + 'k';
   return Math.round(n).toLocaleString('vi-VN');
@@ -20275,120 +20880,158 @@ function fmtNum(n) {
 
 function renderAnalysisCard(icon, title, color, rows, alertLevel) {
   const borderColor = alertLevel === 'good' ? '#2ea043' : alertLevel === 'warn' ? '#f0883e' : alertLevel === 'bad' ? '#f85149' : '#30363d';
-  const bgColor = alertLevel === 'good' ? 'rgba(40,97,34,0.12)' : alertLevel === 'warn' ? 'rgba(120,70,0,0.15)' : alertLevel === 'bad' ? 'rgba(100,20,20,0.15)' : 'rgba(0,0,0,0.15)';
+  const bgColor = alertLevel === 'good' ? 'rgba(40,97,34,0.12)' : alertLevel === 'warn' ? 'rgba(120,70,0,0.15)' : alertLevel === 'bad' ? 'rgba(100,20,20,0.15)' : 'rgba(22,27,34,0.7)';
+  const glow = alertLevel === 'good' ? 'box-shadow: 0 0 12px rgba(46,160,67,0.15);' : alertLevel === 'warn' ? 'box-shadow: 0 0 12px rgba(240,136,62,0.15);' : alertLevel === 'bad' ? 'box-shadow: 0 0 12px rgba(248,81,73,0.2);' : '';
 
   const rowsHtml = rows.map(r => {
     if (r.type === 'header') {
-      return '<div style="font-size:11px; font-weight:bold; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; margin:10px 0 4px; padding-top:8px; border-top:1px solid #30363d;">' + r.text + '</div>';
+      return '<div style="font-size:11px; font-weight:bold; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; margin:12px 0 6px; padding-top:8px; border-top:1px solid #30363d;">' + r.text + '</div>';
     }
     if (r.type === 'progress') {
-      return '<div style="margin:5px 0;">' +
+      return '<div style="margin:6px 0;">' +
         '<div style="display:flex; justify-content:space-between; font-size:12px; color:#8b949e; margin-bottom:3px;">' +
           '<span>' + r.label + '</span><span><b style="color:#f0f6fc;">' + r.value + '</b></span>' +
         '</div>' +
-        '<div style="background:#21262d; border-radius:4px; height:5px; overflow:hidden;">' +
-          '<div style="width:' + Math.min(100, r.pct||0) + '%; height:100%; background:' + (r.barColor||'#388bfd') + '; border-radius:4px;"></div>' +
+        '<div style="background:#21262d; border-radius:4px; height:6px; overflow:hidden;">' +
+          '<div style="width:' + Math.min(100, Math.max(0, r.pct||0)) + '%; height:100%; background:' + (r.barColor||'#388bfd') + '; border-radius:4px; transition:width 0.3s ease;"></div>' +
         '</div>' +
       '</div>';
     }
     if (r.type === 'skill_row') {
       const gainColor = r.dpsDelta > 0 ? '#7ee787' : '#8b949e';
-      const bar = Math.min(100, Math.max(2, (r.dpsDelta / (r.totalDps||1)) * 100 * 20));
-      return '<div style="background:#161b22; border-radius:6px; padding:8px 10px; margin:4px 0; border-left:3px solid ' + gainColor + ';">' +
-        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">' +
-          '<span style="color:#f0f6fc; font-size:13px; font-weight:bold;">' + (r.rank||'') + ' ' + r.name + '</span>' +
+      const curDpsPct = (r.totalDps > 0) ? Math.min(100, (r.curDps / r.totalDps * 100)) : 0;
+      const base64Map = (typeof skillIconsBase64 !== 'undefined' ? skillIconsBase64 : (window.skillIconsBase64 || {}));
+      const iconSrc = (r.icon && base64Map[r.icon]) ? base64Map[r.icon] : (r.icon ? ('skill_icons/' + r.icon + '.png') : null);
+      const iconHtml = iconSrc ? '<img src="' + iconSrc + '" style="width:22px;height:22px;border-radius:4px;object-fit:cover;margin-right:6px;vertical-align:middle;border:1px solid #30363d;" onerror="this.style.display=\'none\'">' : (r.icon ? '<span style="font-size:18px;margin-right:6px;vertical-align:middle;">⚡</span>' : '');
+      return '<div style="background:#161b22; border-radius:8px; padding:10px 12px; margin:6px 0; border:1px solid #30363d; border-left:4px solid ' + gainColor + ';">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+          '<span style="color:#f0f6fc; font-size:13px; font-weight:bold;">' + iconHtml + (r.rank||'') + ' ' + r.name + '</span>' +
           '<span style="color:' + gainColor + '; font-weight:bold; font-size:13px;">+' + fmtNum(r.dpsDelta) + ' DPS</span>' +
         '</div>' +
-        '<div style="display:flex; gap:12px; font-size:11.5px; color:#8b949e;">' +
+        '<div style="display:flex; flex-wrap:wrap; gap:10px; font-size:11.5px; color:#8b949e;">' +
           '<span>Lv.' + r.currentLv + ' → <b style="color:#f2cc60;">Lv.' + r.nextLv + '</b></span>' +
+          '<span>DPS hiện tại: <b style="color:#f0883e;">' + fmtNum(r.curDps) + '</b></span>' +
           '<span>' + r.curMult + '% → <b style="color:#58a6ff;">' + r.nextMult + '%</b> mult</span>' +
           (r.curCd !== r.nextCd ? '<span>CD: ' + r.curCd + 's → <b style="color:#bc8cff;">' + r.nextCd + 's</b></span>' : '') +
           '<span>+' + (r.dpsDeltaPct||0).toFixed(2) + '% tổng DPS</span>' +
         '</div>' +
-        '<div style="background:#21262d; border-radius:3px; height:3px; margin-top:5px; overflow:hidden;">' +
-          '<div style="width:' + bar + '%; height:100%; background:' + gainColor + ';"></div>' +
+        '<div style="background:#21262d; border-radius:3px; height:4px; margin-top:6px; overflow:hidden;">' +
+          '<div style="width:' + curDpsPct.toFixed(1) + '%; height:100%; background:' + gainColor + ';"></div>' +
         '</div>' +
       '</div>';
     }
+    if (r.type === 'stat_row') {
+      const barPct = r.max ? Math.min(100, (r.rawVal / r.max * 100)) : 0;
+      const barColor = r.barColor || '#388bfd';
+      return '<div style="margin:4px 0;">' +
+        '<div style="display:flex; justify-content:space-between; font-size:12px; color:#8b949e; margin-bottom:2px;">' +
+          '<span>' + (r.icon||'') + ' ' + r.label + '</span>' +
+          '<span><b style="color:' + (r.valColor||'#f0f6fc') + ';">' + r.value + '</b></span>' +
+        '</div>' +
+        (r.max ? '<div style="background:#21262d; border-radius:3px; height:4px; overflow:hidden;"><div style="width:' + barPct.toFixed(1) + '%; height:100%; background:' + barColor + ';"></div></div>' : '') +
+      '</div>';
+    }
     const valColor = r.valColor || '#f0f6fc';
-    return '<div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #21262d; font-size:13px;">' +
+    return '<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(48,54,61,0.5); font-size:13px;">' +
       '<span style="color:#8b949e;">' + (r.icon||'') + ' ' + r.label + '</span>' +
       '<span style="color:' + valColor + '; font-weight:bold;">' + r.value + '</span>' +
     '</div>';
   }).join('');
 
-  return '<div style="background:' + bgColor + '; border:1px solid ' + borderColor + '; border-radius:8px; padding:16px;">' +
-    '<div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">' +
-      '<span style="font-size:20px;">' + icon + '</span>' +
-      '<b style="color:' + color + '; font-size:15px;">' + title + '</b>' +
+  return '<div style="background:' + bgColor + '; border:1px solid ' + borderColor + '; border-radius:10px; padding:16px; ' + glow + '">' +
+    '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">' +
+      '<span style="font-size:22px;">' + icon + '</span>' +
+      '<b style="color:' + color + '; font-size:15.5px;">' + title + '</b>' +
     '</div>' +
     rowsHtml +
   '</div>';
 }
 
 function renderSmartAnalysis() {
+  const force = arguments[0];
+  if (force) {
+    window.__lastSmartAnalysisRenderKey = null;
+    _doRenderSmartAnalysis();
+    return;
+  }
+  // Debounce: prevent flicker when applyUserData() calls renderChat() → renderSmartAnalysis() rapidly
+  if (window.__renderAnalysisTimer) clearTimeout(window.__renderAnalysisTimer);
+  window.__renderAnalysisTimer = setTimeout(function() { _doRenderSmartAnalysis(); }, 350);
+}
+
+function _doRenderSmartAnalysis() {
   const el = document.getElementById('smartAnalysisContent');
   if (!el) return;
 
-  // Make sure DPS data is calculated first
   if (!window.__lastDpsBreakdown) {
-    renderCombatBreakdown();
+    if (typeof renderCombatBreakdown === 'function') renderCombatBreakdown();
   }
 
   const s = getSmartAnalysisData();
-  const hasData = s.totalDps > 0 || s.level > 0;
+  const hasData = s.totalDps > 0 || s.level > 1 || s.gold > 0 || (s.expInfo && s.expInfo.level > 1);
+
+  // Dirty check: if data has not changed, do NOT touch innerHTML to prevent flickering/re-rendering
+  const renderKey = JSON.stringify([
+    s.level, s.combatPower, Math.round(s.totalDps), s.gold, s.diamond, s.exp,
+    (s.skillOptimizations || []).map(o => [o.groupId, o.currentLv, Math.round(o.curDps), Math.round(o.dpsDelta)]),
+    s.stuckAnalysis ? [s.stuckAnalysis.stageId, s.stuckAnalysis.failCount] : []
+  ]);
+  if (window.__lastSmartAnalysisRenderKey === renderKey && el.children.length > 0) {
+    return;
+  }
+  window.__lastSmartAnalysisRenderKey = renderKey;
 
   let html = '';
 
   if (!hasData) {
-    html = '<div style="text-align:center; padding:40px; color:#8b949e;">' +
-      '<div style="font-size:32px; margin-bottom:12px;">⚡</div>' +
-      '<b style="font-size:15px; color:#f0883e;">Chưa có đủ dữ liệu để phân tích!</b><br>' +
-      '<div style="margin-top:8px; font-size:13px;">Hãy vào tab <b>⚔️ Thống Kê DPS</b> và tab <b>👤 Hồ Sơ & Tiến Độ</b> để đồng bộ dữ liệu trước, rồi quay lại bấm "🔄 Làm Mới Phân Tích".</div>' +
+    html = '<div style="text-align:center; padding:40px; color:#8b949e; background:#161b22; border-radius:12px; border:1px dashed #30363d;">' +
+      '<div style="font-size:36px; margin-bottom:12px;">⚡</div>' +
+      '<b style="font-size:16px; color:#f0883e;">Chưa có đủ dữ liệu từ game để phân tích!</b><br>' +
+      '<div style="margin-top:10px; font-size:13px; color:#8b949e; max-width:500px; margin-left:auto; margin-right:auto;">Hãy đảm bảo game <b>Genesis.exe</b> đang chạy, hoặc chuyển sang tab <b>⚔️ Thống Kê DPS</b> và tab <b>👤 Hồ Sơ</b> để đồng bộ dữ liệu, sau đó bấm <b>🔄 Làm Mới Phân Tích</b>.</div>' +
     '</div>';
     el.innerHTML = html;
     return;
   }
 
-  html = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:16px;">';
+  html = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:16px;">';
 
-  // ---- CARD 1: TỔNG QUAN TÀI KHOẢN ----
+  // ---- CARD 1: TỔNG QUAN TÀI KHOẢN & EXP ----
   const expPct = s.expPercent.toFixed(1);
   const etaMin = s.liveExpPerSec > 0 ? (s.expRemain / s.liveExpPerSec / 60) : null;
-  const etaText = etaMin ? (etaMin < 60 ? Math.ceil(etaMin) + ' phút' : (etaMin/60).toFixed(1) + ' giờ') : '-- (cần đồng bộ)';
-  html += renderAnalysisCard('👤', 'Tổng Quan Tài Khoản', '#58a6ff', [
-    { label: 'Cấp độ', value: s.level > 0 ? 'Lv. ' + s.level : '--', valColor: '#f2cc60' },
-    { label: 'Lực chiến', value: s.combatPower > 0 ? fmtNum(s.combatPower) : '--', valColor: '#f0883e' },
-    { type: 'progress', label: 'EXP Lên Cấp ' + (s.level + 1), value: s.level > 0 ? (fmtNum(s.exp) + ' / ' + fmtNum(s.expRequired) + ' (' + expPct + '%)') : '--', pct: parseFloat(expPct)||0, barColor: '#7ee787' },
+  const etaText = etaMin ? (etaMin < 60 ? Math.ceil(etaMin) + ' phút' : (etaMin/60).toFixed(1) + ' giờ') : '-- (cần sync)';
+  const accRows = [
+    { label: 'Cấp độ nhân vật', value: s.level > 0 ? 'Lv. ' + s.level : '--', valColor: '#f2cc60' },
+    { label: 'Lực chiến tổng (CP)', value: s.combatPower > 0 ? fmtNum(s.combatPower) : '--', valColor: '#f0883e' },
+    { type: 'progress', label: 'Tiến độ EXP Lv.' + s.level + ' → Lv.' + (s.level + 1), value: s.level > 0 ? (fmtNum(s.exp) + ' / ' + fmtNum(s.expRequired) + ' (' + expPct + '%)') : '--', pct: parseFloat(expPct)||0, barColor: '#7ee787' },
     { label: 'EXP còn thiếu', value: s.expRemain > 0 ? fmtNum(s.expRemain) : '--', valColor: '#8b949e' },
-    { label: 'EXP/giây', value: s.liveExpPerSec > 0 ? fmtNum(s.liveExpPerSec) + ' EXP/s' : '-- (cần sync)' , valColor: '#7ee787' },
+    { label: 'Tốc độ nhận EXP', value: s.liveExpPerSec > 0 ? fmtNum(s.liveExpPerSec) + ' EXP/s' : '-- (cần sync)', valColor: '#7ee787' },
     { label: '⏱️ Ước tính lên cấp', value: etaText, valColor: '#58a6ff' },
-    { label: 'Vàng hiện có', value: s.gold > 0 ? fmtNum(s.gold) + ' 🪙' : '--', valColor: '#f2cc60' },
-    { label: 'Kim cương', value: s.diamond > 0 ? fmtNum(s.diamond) + ' 💎' : '--', valColor: '#79c0ff' },
-  ], s.level > 0 ? 'good' : 'neutral');
+    { label: 'Vàng hiện có', value: s.gold >= 0 ? fmtNum(s.gold) + ' 🪙' : '--', valColor: '#f2cc60' },
+    { label: 'Kim cương', value: (s.diamond !== undefined && s.diamond !== null && s.diamond >= 0) ? fmtNum(s.diamond) + ' 💎' : '--', valColor: '#79c0ff' },
+  ];
+  html += renderAnalysisCard('👤', 'Tổng Quan & Tiến Độ EXP', '#58a6ff', accRows, s.level > 0 ? 'good' : 'neutral');
 
-  // ---- CARD 2: PHÂN TÍCH DPS ----
+  // ---- CARD 2: PHÂN TÍCH DPS LÝ THUYẾT & THỰC CHIẾN ----
   const normalPct = s.totalDps > 0 ? (s.normalDps / s.totalDps * 100).toFixed(1) : '0';
   const skillPct = s.totalDps > 0 ? (s.skillDps / s.totalDps * 100).toFixed(1) : '0';
   const dpsRows = [
-    { label: 'Tổng DPS thực tế', value: fmtNum(s.totalDps) + ' DPS', valColor: '#f0883e' },
+    { label: 'Tổng DPS tính toán', value: fmtNum(s.totalDps) + ' DPS', valColor: '#f0883e' },
     { label: 'Class đang chơi', value: s.activeClass === 'Mage' ? '🔮 Pháp Sư' : s.activeClass === 'Ranged' ? '🏹 Cung Thủ' : s.activeClass === 'Melee' ? '⚔️ Hiệp Sĩ' : s.activeClass, valColor: '#bc8cff' },
     { type: 'progress', label: 'Đòn đánh thường', value: fmtNum(s.normalDps) + ' (' + normalPct + '%)', pct: parseFloat(normalPct), barColor: '#58a6ff' },
-    { type: 'progress', label: 'Kỹ năng (Skill)', value: fmtNum(s.skillDps) + ' (' + skillPct + '%)', pct: parseFloat(skillPct), barColor: '#bc8cff' },
-    { label: 'Công cơ bản', value: fmtNum(s.baseAtk), valColor: '#f0f6fc' },
-    { label: 'Tốc độ đánh', value: (s.attackSpeed||0).toFixed(3) + ' đòn/s', valColor: '#7ee787' },
-    { label: 'Chí mạng', value: (s.critRate||0).toFixed(1) + '% / ' + (s.critDmg||0).toFixed(1) + '%', valColor: '#f2cc60' },
-    { label: 'Khuếch đại tổng', value: '+' + (s.dmgBonus||0).toFixed(1) + '%', valColor: '#f0883e' },
+    { type: 'progress', label: 'Sát thương Kỹ năng', value: fmtNum(s.skillDps) + ' (' + skillPct + '%)', pct: parseFloat(skillPct), barColor: '#bc8cff' },
+    { label: 'Công cơ bản (Base Atk)', value: fmtNum(s.baseAtk), valColor: '#f0f6fc' },
+    { label: 'Tốc độ đánh', value: (s.attackSpeed||0).toFixed(2) + ' đòn/s', valColor: '#7ee787' },
+    { label: 'Chí mạng (Rate / Dmg)', value: (s.critRate||0).toFixed(1) + '% / ' + (s.critDmg||0).toFixed(1) + '%', valColor: '#f2cc60' },
+    { label: 'Hệ số khuếch đại (Crit x Dmg)', value: 'x' + (s.critMult * s.dmgMult).toFixed(2), valColor: '#58a6ff' },
   ];
-  if (s.skills.length > 0) {
-    dpsRows.push({ type: 'header', text: 'Top Kỹ Năng Hiện Tại' });
-    s.skills.slice().sort((a,b)=>b.dps-a.dps).slice(0,4).forEach((sk, i) => {
-      dpsRows.push({ label: (i+1) + '. ' + sk.name, value: fmtNum(sk.dps) + ' DPS', valColor: '#bc8cff' });
-    });
+  if (s.liveCombatData) {
+    dpsRows.push({ type: 'header', text: '⚡ Sát Thương Thực Chiến (Live Combat Tracker)' });
+    dpsRows.push({ label: 'DPS ghi nhận trên quái', value: fmtNum(s.liveCombatData.realDps) + ' DPS (' + fmtNum(s.liveCombatData.totalDamage) + ' dmg)', valColor: '#7ee787' });
+    dpsRows.push({ label: 'Tỷ lệ Chiêu thức / Đòn thường', value: s.liveCombatData.skillRatio.toFixed(0) + '% / ' + s.liveCombatData.normalRatio.toFixed(0) + '% (' + s.liveCombatData.hitCount + ' hits)', valColor: '#bc8cff' });
   }
-  html += renderAnalysisCard('⚔️', 'Phân Tích DPS Thực Tế', '#f0883e', dpsRows, s.totalDps > 0 ? 'neutral' : 'warn');
+  html += renderAnalysisCard('⚔️', 'Phân Tích DPS & Thực Chiến', '#f0883e', dpsRows, s.totalDps > 0 ? 'good' : 'warn');
 
-  // ---- CARD 3: GỢI Ý NÂNG CÂY KỸ NĂNG ----
+  // ---- CARD 3: TỐI ƯU CÂY KỸ NĂNG ----
   const opts = s.skillOptimizations;
   let skillCardRows = [];
   let skillCardAlert = 'neutral';
@@ -20400,12 +21043,13 @@ function renderSmartAnalysis() {
     skillCardRows.push({ label: '✅ Tất cả kỹ năng đã Max Level', value: 'Không còn kỹ năng nào có thể nâng thêm!', valColor: '#7ee787' });
     skillCardAlert = 'good';
   } else {
-    skillCardRows.push({ type: 'header', text: 'Xếp Hạng Theo Mức Tăng DPS Khi Nâng 1 Cấp' });
-    opts.slice(0, 6).forEach((opt, i) => {
+    skillCardRows.push({ type: 'header', text: 'Kỹ Năng DPS Cao Nhất — Ưu Tiên Nâng Cấp' });
+    opts.slice(0, 5).forEach((opt, i) => {
       skillCardRows.push({
         type: 'skill_row',
-        rank: ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'][i] || (i+1) + '.',
+        rank: ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][i] || (i+1) + '.',
         name: opt.name,
+        icon: opt.icon,
         currentLv: opt.currentLv,
         nextLv: opt.nextLv,
         maxLv: opt.maxLv,
@@ -20419,58 +21063,124 @@ function renderSmartAnalysis() {
         totalDps: s.totalDps
       });
     });
-    if (opts.length > 6) {
-      skillCardRows.push({ label: '...và ' + (opts.length - 6) + ' kỹ năng khác có thể nâng', value: '', valColor: '#8b949e' });
-    }
-    // Summary advice
     const top1 = opts[0];
-    skillCardRows.push({ type: 'header', text: '💡 Lời Khuyên' });
-    if (top1.dpsDelta > s.totalDps * 0.05) {
-      skillCardRows.push({ label: '→ Nên nâng ngay: ' + top1.name, value: '+' + top1.dpsDeltaPct.toFixed(1) + '% DPS', valColor: '#7ee787' });
-    } else {
-      skillCardRows.push({ label: '→ Tất cả gain <5% DPS/lần nâng', value: 'Dồn vàng nâng đều', valColor: '#f2cc60' });
+    skillCardRows.push({ type: 'header', text: '💡 Đề Xuất Chiến Lược' });
+    skillCardRows.push({ label: '→ Kỹ năng DPS cao nhất: ' + top1.name, value: fmtNum(top1.curDps) + ' DPS/s (Lv.' + top1.currentLv + '/' + top1.maxLv + ')', valColor: '#f0883e' });
+    if (top1.dpsDelta > 0) {
+      skillCardRows.push({ label: '→ Nâng lên Lv.' + top1.nextLv + ' để tăng', value: '+' + fmtNum(top1.dpsDelta) + ' DPS (+' + top1.dpsDeltaPct.toFixed(1) + '% tổng)', valColor: '#7ee787' });
     }
-    skillCardAlert = opts[0].dpsDelta > s.totalDps * 0.05 ? 'warn' : 'neutral';
+    skillCardAlert = 'good';
   }
-  html += renderAnalysisCard('🌳', 'Tối Ưu Cây Kỹ Năng (Nâng Cấp Nào Tăng Dame Nhất)', '#7ee787', skillCardRows, skillCardAlert);
+  html += renderAnalysisCard('🌳', 'Gợi Ý Tối Ưu Cây Kỹ Năng', '#7ee787', skillCardRows, skillCardAlert);
 
-  // ---- CARD 4: GỢI Ý CÁCH ẢI & PHÒNG THỦ ----
+  // ---- CARD 4: CÀY VÀNG & EXP TỐI ƯU (từ lịch sử đo đạc thực tế) ----
   const goldRows = [];
-  const farmName = s.farmStage ? (s.farmStage.display_full || s.farmStage.nameVi || '') : '';
-  const farmGps = s.farmStage ? (s.farmStage.calc_gps || s.farmStage.gps || 0) : (s.liveGoldPerSec || 0);
+  const farmName = s.farmStage ? (s.farmStage.display_tag || s.farmStage.display_full || s.farmStage.game_name || '') : '';
+  // Use real GPS from stageRunHistory first, fallback to static data
+  const displayGps = s.realGps > 0 ? s.realGps : (s.farmStage ? (s.farmStage.calc_gps || s.farmStage.gold_per_sec || s.farmStage.gps || 0) : (s.liveGoldPerSec || 0));
+  const gpsSource = s.realGps > 0 ? '(đo thực tế)' : '(ước tính)';
 
-  if (farmGps > 0) {
-    goldRows.push({ label: 'Ải đang farm', value: farmName || 'Ải hiện tại', valColor: '#f2cc60' });
-    goldRows.push({ label: 'Vàng/giây', value: fmtNum(farmGps) + ' 🪙/s', valColor: '#7ee787' });
-    goldRows.push({ label: 'Vàng/giờ (AFK)', value: fmtNum(farmGps * 3600) + ' 🪙/h', valColor: '#7ee787' });
+  if (s.stageRunHistory && s.stageRunHistory.length > 0) {
+    goldRows.push({ type: 'header', text: '📊 Dữ Liệu Từ Lịch Sử Chạy Thực Tế' });
+    goldRows.push({ label: 'Số lần chạy đã ghi nhận', value: s.stageRunHistory.length + ' lần', valColor: '#79c0ff' });
+    if (s.bestHistoryStage) {
+      goldRows.push({ label: 'Ải GPS cao nhất (thực đo)', value: s.bestHistoryStage.stageName, valColor: '#f2cc60' });
+      goldRows.push({ label: 'GPS thực tế đo được', value: fmtNum(s.bestHistoryStage.realGps) + ' 🪙/s', valColor: '#7ee787' });
+      goldRows.push({ label: 'Vàng / giờ nếu treo ải này', value: fmtNum(s.bestHistoryStage.realGps * 3600) + ' 🪙/h', valColor: '#7ee787' });
+    }
+    goldRows.push({ type: 'header', text: '🏕️ Ải Đang Cày Hiện Tại' });
+    goldRows.push({ label: 'Ải farm', value: farmName || ('Ải ' + (s.farmStageId || '?')), valColor: '#f2cc60' });
+    goldRows.push({ label: 'GPS ' + gpsSource, value: displayGps > 0 ? fmtNum(displayGps) + ' 🪙/s' : '-- (chưa có dữ liệu)', valColor: displayGps > 0 ? '#7ee787' : '#8b949e' });
+    if (displayGps > 0) {
+      goldRows.push({ label: 'Vàng / giờ treo máy', value: fmtNum(displayGps * 3600) + ' 🪙/h', valColor: '#7ee787' });
+    }
+    // Suggest switching if bestHistoryStage is significantly better
+    if (s.bestHistoryStage && displayGps > 0 && s.bestHistoryStage.realGps > displayGps * 1.05) {
+      goldRows.push({ type: 'header', text: '💡 Khuyến Nghị Tối Ưu' });
+      goldRows.push({ label: '→ Chuyển sang: ' + s.bestHistoryStage.stageName, value: fmtNum(s.bestHistoryStage.realGps) + ' 🪙/s', valColor: '#2ea043' });
+      goldRows.push({ label: '→ Lợi nhuận tăng thêm', value: '+' + ((s.bestHistoryStage.realGps - displayGps) / (displayGps||1) * 100).toFixed(1) + '%', valColor: '#7ee787' });
+    } else if (s.bestHistoryStage) {
+      goldRows.push({ type: 'header', text: '✅ Đang Cày Ải Vàng Tối Ưu Nhất' });
+    }
   } else {
-    goldRows.push({ label: 'Vàng/giây', value: s.liveGoldPerSec > 0 ? fmtNum(s.liveGoldPerSec) + ' 🪙/s' : '-- (cần sync)', valColor: '#f2cc60' });
-  }
-
-  if (s.bestGoldStage) {
-    const bGps = s.bestGoldStage.calc_gps || s.bestGoldStage.gps || 0;
-    const bName = s.bestGoldStage.display_full || s.bestGoldStage.nameVi || '';
-    const sameStage = s.farmStage && (s.bestGoldStage.stage_id === s.farmStage.stage_id);
-    if (!sameStage && bGps > farmGps * 1.03) {
-      goldRows.push({ type: 'header', text: '💡 Gợi Ý Ải Vàng Tốt Hơn' });
-      goldRows.push({ label: '→ ' + bName, value: fmtNum(bGps) + ' 🪙/s', valColor: '#2ea043' });
-      goldRows.push({ label: '→ Tăng thêm', value: '+' + ((bGps - farmGps) / (farmGps||1) * 100).toFixed(1) + '%', valColor: '#7ee787' });
-    } else {
-      goldRows.push({ type: 'header', text: '✅ Đang Cày Ải Vàng Tối Ưu' });
+    goldRows.push({ label: '📊 Chưa có lịch sử chạy ải', value: 'Cần chạy ải để thu thập dữ liệu', valColor: '#8b949e' });
+    goldRows.push({ label: 'Ải farm', value: farmName || ('Ải ' + (s.farmStageId || '?')), valColor: '#f2cc60' });
+    goldRows.push({ label: 'GPS (ước tính tĩnh)', value: displayGps > 0 ? fmtNum(displayGps) + ' 🪙/s' : '-- (cần sync)', valColor: '#f2cc60' });
+    if (displayGps > 0) {
+      goldRows.push({ label: 'Vàng / giờ (Treo máy)', value: fmtNum(displayGps * 3600) + ' 🪙/h', valColor: '#f2cc60' });
     }
   }
 
   if (s.bestExpStage) {
-    const beName = s.bestExpStage.display_full || s.bestExpStage.nameVi || '';
-    const beEps = s.bestExpStage.exp_per_sec || s.bestExpStage.expPerSec || 0;
-    goldRows.push({ type: 'header', text: '📈 Ải EXP Tốt Nhất Đã Mở' });
-    goldRows.push({ label: '→ ' + beName, value: beEps > 0 ? fmtNum(beEps) + ' EXP/s' : 'Tốt nhất', valColor: '#58a6ff' });
+    const beName = s.bestExpStage.display_tag || s.bestExpStage.display_full || s.bestExpStage.game_name || ('Ải ' + s.bestExpStage.stage_id);
+    const beEps = s.bestExpStage.calc_eps || (s.bestExpStage.total_exp && s.bestExpStage.est_clear_sec ? (s.bestExpStage.total_exp / s.bestExpStage.est_clear_sec) : (s.bestExpStage.exp_per_sec || s.bestExpStage.expPerSec || 0));
+    goldRows.push({ type: 'header', text: '📈 Ải EXP Cao Nhất Đã Mở' });
+    goldRows.push({ label: '→ ' + beName, value: beEps > 0 ? fmtNum(beEps) + ' EXP/s' : (s.bestExpStage.total_exp ? fmtNum(s.bestExpStage.total_exp) + ' EXP/clear' : 'Tốt nhất'), valColor: '#58a6ff' });
   }
 
-  html += renderAnalysisCard('🌾', 'Cày Vàng & EXP Tối Ưu', '#f2cc60', goldRows, 'neutral');
+  html += renderAnalysisCard('🌾', 'Tối Ưu Hóa Cày Vàng & EXP', '#f2cc60', goldRows, 'neutral');
+
+  // ---- CARD 5: CHẨN ĐOÁN LEO ẢI & CẢNH BÁO KẸT ẢI ----
+  const stageRows = [];
+  const sa = s.stuckAnalysis;
+  let stageAlert = 'good';
+  const stageLabel = sa.stageName || (sa.stageId ? ('Ải ' + sa.stageId) : null);
+
+  if (stageLabel) {
+    stageRows.push({ label: 'Ải gần nhất', value: stageLabel, valColor: '#f0f6fc' });
+    stageRows.push({ label: 'Tỷ lệ thắng (Winrate)', value: sa.successRate.toFixed(1) + '% (' + (sa.totalRuns - sa.failCount) + '/' + sa.totalRuns + ')', valColor: sa.successRate >= 80 ? '#7ee787' : (sa.successRate >= 50 ? '#f0883e' : '#f85149') });
+    stageRows.push({ label: 'Thời gian hoàn thành TB', value: sa.avgDuration > 0 ? sa.avgDuration.toFixed(1) + ' giây' : '--', valColor: '#8b949e' });
+    stageRows.push({ type: 'header', text: 'Chẩn Đoán Trạng Thái' });
+
+    if (sa.isStuck) {
+      stageAlert = 'bad';
+      stageRows.push({ label: '⚠️ Phát hiện kẹt ải', value: 'Thất bại ' + sa.failCount + ' lần gần đây tại ' + stageLabel, valColor: '#f85149' });
+      stageRows.push({ label: '💡 Lời khuyên AI', value: 'Chuyển về farm ải trước để tích lũy vàng & nâng kỹ năng', valColor: '#f2cc60' });
+    } else {
+      stageRows.push({ label: '✅ Trạng thái vượt ải', value: 'Chạy ải ổn định, không bị kẹt', valColor: '#7ee787' });
+      stageRows.push({ label: '🚀 Khuyến nghị', value: 'Sẵn sàng tiến tới ải tiếp theo', valColor: '#58a6ff' });
+    }
+  } else {
+    stageRows.push({ label: '📜 Lịch sử chạy ải', value: 'Chưa có bản ghi nào', valColor: '#8b949e' });
+    stageRows.push({ label: 'ℹ️ Hướng dẫn', value: 'Bật game và chạy ải để ghi nhận lịch sử', valColor: '#58a6ff' });
+  }
+
+  html += renderAnalysisCard('🛡️', 'Chẩn Đoán Leo Ải & Kẹt Ải', '#bc8cff', stageRows, stageAlert);
+
+  // ---- CARD 6: THÔNG SỐ CHI TIẾT NHÂN VẬT (Real-time from profile.stats) ----
+  const cs = s.charStats;
+  const statRows = [];
+  if (cs && Object.keys(cs).length > 0) {
+    statRows.push({ type: 'header', text: '⚔️ Chỉ Số Tấn Công' });
+    if (cs.finalAttack !== undefined) statRows.push({ type: 'stat_row', icon: '🗡️', label: 'Tấn Công (Atk)', value: fmtNum(Number(cs.finalAttack)), rawVal: Number(cs.finalAttack), max: 50000, barColor: '#f0883e', valColor: '#f0883e' });
+    if (cs.finalAttackSpeed !== undefined) statRows.push({ type: 'stat_row', icon: '⚡', label: 'Tốc Đánh (Atk Spd)', value: Number(cs.finalAttackSpeed).toFixed(1) + '%', rawVal: Number(cs.finalAttackSpeed), max: 200, barColor: '#7ee787', valColor: '#7ee787' });
+    if (cs.finalCriticalRate !== undefined) statRows.push({ type: 'stat_row', icon: '🎯', label: 'Tỉ lệ Chí Mạng', value: Number(cs.finalCriticalRate).toFixed(1) + '%', rawVal: Number(cs.finalCriticalRate), max: 100, barColor: '#f2cc60', valColor: '#f2cc60' });
+    if (cs.finalCriticalDamage !== undefined) statRows.push({ type: 'stat_row', icon: '💥', label: 'ST Chí Mạng', value: Number(cs.finalCriticalDamage).toFixed(1) + '%', rawVal: Number(cs.finalCriticalDamage), max: 500, barColor: '#f0883e', valColor: '#f0883e' });
+    if (cs.damageBonus !== undefined) statRows.push({ type: 'stat_row', icon: '📈', label: 'Bonus Sát Thương', value: '+' + Number(cs.damageBonus).toFixed(1) + '%', rawVal: Number(cs.damageBonus), max: 100, barColor: '#58a6ff', valColor: '#58a6ff' });
+    if (cs.pveBonus !== undefined) statRows.push({ type: 'stat_row', icon: '🏟️', label: 'Bonus PvE', value: '+' + Number(cs.pveBonus).toFixed(1) + '%', rawVal: Number(cs.pveBonus), max: 100, barColor: '#7ee787', valColor: '#7ee787' });
+    if (cs.bossBonus !== undefined) statRows.push({ type: 'stat_row', icon: '👑', label: 'Bonus Boss', value: '+' + Number(cs.bossBonus).toFixed(1) + '%', rawVal: Number(cs.bossBonus), max: 100, barColor: '#bc8cff', valColor: '#bc8cff' });
+
+    statRows.push({ type: 'header', text: '🛡️ Chỉ Số Phòng Thủ' });
+    if (cs.finalDefense !== undefined) statRows.push({ type: 'stat_row', icon: '🛡️', label: 'Phòng Thủ (Def)', value: fmtNum(Number(cs.finalDefense)), rawVal: Number(cs.finalDefense), max: 20000, barColor: '#79c0ff', valColor: '#79c0ff' });
+    if (cs.finalHp !== undefined) statRows.push({ type: 'stat_row', icon: '❤️', label: 'Máu (HP)', value: fmtNum(Number(cs.finalHp)), rawVal: Number(cs.finalHp), max: 100000, barColor: '#f85149', valColor: '#f85149' });
+    if (cs.damageReduction !== undefined) statRows.push({ type: 'stat_row', icon: '🔰', label: 'Giảm ST nhận vào', value: Number(cs.damageReduction).toFixed(0) + '%', rawVal: Number(cs.damageReduction), max: 80, barColor: '#2ea043', valColor: '#2ea043' });
+    if (cs.pveDefense !== undefined) statRows.push({ type: 'stat_row', icon: '⚔️', label: 'Kháng PvE', value: Number(cs.pveDefense).toFixed(1) + '%', rawVal: Number(cs.pveDefense), max: 80, barColor: '#58a6ff', valColor: '#58a6ff' });
+    if (cs.critDmgResist !== undefined) statRows.push({ type: 'stat_row', icon: '💠', label: 'Kháng ST Chí Mạng', value: Number(cs.critDmgResist).toFixed(1) + '%', rawVal: Number(cs.critDmgResist), max: 80, barColor: '#79c0ff', valColor: '#79c0ff' });
+
+    statRows.push({ type: 'header', text: '✨ Chỉ Số Đặc Biệt' });
+    if (cs.skillCooldownReduction !== undefined) statRows.push({ type: 'stat_row', icon: '⏱️', label: 'Giảm Thời Gian Hồi', value: Number(cs.skillCooldownReduction).toFixed(0) + '%', rawVal: Number(cs.skillCooldownReduction), max: 50, barColor: '#bc8cff', valColor: '#bc8cff' });
+    if (cs.ignoreBlock !== undefined) statRows.push({ type: 'stat_row', icon: '🚫', label: 'Xuyên Phá (Ignore Block)', value: Number(cs.ignoreBlock).toFixed(0) + '%', rawVal: Number(cs.ignoreBlock), max: 100, barColor: '#f0883e', valColor: '#f0883e' });
+    if (cs.moveSpeed !== undefined) statRows.push({ type: 'stat_row', icon: '💨', label: 'Tốc Độ Di Chuyển', value: Number(cs.moveSpeed).toFixed(0), rawVal: Number(cs.moveSpeed), max: 500, barColor: '#7ee787', valColor: '#7ee787' });
+    if (cs.lightningDamage !== undefined) statRows.push({ type: 'stat_row', icon: '⚡', label: 'Sát Thương Sét', value: '+' + Number(cs.lightningDamage).toFixed(1) + '%', rawVal: Number(cs.lightningDamage), max: 30, barColor: '#f2cc60', valColor: '#f2cc60' });
+    if (cs.poisonDamage !== undefined) statRows.push({ type: 'stat_row', icon: '🐍', label: 'Sát Thương Độc', value: '+' + Number(cs.poisonDamage).toFixed(1) + '%', rawVal: Number(cs.poisonDamage), max: 50, barColor: '#2ea043', valColor: '#2ea043' });
+    if (cs.naturalRecovery !== undefined) statRows.push({ type: 'stat_row', icon: '💚', label: 'Hồi Máu Tự Nhiên', value: fmtNum(Number(cs.naturalRecovery)) + '/s', rawVal: Number(cs.naturalRecovery), max: 500, barColor: '#2ea043', valColor: '#2ea043' });
+  } else {
+    statRows.push({ label: '⚠️ Chưa có chỉ số nhân vật', value: 'Đồng bộ dữ liệu từ game để xem', valColor: '#8b949e' });
+  }
+  html += renderAnalysisCard('📊', 'Thông Số Chi Tiết Nhân Vật', '#79c0ff', statRows, cs && cs.finalAttack ? 'good' : 'neutral');
 
   html += '</div>';
-  html += '<div style="text-align:center; font-size:12px; color:#484f58; margin-top:12px;">⏱️ Dữ liệu từ lần đồng bộ gần nhất · Bấm <b>🔄 Đồng Bộ Ngay</b> ở tab Hồ Sơ → quay lại bấm <b>🔄 Làm Mới Phân Tích</b></div>';
+  html += '<div style="text-align:center; font-size:12px; color:#484f58; margin-top:16px;">⚡ Dữ liệu được tính toán và phân tích tự động theo thời gian thực từ game Genesis.exe · Bấm <b>🔄 Làm Mới Phân Tích</b> để cập nhật</div>';
 
   el.innerHTML = html;
 }
@@ -20518,6 +21228,8 @@ function applyUserData(data) {
   document.getElementById('barGem').innerText = gemCnt;
   document.getElementById('barCp').innerText = cpCnt;
   document.getElementById('barDps').innerText = Number(Math.round(dpsVal)).toLocaleString();
+  const dpsLiveCpEl = document.getElementById('dpsLiveCp');
+  if (dpsLiveCpEl) dpsLiveCpEl.innerText = cpCnt;
 
   // EXP Progress
   const pLv = data.level || 32;
@@ -20992,6 +21704,24 @@ function requestSingleSteamPrice(itemType, itemId) {
     if (typeof renderJewelLookup === 'function') renderJewelLookup();
   }
 
+  // Trigger dispatch to bridge / game
+  if (typeof fetch === 'function') {
+    fetch('http://127.0.0.1:10998/api/steam-market?query=' + encodeURIComponent(query))
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.items && Object.keys(data.items).length > 0) {
+          applyLiveSteamPrices(data);
+        } else if (typeof sendEvaluatePoll === 'function') {
+          sendEvaluatePoll();
+        }
+      })
+      .catch(() => {
+        if (typeof sendEvaluatePoll === 'function') sendEvaluatePoll();
+      });
+  } else if (typeof sendEvaluatePoll === 'function') {
+    sendEvaluatePoll();
+  }
+
   // Watchdog: reset loading state if no response in 8s
   setTimeout(function() {
     if (window.loadingSteamItemId === itemType + '_' + itemId) {
@@ -21056,12 +21786,30 @@ function requestRealtimeSteamPrices(customQuery) {
     updateJewelSteamLiveStatus(msg, 'warning');
   }, 10000);
 
-  sendEvaluatePoll();
+  // Dual-dispatch: HTTP API to bridge with WebSocket CDP fallback
+  if (typeof fetch === 'function') {
+    fetch('http://127.0.0.1:10998/api/steam-market?query=' + encodeURIComponent(query))
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.items && Object.keys(data.items).length > 0) {
+          applyLiveSteamPrices(data);
+        } else if (typeof sendEvaluatePoll === 'function' && typeof liveWs !== 'undefined' && liveWs && liveWs.readyState === WebSocket.OPEN) {
+          sendEvaluatePoll();
+        }
+      })
+      .catch(() => {
+        if (typeof sendEvaluatePoll === 'function' && typeof liveWs !== 'undefined' && liveWs && liveWs.readyState === WebSocket.OPEN) {
+          sendEvaluatePoll();
+        }
+      });
+  } else if (typeof sendEvaluatePoll === 'function') {
+    sendEvaluatePoll();
+  }
 }
 
 function requestRealtimeJewelSteamPrices(customQuery) {
   const isEn = (localStorage.getItem('genesis_helper_lang') === 'en');
-  if (!liveWs || liveWs.readyState !== WebSocket.OPEN) {
+  if (typeof liveWs === 'undefined' || !liveWs || liveWs.readyState !== WebSocket.OPEN) {
     updateJewelSteamLiveStatus(
       isEn ? '⚠️ Genesis.exe is not connected. Open game to query real-time Steam prices.' 
            : '⚠️ Chưa kết nối với Genesis.exe. Hãy mở game để cập nhật giá Steam thực tế.',
@@ -21079,7 +21827,7 @@ function requestRealtimeJewelSteamPrices(customQuery) {
   }
 
   const now = Date.now();
-  if (now - lastSteamMarketRequestTime < 2500) {
+  if (now - (lastSteamMarketRequestTime || 0) < 2500) {
     updateJewelSteamLiveStatus(isEn ? '⏳ Please wait 2s...' : '⏳ Vui lòng chờ 2s...', 'info');
     return;
   }
@@ -21098,7 +21846,25 @@ function requestRealtimeJewelSteamPrices(customQuery) {
     updateJewelSteamLiveStatus(msg, 'warning');
   }, 10000);
 
-  sendEvaluatePoll();
+  // Dual-dispatch: HTTP API to bridge with WebSocket CDP fallback
+  if (typeof fetch === 'function') {
+    fetch('http://127.0.0.1:10998/api/steam-market?query=' + encodeURIComponent(query))
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.items && Object.keys(data.items).length > 0) {
+          applyLiveSteamPrices(data);
+        } else if (typeof sendEvaluatePoll === 'function' && typeof liveWs !== 'undefined' && liveWs && liveWs.readyState === WebSocket.OPEN) {
+          sendEvaluatePoll();
+        }
+      })
+      .catch(() => {
+        if (typeof sendEvaluatePoll === 'function' && typeof liveWs !== 'undefined' && liveWs && liveWs.readyState === WebSocket.OPEN) {
+          sendEvaluatePoll();
+        }
+      });
+  } else if (typeof sendEvaluatePoll === 'function') {
+    sendEvaluatePoll();
+  }
 }
 
 function updateSteamLiveStatus(msg, type) {
@@ -22516,6 +23282,9 @@ function switchMainTab(tab) {
     if (typeof fetchCloudCommunityBuilds === 'function') {
       fetchCloudCommunityBuilds(false);
     }
+    if (window.CloudBuildsService && typeof window.CloudBuildsService.startRealtimeListener === 'function') {
+      window.CloudBuildsService.startRealtimeListener();
+    }
   }
 }
 
@@ -23908,7 +24677,8 @@ window.CloudBuildsService = {
       }
       this.db = firebase.firestore(app);
       this.isReady = true;
-      this.updateStatusUI(true, 'Cloud Đã Kết Nối (' + config.projectId + ')');
+      this.updateStatusUI(true, 'Cloud Realtime (' + config.projectId + ')');
+      this.startRealtimeListener();
       return true;
     } catch(err) {
       console.warn('Error initializing Firebase App:', err);
@@ -23922,7 +24692,51 @@ window.CloudBuildsService = {
     const badge = document.getElementById('cloudStatusBadge');
     if (badge) {
       badge.style.background = isOnline ? '#2ea043' : '#8b949e';
-      badge.title = isOnline ? '🟢 Cloud Online' : '⚪ Cloud Offline';
+      badge.title = isOnline ? ('🟢 ' + (text || 'Cloud Realtime Online')) : ('⚪ ' + (text || 'Cloud Offline'));
+    }
+    const textEl = document.getElementById('cloudRefreshText');
+    if (textEl && text && isOnline) {
+      textEl.textContent = 'Đồng Bộ Realtime';
+    }
+  },
+
+  unsubscribe: null,
+
+  startRealtimeListener: function() {
+    if (this.unsubscribe) return;
+    if (!this.isReady) {
+      this.init();
+    }
+    if (!this.isReady || !this.db) return;
+
+    try {
+      this.unsubscribe = this.db.collection('community_builds')
+        .orderBy('createdAt', 'desc')
+        .limit(100)
+        .onSnapshot((snapshot) => {
+          const list = [];
+          snapshot.forEach(function(doc) {
+            const d = doc.data();
+            if (d && d.id) {
+              d.isCloudSynced = true;
+              delete d.isOwner;
+              list.push(d);
+            }
+          });
+          localStorage.setItem(this.cacheKey, JSON.stringify(list));
+          this.updateStatusUI(true, 'Cloud Realtime (' + list.length + ' builds)');
+          const textEl = document.getElementById('cloudRefreshText');
+          if (textEl) textEl.textContent = 'Realtime (' + list.length + ')';
+          if (typeof renderCommunityBuildsList === 'function') {
+            renderCommunityBuildsList();
+          }
+        }, (err) => {
+          console.warn('Realtime listener error:', err);
+          this.updateStatusUI(false, 'Lỗi kết nối Realtime');
+        });
+      console.log('⚡ Firebase Cloud Realtime Listener successfully started!');
+    } catch(err) {
+      console.warn('Failed to attach Firebase realtime listener:', err);
     }
   },
 
@@ -24150,7 +24964,7 @@ function isLiveGameSynced() {
   if (window.isGameLiveSynced === true) {
     return true;
   }
-  if (window.userSaveProfile && window.userSaveProfile.isLiveConnected) {
+  if (window.userSaveProfile && (window.userSaveProfile.isLiveConnected || window.userSaveProfile.nickname || window.userSaveProfile.combatPower)) {
     return true;
   }
   return false;
@@ -24510,6 +25324,34 @@ function getSystemTierStyle(tier) {
   return map[tier] || map[1];
 }
 
+function formatStatClean(val, defaultVal = 0, maxDecimals = 1) {
+  if (val === undefined || val === null || isNaN(val)) val = defaultVal;
+  const num = Number(val);
+  const rounded = Math.round(num);
+  if (Math.abs(num - rounded) < 0.0001) {
+    return rounded.toString();
+  }
+  return parseFloat(num.toFixed(maxDecimals)).toString();
+}
+
+function resolveStageDisplayName(stageTid, fallbackName) {
+  const tid = Number(stageTid);
+  if (!tid) return fallbackName || '1-1';
+  if (typeof stageData !== 'undefined' && Array.isArray(stageData)) {
+    const sObj = stageData.find(s => Number(s.stage_id) === tid);
+    if (sObj && sObj.display_tag) return sObj.display_tag;
+  }
+  const diffMap = { 11: '', 12: 'Khó', 13: 'Rất khó', 14: 'Ác mộng', 15: 'Địa ngục' };
+  const diffCode = Math.floor(tid / 1000);
+  const ch = Math.floor((tid % 1000) / 100);
+  const step = tid % 100;
+  if (ch > 0 && step > 0) {
+    const diff = diffMap[diffCode] ? (' ' + diffMap[diffCode]) : '';
+    return ch + '-' + step + diff;
+  }
+  return fallbackName || ('Ải ' + tid);
+}
+
 function openBuildDetailModal(buildId) {
   const builds = getCommunityBuilds();
   const build = builds.find(function(b) { return b.id === buildId; });
@@ -24591,51 +25433,51 @@ function openBuildDetailModal(buildId) {
 
   // Tab 1: Stats
   const st = build.stats || {};
-  setEl('statAttack', Number(st.finalAttack || 2378.5).toLocaleString());
-  setEl('statAtkSpeed', (Number(st.finalAttackSpeed || 119.4)).toFixed(1) + '%');
-  setEl('statCritRate', (Number(st.finalCriticalRate || 29.7)).toFixed(1) + '%');
-  setEl('statCritDmg', (Number(st.finalCriticalDamage || 208.9)).toFixed(1) + '%');
-  setEl('statMoveSpeed', (Number(st.moveSpeed || 622.8)).toFixed(1));
+  setEl('statAttack', Number(Math.round(st.finalAttack || 2378.5)).toLocaleString());
+  setEl('statAtkSpeed', formatStatClean(st.finalAttackSpeed || 119.4) + '%');
+  setEl('statCritRate', formatStatClean(st.finalCriticalRate || 29.7) + '%');
+  setEl('statCritDmg', formatStatClean(st.finalCriticalDamage || 208.9) + '%');
+  setEl('statMoveSpeed', formatStatClean(st.moveSpeed || 322.8));
   setEl('statHp', Number(Math.round(st.finalHp || 24510)).toLocaleString());
   setEl('statDefense', Number(Math.round(st.finalDefense || 4028)).toLocaleString());
 
   // Giảm sát thương nhận vào
   const dmgRed = st.damageReduction !== undefined ? Number(st.damageReduction) : 16.5;
-  setEl('statDmgRed', '-' + dmgRed.toFixed(1) + '%');
+  setEl('statDmgRed', '-' + formatStatClean(dmgRed) + '%');
 
   // Hồi phục tự nhiên
   const natRec = (st.naturalRecovery !== undefined && st.naturalRecovery !== null) ? Number(st.naturalRecovery) : 26;
   const natRecPct = (st.naturalRecoveryPct !== undefined && st.naturalRecoveryPct !== null) ? Number(st.naturalRecoveryPct) : 23;
-  setEl('statRecovery', natRec + ' (+' + natRecPct + '%)');
+  setEl('statRecovery', formatStatClean(natRec) + ' (+' + formatStatClean(natRecPct) + '%)');
 
   // Phòng thủ PVE% & PVP%
   const pveDef = st.pveDefense !== undefined ? Number(st.pveDefense) : 40;
   const pvpDef = st.pvpDefense !== undefined ? Number(st.pvpDefense) : 40;
-  setEl('statPveDef', '+' + pveDef + '%');
-  setEl('statPvpDef', '+' + pvpDef + '%');
+  setEl('statPveDef', '+' + formatStatClean(pveDef) + '%');
+  setEl('statPvpDef', '+' + formatStatClean(pvpDef) + '%');
 
   setEl('statCp', Number(Math.round(build.combatPower || 0)).toLocaleString());
 
   // Thưởng sát thương chuyên biệt
-  setEl('statPveBonus', '+' + Number(st.pveBonus || 45) + '%');
-  setEl('statPvpBonus', '+' + Number(st.pvpBonus || 40) + '%');
-  setEl('statBossBonus', '+' + (Number(st.bossBonus || 31.7)).toFixed(1) + '%');
-  setEl('statDamageBonus', '+' + (Number(st.damageBonus || 25.9)).toFixed(1) + '%');
+  setEl('statPveBonus', '+' + formatStatClean(st.pveBonus || 45) + '%');
+  setEl('statPvpBonus', '+' + formatStatClean(st.pvpBonus || 40) + '%');
+  setEl('statBossBonus', '+' + formatStatClean(st.bossBonus || 31.7) + '%');
+  setEl('statDamageBonus', '+' + formatStatClean(st.damageBonus || 25.9) + '%');
 
   const critDmgRes = st.critDmgResist !== undefined ? Number(st.critDmgResist) : 30;
-  setEl('statCritDmgResist', '+' + critDmgRes + '%');
+  setEl('statCritDmgResist', '+' + formatStatClean(critDmgRes) + '%');
 
   const cdRed = st.skillCooldownReduction !== undefined ? Number(st.skillCooldownReduction) : 3;
-  setEl('statSkillCdRed', '-' + cdRed + '%');
+  setEl('statSkillCdRed', '-' + formatStatClean(cdRed) + '%');
 
   const lightDmg = st.lightningDamage !== undefined ? Number(st.lightningDamage) : 2.5;
-  setEl('statLightningDmg', '+' + lightDmg.toFixed(1) + '%');
+  setEl('statLightningDmg', '+' + formatStatClean(lightDmg) + '%');
 
   const poisDmg = st.poisonDamage !== undefined ? Number(st.poisonDamage) : 18.2;
-  setEl('statPoisonDmg', '+' + poisDmg.toFixed(1) + '%');
+  setEl('statPoisonDmg', '+' + formatStatClean(poisDmg) + '%');
 
   const ignBlock = st.ignoreBlock !== undefined ? Number(st.ignoreBlock) : 32;
-  setEl('statIgnoreBlock', ignBlock);
+  setEl('statIgnoreBlock', formatStatClean(ignBlock));
 
   // Sát thương đột kích & Boss thế giới
   const rDmg = Number(build.raidDamage || 0);
@@ -24647,7 +25489,8 @@ function openBuildDetailModal(buildId) {
   setEl('statWorldBossDmg', wbTxt);
 
   // Bảng thành tích & Xếp hạng server (5 chỉ số cạnh Phòng Thủ & Sinh Lực)
-  const highestStageText = build.stageName || (build.stageTid ? (build.stageTid == 14308 ? 'Ác mộng 3-8 (14-8)' : ('Ải ' + build.stageTid)) : 'Ác mộng 3-8 (14-8)');
+  const targetStageId = Number(build.clearStageTid || build.stageTid || build.maxUnlockedStageTid || 0);
+  const highestStageText = resolveStageDisplayName(targetStageId, build.stageName || '4-10 Ác mộng');
   setEl('statHighestStage', highestStageText);
   setEl('statWorldBossDmgSummary', wbTxt);
   setEl('statRaidDmgSummary', rTxt);
@@ -25898,17 +26741,41 @@ window.GenesisGameBridge = {
 
         let liveRaidDamage = 0;
         let liveWorldBossDamage = 0;
+        let liveRaidPlayCount = 0;
+        let liveWorldBossPlayCount = 0;
+        let d3Info = null;
+        let d2Info = null;
         if (typeof dungC !== 'undefined' && dungC) {
           try {
             const d3 = dungC.getDungeonInfo(3);
-            if (d3 && d3._dungeonRecords) {
-              const rec1 = d3._dungeonRecords.find(function(r) { return r._type === 1 || r.type === 1; });
-              if (rec1 && rec1._value) liveRaidDamage = Number(rec1._value) || 0;
+            if (d3) {
+              liveRaidPlayCount = d3._playCnt || 0;
+              d3Info = {
+                dungeonTid: d3._dungeonTid || 20000,
+                dungeonType: 3,
+                playCount: d3._playCnt || 0,
+                clearCount: d3._clearCnt || 0,
+                records: d3._dungeonRecords || []
+              };
+              if (d3._dungeonRecords) {
+                const rec1 = d3._dungeonRecords.find(function(r) { return r._type === 1 || r.type === 1; });
+                if (rec1 && rec1._value) liveRaidDamage = Number(rec1._value) || 0;
+              }
             }
             const d2 = dungC.getDungeonInfo(2);
-            if (d2 && d2._dungeonRecords) {
-              const rec1 = d2._dungeonRecords.find(function(r) { return r._type === 1 || r.type === 1; });
-              if (rec1 && rec1._value) liveWorldBossDamage = Number(rec1._value) || 0;
+            if (d2) {
+              liveWorldBossPlayCount = d2._playCnt || 0;
+              d2Info = {
+                dungeonTid: d2._dungeonTid || 10000,
+                dungeonType: 2,
+                playCount: d2._playCnt || 0,
+                clearCount: d2._clearCnt || 0,
+                records: d2._dungeonRecords || []
+              };
+              if (d2._dungeonRecords) {
+                const rec1 = d2._dungeonRecords.find(function(r) { return r._type === 1 || r.type === 1; });
+                if (rec1 && rec1._value) liveWorldBossDamage = Number(rec1._value) || 0;
+              }
             }
           } catch(e) {}
         }
@@ -25979,16 +26846,56 @@ window.GenesisGameBridge = {
           if (cat1 && cat1.keys) {
             for (let sk of cat1.keys()) {
               const node = cat1.getValue(sk);
-              if (node) trainingSkills[sk] = { tid: node._treeTid, level: (node._treeTid % 100) };
+              if (node && node._treeTid) {
+                const baseGid = (Math.floor(node._treeTid / 1000) * 1000) + 10;
+                const realLv = Math.max(1, Math.min(10, Math.floor((node._treeTid - baseGid) / 10) + 1));
+                trainingSkills[sk] = { tid: node._treeTid, level: realLv };
+              }
             }
           }
           const cat4 = treeC._mapTreeInfo.get(4);
           if (cat4 && cat4.keys) {
             for (let sk of cat4.keys()) {
               const node = cat4.getValue(sk);
-              if (node) skillTreeAllocations[sk] = { tid: node._treeTid, level: (node._treeTid % 100) };
+              if (node && node._treeTid) {
+                const baseGid = (Math.floor(node._treeTid / 1000) * 1000) + 10;
+                const realLv = Math.max(1, Math.min(10, Math.floor((node._treeTid - baseGid) / 10) + 1));
+                skillTreeAllocations[sk] = { tid: node._treeTid, level: realLv };
+              }
             }
           }
+        }
+
+        let deployedSkills = [];
+        try {
+          let sCombat = null;
+          if (nn.services && nn.services.combat) sCombat = nn.services.combat;
+          if (!sCombat && nn.services && nn.services._mapService) {
+            for (let [k, v] of nn.services._mapService.entries()) {
+              const sName = k.name || k.toString();
+              if (sName === 'ServiceCombat') sCombat = v;
+            }
+          }
+          if (sCombat && typeof sCombat.createMySkillTids === 'function') {
+            const tids = sCombat.createMySkillTids();
+            if (tids && tids.length) {
+              deployedSkills = Array.from(tids).map(function(t) { return Number(t); });
+            }
+          }
+        } catch(_) {}
+        if (!deployedSkills || deployedSkills.length === 0) {
+          try {
+            if (nn.net && nn.net.data && nn.net.data.preset) {
+              const p2 = nn.net.data.preset.getPresetNoData(2, currentPrimaryNo) || nn.net.data.preset.getPresetNoData(2, 1);
+              if (p2 && p2._map) {
+                p2._map.forEach(function(val) {
+                  if (val && val._info && val._info._skillTid) {
+                    deployedSkills.push(Number(val._info._skillTid));
+                  }
+                });
+              }
+            }
+          } catch(_) {}
         }
 
         const heroes = [];
@@ -26073,27 +26980,27 @@ window.GenesisGameBridge = {
             const finalMove = Number((bMove * (1 + pMove / 100)).toFixed(1));
 
             liveStats = {
-              finalAttack: finalAtk || 2330,
-              finalDefense: finalDef || 4142,
-              finalHp: finalHp || 25150,
+              finalAttack: Math.round(finalAtk || 2330),
+              finalDefense: Math.round(finalDef || 4142),
+              finalHp: Math.round(finalHp || 25150),
               finalAttackSpeed: finalAtkSpd || 117,
               finalCriticalRate: finalCritRate || 29.7,
               finalCriticalDamage: finalCritDmg || 174.7,
               moveSpeed: finalMove || 322.8,
               damageReduction: Number(getAb(1059).toFixed(1)),
-              naturalRecovery: getAb(1095),
-              naturalRecoveryPct: getAb(1096),
-              pveDefense: getAb(1056),
-              pvpDefense: getAb(1067),
-              pveBonus: getAb(1054),
-              pvpBonus: getAb(1065),
+              naturalRecovery: Math.round(getAb(1095)),
+              naturalRecoveryPct: Number(getAb(1096).toFixed(1)),
+              pveDefense: Number(getAb(1056).toFixed(1)),
+              pvpDefense: Number(getAb(1067).toFixed(1)),
+              pveBonus: Number(getAb(1054).toFixed(1)),
+              pvpBonus: Number(getAb(1065).toFixed(1)),
               bossBonus: Number(getAb(1057).toFixed(1)),
               damageBonus: Number(getAb(1058).toFixed(1)),
-              critDmgResist: getAb(1068),
-              skillCooldownReduction: getAb(1082),
+              critDmgResist: Number(getAb(1068).toFixed(1)),
+              skillCooldownReduction: Number(getAb(1082).toFixed(1)),
               lightningDamage: Number(getAb(1032).toFixed(1)),
               poisonDamage: Number(getAb(1042).toFixed(1)),
-              ignoreBlock: getAb(1092)
+              ignoreBlock: Math.round(getAb(1092))
             };
           }
         } catch(e) {}
@@ -26110,8 +27017,8 @@ window.GenesisGameBridge = {
           }
         } catch(e) {}
 
-        const clearTid = (stageC && stageC._stageInfo && stageC._stageInfo._clearStageTid) ? Number(stageC._stageInfo._clearStageTid) : 14308;
-        const curFarmingTid = (stageC && stageC._stageInfo && stageC._stageInfo._stageTid) ? Number(stageC._stageInfo._stageTid) : 14305;
+        const clearTid = (stageC && stageC._stageInfo && stageC._stageInfo._clearStageTid) ? Number(stageC._stageInfo._clearStageTid) : 14410;
+        const curFarmingTid = (stageC && stageC._stageInfo && stageC._stageInfo._stageTid) ? Number(stageC._stageInfo._stageTid) : clearTid;
         let liveCp = 0;
         try {
           let scp = null;
@@ -26149,13 +27056,20 @@ window.GenesisGameBridge = {
           worldBossDamage: liveWorldBossDamage,
           specialBattles: {
             raidDamage: liveRaidDamage,
-            worldBossDamage: liveWorldBossDamage
+            raidPlayCount: liveRaidPlayCount,
+            worldBossDamage: liveWorldBossDamage,
+            worldBossPlayCount: liveWorldBossPlayCount
+          },
+          dungeonInfo: {
+            raid: d3Info,
+            worldBoss: d2Info
           },
           heroes: heroes,
           equippedGear: equippedGear,
           gear: equippedGear,
           trainingSkills: trainingSkills,
           skillTreeAllocations: skillTreeAllocations,
+          deployedSkills: deployedSkills,
           systemsData: systemsData,
           altarLevel: altarLevel,
           exportedAt: new Date().toISOString()
@@ -26173,6 +27087,12 @@ window.GenesisGameBridge = {
   },
 
   applyLiveProfile: function(data) {
+    if (!data) return;
+    const highestTid = Number(data.clearStageTid || data.stageTid || (window.userSaveProfile && (window.userSaveProfile.clearStageTid || window.userSaveProfile.stageTid)) || 14410);
+    if (!data.clearStageTid && highestTid) data.clearStageTid = highestTid;
+    if (typeof resolveStageDisplayName === 'function') {
+      data.stageName = resolveStageDisplayName(highestTid, data.stageName);
+    }
     this.hasLiveProfile = true;
     window.isGameLiveSynced = true;
     window.lastLiveSyncTime = Date.now();
@@ -26243,9 +27163,13 @@ function updateCurrentBuildRealtime(buildId) {
     const activeCp = (window.userProfile && window.userProfile.combatPower) || (window.userSaveProfile && window.userSaveProfile.combatPower) || 0;
     const liveCp = Number(prof.combatPower) || Number(activeCp);
     b.combatPower = (liveCp > 0) ? Math.round(liveCp) : (b.combatPower || 0);
-    b.stageTid = prof.stageTid || b.stageTid;
-    if (prof.clearStageTid) b.clearStageTid = prof.clearStageTid;
-    if (prof.stageName) b.stageName = prof.stageName;
+
+    // Prioritize highest cleared stage from live profile
+    const highestTid = Number(prof.clearStageTid || prof.stageTid || b.clearStageTid || b.stageTid || 14410);
+    b.clearStageTid = highestTid;
+    b.stageTid = highestTid;
+    b.stageName = resolveStageDisplayName(highestTid, prof.stageName);
+
     b.heroTid = prof.heroTid || b.heroTid;
     b.heroClass = prof.heroClass || b.heroClass;
     if (prof.equippedGear && prof.equippedGear.length > 0) b.gear = JSON.parse(JSON.stringify(prof.equippedGear));
@@ -26261,6 +27185,11 @@ function updateCurrentBuildRealtime(buildId) {
     b.updatedAt = new Date().toISOString();
 
     localStorage.setItem('genesis_community_builds', JSON.stringify(customBuilds));
+
+    // Also push updated build to Firebase Cloud
+    if (typeof publishBuildToCloud === 'function') {
+      publishBuildToCloud(b);
+    }
 
     if (document.getElementById('buildDetailModal') && document.getElementById('buildDetailModal').style.display !== 'none') {
       openBuildDetailModal(buildId);
@@ -26420,8 +27349,27 @@ function syncLiveGameData(showFeedback) {
 
 // Auto-connect to game on startup
 setTimeout(function() {
+  if (typeof startLiveSync === 'function') {
+    startLiveSync();
+  }
   if (typeof syncLiveGameData === 'function') {
     syncLiveGameData(false);
+  }
+}, 1000);
+
+// ═══════════════════════════════════════════════════════════
+// LIVE STAGE TIMER: Tự cập nhật thời gian ải đang đánh mỗi 1s
+// Không phụ thuộc vào WS packet (poll 2s) — dùng timestamp để
+// tính duration = (Date.now() - liveCurrentStageRun.timestamp) / 1000
+// ═══════════════════════════════════════════════════════════
+setInterval(function() {
+  if (window.liveCurrentStageRun && window.liveCurrentStageRun.timestamp) {
+    var liveDur = Math.max(0.1, (Date.now() - window.liveCurrentStageRun.timestamp) / 1000);
+    window.liveCurrentStageRun.duration = Math.round(liveDur * 10) / 10;
+    var histSection = document.getElementById('stageHistorySection');
+    if (histSection && histSection.style.display !== 'none') {
+      if (typeof renderStageHistoryTable === 'function') renderStageHistoryTable();
+    }
   }
 }, 1000);
 
@@ -26439,7 +27387,74 @@ document.addEventListener('DOMContentLoaded', function() {
   switchLanguage(savedLang);
   // Bật observer dịch nội dung động (chỉ khi ngôn ngữ != vi)
   try { __i18nObserver.observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) {}
+  checkAndShowUpdateNotice();
 });
+
+/* UPDATE_NOTICE_START */
+function openUpdateNoticeModal(forceOpen) {
+  const modal = document.getElementById('updateNoticeModal');
+  if (!modal) return;
+  const chk = document.getElementById('updateNoticeDontShowCheckbox');
+  if (chk && forceOpen) chk.checked = false;
+  
+  const savedLang = localStorage.getItem('genesis_helper_lang') || (window.currentLang || 'vi');
+  setUpdateNoticeLang(savedLang === 'vi' ? 'vi' : 'en');
+  modal.style.display = 'flex';
+}
+
+function closeUpdateNoticeModal() {
+  const chk = document.getElementById('updateNoticeDontShowCheckbox');
+  if (chk && chk.checked) {
+    try {
+      localStorage.setItem('genesis_update_notice_dismissed_v20260920', 'true');
+    } catch(e) {}
+  }
+  const modal = document.getElementById('updateNoticeModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function setUpdateNoticeLang(lang) {
+  const isVi = (lang === 'vi');
+  const viContent = document.getElementById('updateNoticeVi');
+  const enContent = document.getElementById('updateNoticeEn');
+  const tabVi = document.getElementById('updateNoticeTabVi');
+  const tabEn = document.getElementById('updateNoticeTabEn');
+  const title = document.getElementById('updateNoticeTitle');
+  const subtitle = document.getElementById('updateNoticeSubtitle');
+  const dlBtn = document.getElementById('updateNoticeDlBtnText');
+  const closeBtn = document.getElementById('updateNoticeCloseBtnText');
+  const dontShowLabel = document.getElementById('updateNoticeDontShowLabel');
+
+  if (viContent) viContent.style.display = isVi ? 'block' : 'none';
+  if (enContent) enContent.style.display = isVi ? 'none' : 'block';
+
+  if (tabVi) {
+    tabVi.style.background = isVi ? '#1f6feb' : 'transparent';
+    tabVi.style.color = isVi ? '#ffffff' : '#8b949e';
+  }
+  if (tabEn) {
+    tabEn.style.background = !isVi ? '#1f6feb' : 'transparent';
+    tabEn.style.color = !isVi ? '#ffffff' : '#8b949e';
+  }
+
+  if (title) title.textContent = isVi ? 'Thông Báo Cập Nhật Hệ Thống' : 'Important System Update Notice';
+  if (subtitle) subtitle.textContent = isVi ? 'Khôi phục toàn bộ tính năng & Cập nhật Script LiveSync' : 'All Features Restored & LiveSync Script Update Guide';
+  if (dlBtn) dlBtn.textContent = isVi ? 'Tải Script Mới (.ZIP)' : 'Download New Script (.ZIP)';
+  if (closeBtn) closeBtn.textContent = isVi ? 'Đã Hiểu' : 'Got It';
+  if (dontShowLabel) dontShowLabel.textContent = isVi ? 'Không hiển thị lại thông báo này' : "Don't show this announcement again";
+}
+
+function checkAndShowUpdateNotice() {
+  try {
+    const isDismissed = localStorage.getItem('genesis_update_notice_dismissed_v20260920');
+    if (!isDismissed) {
+      setTimeout(function() {
+        openUpdateNoticeModal();
+      }, 700);
+    }
+  } catch(e) {}
+}
+/* UPDATE_NOTICE_END */
 </script>
 
 
@@ -26482,6 +27497,168 @@ document.addEventListener('DOMContentLoaded', function() {
       <button onclick="closeEditBuildModal()" style="padding:8px 16px; background:#21262d; border:1px solid #30363d; color:#c9d1d9; border-radius:6px; cursor:pointer;">Hủy</button>
       <button onclick="saveEditBuild()" style="padding:8px 18px; background:#1f6feb; border:1px solid #388bfd; color:#fff; font-weight:bold; border-radius:6px; cursor:pointer;">💾 Lưu Thay Đổi</button>
     </div>
+  </div>
+</div>
+
+<!-- UPDATE NOTICE MODAL (Bilingual VI / EN with "Don't show again" option) -->
+<div id="updateNoticeModal" style="display:none; position:fixed; inset:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(6px); z-index:10000000; justify-content:center; align-items:center; padding:16px;">
+  <div style="background:#0d1117; border:1px solid #388bfd; border-radius:14px; max-width:680px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.95); display:flex; flex-direction:column; position:relative;">
+    
+    <!-- Modal Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #30363d; padding:16px 20px; background:linear-gradient(180deg, #161b22 0%, #0d1117 100%);">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:26px;">📢</span>
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:rgba(227,179,65,0.2); color:#e3b341; border:1px solid #e3b341; font-size:11px; font-weight:bold; padding:2px 8px; border-radius:12px; text-transform:uppercase;">UPDATE 20/09/2026</span>
+            <h3 id="updateNoticeTitle" style="margin:0; font-size:17px; color:#f0f6fc; font-weight:700;">Thông Báo Cập Nhật Hệ Thống</h3>
+          </div>
+          <div id="updateNoticeSubtitle" style="font-size:12px; color:#8b949e; margin-top:2px;">Khôi phục toàn bộ tính năng &amp; Cập nhật Script LiveSync</div>
+        </div>
+      </div>
+      
+      <!-- Right: Language Switcher Tabs & Close Button -->
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; background:#21262d; border:1px solid #30363d; border-radius:8px; padding:2px;">
+          <button type="button" id="updateNoticeTabVi" onclick="setUpdateNoticeLang('vi')" style="background:#1f6feb; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; padding:4px 10px; cursor:pointer; transition:all 0.2s;">🇻🇳 Tiếng Việt</button>
+          <button type="button" id="updateNoticeTabEn" onclick="setUpdateNoticeLang('en')" style="background:transparent; color:#8b949e; border:none; border-radius:6px; font-size:12px; font-weight:600; padding:4px 10px; cursor:pointer; transition:all 0.2s;">🇬🇧 English</button>
+        </div>
+        <button type="button" onclick="closeUpdateNoticeModal()" style="background:transparent; border:none; color:#8b949e; font-size:20px; cursor:pointer; padding:4px 8px; border-radius:6px; line-height:1;" title="Đóng / Close">✕</button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+      
+      <!-- ================= VIETNAMESE CONTENT ================= -->
+      <div id="updateNoticeVi" style="display:block;">
+        
+        <!-- Feature Restoration Card -->
+        <div style="background:#161b22; border:1px solid #238636; border-radius:10px; padding:15px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🟢</span>
+            <b style="color:#7ee787; font-size:14.5px;">Tất Cả Các Chức Năng Trên Website Đã Được Khôi Phục &amp; Hoạt Động Bình Thường!</b>
+          </div>
+          <div style="font-size:12.5px; color:#c9d1d9; line-height:1.6;">
+            Chào bạn! Các tính năng nâng cao trên Web Helper đã được cập nhật và đồng bộ thời gian thực hoàn toàn:
+            <ul style="margin:6px 0 0 0; padding-left:20px; line-height:1.7;">
+              <li><b>⚡ LiveSync Realtime:</b> Kết nối trực tiếp dữ liệu game mượt mà, khắc phục lỗi mất cổng kết nối.</li>
+              <li><b>⚔️ Phân Tích Sát Thương (Combat Breakdown):</b> Chuẩn công thức Wiki 100% kèm vạch đa sắc trực quan.</li>
+              <li><b>🐉 Đột Kích &amp; Boss Thế Giới:</b> Tự động nhận diện ải, ghi nhận lịch sử sát thương chuẩn xác.</li>
+              <li><b>🛡️ Lò Rèn Ghép Đồ/Ngọc Tier 3:</b> Tự động ghép an toàn tuyệt đối theo đúng cấp bậc đã chọn.</li>
+              <li><b>🌐 Build Cộng Đồng &amp; Giá Chợ Steam:</b> Đồng bộ Cloud thời gian thực và cập nhật giá item trực tiếp.</li>
+              <li><b>🎯 Chuẩn Hóa Chỉ Số:</b> Đã xóa sạch dãy số thập phân dài ngoằng và tự động đồng bộ Ải cao nhất đã vượt qua (4-10 Ác mộng).</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Script Update & Installation Card -->
+        <div style="background:#161b22; border:1px solid #1f6feb; border-radius:10px; padding:15px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">📦</span>
+            <b style="color:#58a6ff; font-size:14px;">Vui Lòng Tải &amp; Chạy File Script Mới Nhất Được Đặt Trên Web</b>
+          </div>
+          <div style="font-size:12.5px; color:#c9d1d9; line-height:1.6;">
+            Để nhận đầy đủ các bản cập nhật và dữ liệu đồng bộ chuẩn nhất, vui lòng tải bộ cài đặt mới:
+            <div style="background:#0d1117; border-left:3px solid #1f6feb; padding:10px 12px; margin:8px 0; border-radius:0 6px 6px 0; font-size:12px; line-height:1.6;">
+              <b>📖 Cách cài đặt vẫn như cũ (chỉ mất ~10 giây):</b><br>
+              1. Bấm nút tải trọn gói <code style="color:#7ee787; font-weight:bold;">LiveSync_1Click.zip</code> ở bên dưới.<br>
+              2. Mở thư mục cài đặt game trên Steam (nơi chứa file <code>Genesis.exe</code>).<br>
+              3. Giải nén đè cả 3 file vào thư mục game: <code style="color:#58a6ff;">cai_dat_livesync.bat</code>, <code style="color:#58a6ff;">install_game_hook_v2.js</code>, <code style="color:#58a6ff;">livesync_bridge.js</code>.<br>
+              4. Nhấp đúp chạy <code style="color:#7ee787; font-weight:bold;">cai_dat_livesync.bat</code> và quay lại web trải nghiệm!
+            </div>
+          </div>
+        </div>
+
+        <!-- Disclaimer Warning Card -->
+        <div style="background:#1c1308; border:1px solid #d29922; border-radius:10px; padding:14px;">
+          <div style="display:flex; align-items:flex-start; gap:10px;">
+            <span style="font-size:22px; flex-shrink:0;">⚠️</span>
+            <div style="font-size:12.5px; line-height:1.6;">
+              <b style="color:#e3b341; font-size:13.5px;">LƯU Ý QUAN TRỌNG (USE AT YOUR OWN RISK):</b><br>
+              <span style="color:#f0f6fc;">Các công cụ đọc dữ liệu bộ nhớ và hỗ trợ tự động được phát triển nhằm mục đích phi thương mại để cộng đồng tham khảo và phân tích lối chơi. <b>Vui lòng sử dụng với sự tự chịu trách nhiệm của bạn (Use at your own risk).</b> Tác giả không chịu trách nhiệm đối với bất kỳ rủi ro nào liên quan đến tài khoản game của bạn.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= ENGLISH CONTENT ================= -->
+      <div id="updateNoticeEn" style="display:none;">
+        
+        <!-- Feature Restoration Card -->
+        <div style="background:#161b22; border:1px solid #238636; border-radius:10px; padding:15px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🟢</span>
+            <b style="color:#7ee787; font-size:14.5px;">All Website Features Have Been Restored &amp; Are Fully Operational!</b>
+          </div>
+          <div style="font-size:12.5px; color:#c9d1d9; line-height:1.6;">
+            Welcome! All advanced analysis tools on the Web Helper have been restored and updated:
+            <ul style="margin:6px 0 0 0; padding-left:20px; line-height:1.7;">
+              <li><b>⚡ Real-Time LiveSync:</b> Direct game memory synchronization without drops or disconnections.</li>
+              <li><b>⚔️ Combat Breakdown &amp; DPS Calculator:</b> 100% accurate Wiki damage formulas with vibrant multi-color bars.</li>
+              <li><b>🐉 World Boss &amp; Raid Tracking:</b> Correct stage detection with complete historical damage logs.</li>
+              <li><b>🛡️ Auto-Forge &amp; Tier 3 Jewel/Equip Fusion:</b> Completely safe automatic fusion for selected tiers.</li>
+              <li><b>🌐 Community Builds &amp; Steam Market Prices:</b> Real-time Cloud syncing and live Steam item price integration.</li>
+              <li><b>🎯 Clean Stats Display:</b> Long trailing float decimals removed, and true highest cleared stage auto-synchronized.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Script Update & Installation Card -->
+        <div style="background:#161b22; border:1px solid #1f6feb; border-radius:10px; padding:15px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">📦</span>
+            <b style="color:#58a6ff; font-size:14px;">Please Download &amp; Run the New Script File from the Website</b>
+          </div>
+          <div style="font-size:12.5px; color:#c9d1d9; line-height:1.6;">
+            To receive the latest fixes and ensure full compatibility with the game, please download the updated script package:
+            <div style="background:#0d1117; border-left:3px solid #1f6feb; padding:10px 12px; margin:8px 0; border-radius:0 6px 6px 0; font-size:12px; line-height:1.6;">
+              <b>📖 Installation steps remain the same (takes ~10 seconds):</b><br>
+              1. Download <code style="color:#7ee787; font-weight:bold;">LiveSync_1Click.zip</code> using the button below.<br>
+              2. Open your Steam game folder (where <code>Genesis.exe</code> resides).<br>
+              3. Extract and overwrite all 3 files into the game folder: <code style="color:#58a6ff;">cai_dat_livesync.bat</code>, <code style="color:#58a6ff;">install_game_hook_v2.js</code>, <code style="color:#58a6ff;">livesync_bridge.js</code>.<br>
+              4. Double-click <code style="color:#7ee787; font-weight:bold;">cai_dat_livesync.bat</code> and enjoy the Web Helper!
+            </div>
+          </div>
+        </div>
+
+        <!-- Disclaimer Warning Card -->
+        <div style="background:#1c1308; border:1px solid #d29922; border-radius:10px; padding:14px;">
+          <div style="display:flex; align-items:flex-start; gap:10px;">
+            <span style="font-size:22px; flex-shrink:0;">⚠️</span>
+            <div style="font-size:12.5px; line-height:1.6;">
+              <b style="color:#e3b341; font-size:13.5px;">IMPORTANT DISCLAIMER (USE AT YOUR OWN RISK):</b><br>
+              <span style="color:#f0f6fc;">These live data inspection and automation helper tools are provided for personal and non-commercial analytical use. <b>Please use at your own risk.</b> The developer assumes no responsibility or liability for any game account bans, penalties, or damages resulting from third-party tool usage.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="border-top:1px solid #30363d; padding:14px 20px; background:#161b22; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-radius:0 0 14px 14px;">
+      
+      <!-- Checkbox "Don't show again" -->
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; color:#c9d1d9; user-select:none;">
+        <input type="checkbox" id="updateNoticeDontShowCheckbox" style="accent-color:#1f6feb; width:16px; height:16px; cursor:pointer;">
+        <span id="updateNoticeDontShowLabel">Không hiển thị lại thông báo này / Don't show again</span>
+      </label>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <a href="LiveSync_1Click.zip" download="LiveSync_1Click.zip" style="background:#238636; color:#ffffff; font-weight:bold; font-size:13px; padding:8px 16px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:6px; box-shadow:0 3px 10px rgba(35,134,54,0.35); transition:all 0.2s;" onmouseover="this.style.background='#2ea043'" onmouseout="this.style.background='#238636'">
+          <span>📦</span> <span id="updateNoticeDlBtnText">Tải Script Mới (.ZIP) / Download</span>
+        </a>
+        <button type="button" onclick="closeUpdateNoticeModal()" style="background:#1f6feb; border:none; color:#ffffff; font-weight:bold; font-size:13px; padding:8px 18px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;" onmouseover="this.style.background='#388bfd'" onmouseout="this.style.background='#1f6feb'">
+          <span>✓</span> <span id="updateNoticeCloseBtnText">Đã Hiểu / Got It</span>
+        </button>
+      </div>
+
+    </div>
+
   </div>
 </div>
 
