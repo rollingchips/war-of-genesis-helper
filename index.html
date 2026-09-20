@@ -17413,11 +17413,11 @@ function sendEvaluatePoll() {
         }
         const activeStageTid = (sStageInst && sStageInst.playingStageTid) ? sStageInst.playingStageTid : ((sStageInst && sStageInst.stageTid) ? sStageInst.stageTid : (curProxy ? curProxy.fieldTid : stageTid));
         const curClearTid = (sStageInst && sStageInst.stageInfo) ? sStageInst.stageInfo._clearStageTid : clearStageTid;
-        const isHeroDead = heroPawn ? (heroPawn._isDead || heroPawn._isAlive === false || (heroPawn._curHp !== undefined && heroPawn._curHp <= 0)) : false;
-        const isClearSeqStarted = curProxy ? !!curProxy._bStageClearSequenceStarted : false;
-        const isGameEnd = curProxy ? (!!curProxy._isGameEnd || curProxy._gameState === 4 || curProxy._gameState === 5) : false;
+        const isHeroDead = heroPawn ? (heroPawn._isDead || heroPawn._isAlive === false || heroPawn.isDead || (heroPawn._curHp !== undefined && heroPawn._curHp <= 0) || (heroPawn.hp !== undefined && heroPawn.hp <= 0)) : false;
+        const isClearSeqStarted = curProxy ? !!(curProxy._bStageClearSequenceStarted || curProxy._bStageClearSequenceActive || curProxy._isWin === true || curProxy._gameResult === 1 || curProxy._isClear === true) : false;
+        const isGameEnd = curProxy ? (!!curProxy._isGameEnd || curProxy._gameState === 5) : false;
         const curElapsed = curProxy ? (curProxy.elapsedTime || 0) : 0;
-        const curGameId = curProxy ? curProxy._gameId : null;
+        const curGameId = curProxy ? (curProxy._gameId || curProxy.gameId) : null;
         const nowTs = Date.now();
 
         if (sTracker.currentRun) {
@@ -17427,24 +17427,29 @@ function sendEvaluatePoll() {
           if (sameGame) {
             cur.duration = curElapsed > 0 ? curElapsed : ((nowTs - cur.startTime) / 1000);
             if (isHeroDead) cur.wasHeroDead = true;
-            if (isClearSeqStarted || (curProxy && (curProxy._bStageClearSequenceStarted || curProxy._isWin === true || curProxy._gameResult === 1 || curProxy._isClear === true))) cur.wasClearSeqStarted = true;
+            if (isClearSeqStarted || (curProxy && (curProxy._bStageClearSequenceStarted || curProxy._bStageClearSequenceActive || curProxy._isWin === true || curProxy._gameResult === 1 || curProxy._isClear === true))) cur.wasClearSeqStarted = true;
             if (curClearTid > cur.initialClearTid) cur.clearedNewStage = true;
             if (curProxy && (curProxy._isDefeat === true || curProxy._gameResult === 2 || curProxy._bStageFailSequenceStarted === true)) cur.wasDefeat = true;
           }
+
+          const isStageAdvanced = (activeStageTid > 0 && activeStageTid > cur.stageId);
+          if (isStageAdvanced) cur.wasClearSeqStarted = true;
 
           const battleEnded = (!sameGame && curGameId) || isGameEnd || isClearSeqStarted || cur.wasHeroDead || cur.wasDefeat || !curProxy || (activeStageTid !== cur.stageId && activeStageTid !== 0);
 
           if (battleEnded && !cur.recorded && cur.duration >= 1) {
             const isShort = cur.duration < 6.0;
-            const isCleared = !!(cur.wasClearSeqStarted || cur.clearedNewStage || (curProxy && (curProxy._bStageClearSequenceStarted || curProxy._isWin === true || curProxy._gameResult === 1 || curProxy._isClear === true)));
+            const isCleared = !!(cur.wasClearSeqStarted || cur.clearedNewStage || isStageAdvanced || (curProxy && (curProxy._bStageClearSequenceStarted || curProxy._bStageClearSequenceActive || curProxy._isWin === true || curProxy._gameResult === 1 || curProxy._isClear === true)));
             const isExplicitDefeat = !!(cur.wasHeroDead || cur.wasDefeat || (curProxy && (curProxy._isDefeat === true || curProxy._gameResult === 2 || curProxy._bStageFailSequenceStarted === true)));
-            const isStageAbandoned = !!(!curProxy || (activeStageTid !== cur.stageId && activeStageTid !== 0));
+            const isStageAbandoned = !!(!curProxy || (activeStageTid !== cur.stageId && activeStageTid !== 0 && !isStageAdvanced));
 
             let runStatus = 'abandoned';
-            if (isCleared) {
+            if (isCleared || isStageAdvanced) {
               runStatus = 'success';
             } else if (isExplicitDefeat) {
               runStatus = 'failed';
+            } else if (!curProxy && !isExplicitDefeat) {
+              runStatus = 'success';
             } else if (isGameEnd) {
               // Battle ended naturally without clear sequence -> Failed (Defeat / Timeout)
               runStatus = 'failed';
