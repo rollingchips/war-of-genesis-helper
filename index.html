@@ -995,15 +995,52 @@ body {
         Tự động nhận diện & ghép ngọc khi đủ <b>6 viên cùng cấp</b> (không cần cùng loại), hỗ trợ gom ngọc từ cả <b>Balo lẫn Kho đồ</b>, và tự động cất ngọc rời vào kho để <b>không bao giờ bị đầy Balo khi AFK</b>.
       </div>
     </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
       <button class="jewel-btn jewel-btn-primary" onclick="triggerManualJewelFuse()">⚡ Ghép Ngọc Tự Động</button>
       <button class="jewel-btn" onclick="openLiveSyncHelpModal()" style="background:#21262d; border:1px solid #388bfd; color:#58a6ff; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;" title="Xem hướng dẫn tải .bat bật LiveSync cho Lò Rèn &amp; Kho">⚡ Hướng Dẫn LiveSync (.BAT)</button>
       <button class="jewel-btn jewel-btn-gold" id="btnManualFuseT3" onclick="triggerManualT3Fuse()" style="background:#9e6a03; color:#fff; border:1px solid #d29922; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;" title="Ghép ngay lập tức các món Trang bị (cần 6) và Trang sức (cần 3) cùng Tier 3">🔨 Ghép Ngay Đồ Tier 3</button>
-      <button class="jewel-btn" id="btnManualEquipClass" onclick="triggerManualClassEquipOpt()" style="background:#1f6feb; color:#fff; border:1px solid #388bfd; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;" title="Lắp ngay vũ khí chính &amp; phụ mạnh nhất phù hợp với Class hiện tại">⚔️ Tối Ưu Vũ Khí Class</button>
-      <button class="jewel-btn" id="btnManualSkillClass" onclick="triggerManualClassSkillOpt()" style="background:#6e40c9; color:#fff; border:1px solid #8957e5; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;" title="Trang bị ngay bộ kỹ năng chuẩn cho Class hiện tại">🔮 Lắp Skill Chuẩn Class</button>
-      <button class="jewel-btn jewel-btn-blue" onclick="triggerDepositJewelsToStorage()">📦 Cất Toàn Bộ Vào Kho</button>
+      <div style="display:inline-flex; align-items:center; gap:6px; background:#161b22; border:1px solid #388bfd; border-radius:6px; padding:2px 6px;">
+        <select id="selDepositTargetStorage" style="background:#0d1117; color:#58a6ff; border:1px solid rgba(88,166,255,0.4); border-radius:4px; font-weight:600; font-size:12px; padding:5px 6px; cursor:pointer;" title="Chọn kho đích để cất toàn bộ đồ balo">
+          <option value="auto">📦 Tất cả kho (Tự động)</option>
+          <option value="1">🏛️ Kho 1 (Ô 1-42)</option>
+          <option value="2">🏛️ Kho 2 (Ô 43-84)</option>
+          <option value="3">🏛️ Kho 3 (Ô 85-126)</option>
+          <option value="4">🏛️ Kho 4 (Ô 127-168)</option>
+          <option value="5">🏛️ Kho 5 (Ô 169-210)</option>
+        </select>
+        <button class="jewel-btn jewel-btn-blue" id="btnDepositAllBag" onclick="triggerDepositAllBagToStorage()" style="padding:6px 12px; margin:0;" title="Cất toàn bộ trang bị, trang sức, ngọc chưa khóa từ Balo vào kho đã chọn">📦 Cất Toàn Bộ Balo Vào Kho</button>
+      </div>
+      <button class="jewel-btn" onclick="triggerDepositJewelsToStorage()" style="background:#1f6feb; color:#fff; border:1px solid #388bfd; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;" title="Chỉ cất ngọc rời từ Balo vào Kho">💎 Cất Riêng Ngọc</button>
+      <button class="jewel-btn" id="btnDepositT3" onclick="triggerDepositT3ToStorage()" style="background:#1f6feb; color:#fff; border:1px solid #388bfd; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;" title="Chỉ cất trang bị và trang sức Tier 3 từ Balo vào Kho">🛡️ Cất Riêng Đồ T3</button>
       <button class="jewel-btn jewel-btn-purple" onclick="triggerWithdrawJewelsFromStorage()">📥 Rút Toàn Bộ Về Balo</button>
       <button class="jewel-btn" onclick="openDonateModal()" style="background:linear-gradient(135deg, rgba(227,179,65,0.2) 0%, rgba(255,166,87,0.3) 100%); border:1px solid #e3b341; color:#f0c674; font-weight:600; padding:6px 12px; border-radius:6px; cursor:pointer;" title="Ủng hộ tác giả / Support the Developer">☕ Ủng Hộ Tác Giả</button>
+    </div>
+  </div>
+
+  <!-- BANNER THÔNG BÁO CẬP NHẬT LÒ RÈN & KHO NGỌC (Bilingual VI/EN) -->
+  <div id="jewelUpdateNoticeBanner" style="background: linear-gradient(90deg, rgba(88, 166, 255, 0.12) 0%, rgba(188, 140, 255, 0.12) 100%); border: 1px solid rgba(88, 166, 255, 0.35); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);">
+    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
+      <span style="font-size: 26px; line-height: 1;">📢</span>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span id="jewelNoticeBadge" style="background: #238636; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Cập Nhật Mới</span>
+          <span id="jewelNoticeTitle" style="font-weight: 700; color: #f0f6fc; font-size: 14px;">Web đã update bản mới, hãy cập nhật file script để sử dụng những tính năng mới!</span>
+        </div>
+        <div id="jewelNoticeDesc" style="font-size: 12px; color: #8b949e; margin-top: 3px;">
+          Bao gồm: Tự động cất trang bị &amp; trang sức Tier 3 vào kho, chọn kho đích (Kho 1/2/3/Tự động) cho Ngọc &amp; T3, tự động ghép đồ T3 chuẩn cấp.
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <a id="jewelNoticeDownloadBtn" href="LiveSync_1Click.zip" download="LiveSync_1Click.zip" style="background: #238636; color: #ffffff; font-weight: bold; font-size: 12.5px; padding: 7px 14px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(35, 134, 54, 0.35); transition: all 0.2s;" onmouseover="this.style.background='#2ea043'" onmouseout="this.style.background='#238636'">
+        📦 Tải Script Mới (.ZIP)
+      </a>
+      <button id="jewelNoticeGuideBtn" onclick="openLiveSyncHelpModal()" style="background: #21262d; border: 1px solid #388bfd; color: #58a6ff; font-weight: 600; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+        ⚡ Hướng Dẫn (.BAT)
+      </button>
+      <button id="jewelNoticeCloseBtn" onclick="dismissJewelNoticeBanner()" title="Đóng thông báo" aria-label="Đóng thông báo" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.18); color: #8b949e; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; line-height: 1; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.color='#f85149'; this.style.borderColor='#f85149'; this.style.background='rgba(248,81,73,0.15)'" onmouseout="this.style.color='#8b949e'; this.style.borderColor='rgba(255, 255, 255, 0.18)'; this.style.background='rgba(255, 255, 255, 0.06)'">
+        ✕
+      </button>
     </div>
   </div>
 
@@ -1103,11 +1140,52 @@ body {
         </div>
       </div>
 
-      <div class="jewel-switch-wrap" onclick="toggleAutoDepositJewels()">
-        <div class="jewel-switch active" id="switchAutoDeposit"></div>
-        <div>
-          <div style="font-weight:bold; font-size:13.5px; color:#f0f6fc;">Tự động cất ngọc lẻ vào Kho đồ</div>
-          <div style="font-size:11.5px; color:#8b949e;">Khi nhặt ngọc mới hoặc ghép xong, tự động cất vào kho để tránh đầy Balo khi AFK.</div>
+      <!-- AUTO DEPOSIT JEWELS SWITCH WITH STORAGE SELECTOR -->
+      <div style="background:rgba(33, 38, 45, 0.6); border:1px solid #30363d; border-radius:8px; padding:10px 12px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleAutoDepositJewels()">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="jewel-switch active" id="switchAutoDeposit"></div>
+            <div>
+              <div style="font-weight:bold; font-size:13.5px; color:#f0f6fc;">💎 Tự động cất ngọc lẻ vào Kho đồ</div>
+              <div style="font-size:11.5px; color:#8b949e;">Khi nhặt ngọc mới hoặc ghép xong, tự động cất vào kho để tránh đầy Balo khi AFK.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; font-size:12px;">
+          <span style="color:#8b949e;">🏛️ Kho đích tự động cất ngọc:</span>
+          <select id="selAutoDepositJewelTargetStorage" onchange="setAutoDepositJewelTargetStorage(this.value)" style="background:#0d1117; color:#58a6ff; border:1px solid rgba(88,166,255,0.4); border-radius:4px; font-weight:600; font-size:11.5px; padding:3px 6px; cursor:pointer;">
+            <option value="auto">📦 Tất cả kho (Tự động)</option>
+            <option value="1">🏛️ Kho 1 (Ô 1-42)</option>
+            <option value="2">🏛️ Kho 2 (Ô 43-84)</option>
+            <option value="3">🏛️ Kho 3 (Ô 85-126)</option>
+            <option value="4">🏛️ Kho 4 (Ô 127-168)</option>
+            <option value="5">🏛️ Kho 5 (Ô 169-210)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- AUTO DEPOSIT T3 GEAR & ACC SWITCH WITH STORAGE SELECTOR -->
+      <div style="background:rgba(33, 38, 45, 0.6); border:1px solid #30363d; border-radius:8px; padding:10px 12px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleAutoDepositT3()">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="jewel-switch active" id="switchAutoDepositT3"></div>
+            <div>
+              <div style="font-weight:bold; font-size:13.5px; color:#f0f6fc;">🛡️ Tự động cất Trang bị &amp; Trang sức Tier 3 vào Kho</div>
+              <div style="font-size:11.5px; color:#8b949e;">Khi nhặt được đồ Tier 3 chưa khóa từ farm map/boss, tự động cất vào kho để gom ghép và tránh đầy Balo.</div>
+            </div>
+          </div>
+          <div id="t3InvBadge" style="font-size:12px; font-weight:bold; color:#79c0ff; background:rgba(56,139,253,0.15); border:1px solid rgba(56,139,253,0.3); border-radius:10px; padding:2px 8px; white-space:nowrap;">Balo: 0 món</div>
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; font-size:12px;">
+          <span style="color:#8b949e;">🏛️ Kho đích tự động cất đồ T3:</span>
+          <select id="selAutoDepositT3TargetStorage" onchange="setAutoDepositT3TargetStorage(this.value)" style="background:#0d1117; color:#58a6ff; border:1px solid rgba(88,166,255,0.4); border-radius:4px; font-weight:600; font-size:11.5px; padding:3px 6px; cursor:pointer;">
+            <option value="auto">📦 Tất cả kho (Tự động)</option>
+            <option value="1">🏛️ Kho 1 (Ô 1-42)</option>
+            <option value="2">🏛️ Kho 2 (Ô 43-84)</option>
+            <option value="3">🏛️ Kho 3 (Ô 85-126)</option>
+            <option value="4">🏛️ Kho 4 (Ô 127-168)</option>
+            <option value="5">🏛️ Kho 5 (Ô 169-210)</option>
+          </select>
         </div>
       </div>
 
@@ -4799,6 +4877,7 @@ function switchLanguage(lang) {
   if (typeof renderCommunityBuildsList === 'function') renderCommunityBuildsList();
   if (typeof updateLiveSyncI18n === 'function') updateLiveSyncI18n(lang);
   if (typeof updateDonateModalI18n === 'function') updateDonateModalI18n(lang);
+  if (typeof updateJewelNoticeBanner === 'function') updateJewelNoticeBanner(lang);
   updateDOMTranslations(lang);
 }
 
@@ -16330,27 +16409,69 @@ function pollLiveGame() {
             if (typeof addJewelLog === 'function') {
               if (data.action === 'deposit') {
                 if (data.count > 0) {
-                  addJewelLog('📦 Đã cất ' + data.count + ' viên ngọc vào Kho đồ thành công!', 'success');
+                  const targetStrVi = data.targetStorage && data.targetStorage !== 'auto' ? ('Kho ' + data.targetStorage) : 'Kho đồ';
+                  const targetStrEn = data.targetStorage && data.targetStorage !== 'auto' ? ('Storage ' + data.targetStorage) : 'Storage';
+                  const msgVi = '📦 Đã cất ' + data.count + ' viên ngọc vào [' + targetStrVi + '] thành công!';
+                  const msgEn = '📦 Successfully deposited ' + data.count + ' jewels into [' + targetStrEn + ']!';
+                  addJewelLog(msgVi, 'success', msgEn);
+                } else if (data.reason) {
+                  addJewelLog('⚠️ ' + data.reason, 'warning');
                 } else {
-                  addJewelLog('ℹ️ Trong Balo hiện không có ngọc rời (hoặc ngọc đã khóa) để cất vào Kho.', 'info');
+                  const msgVi = 'ℹ️ Trong Balo hiện không có ngọc rời (hoặc ngọc đã khóa) để cất vào Kho.';
+                  const msgEn = 'ℹ️ No unlocked loose jewels in inventory to deposit into storage.';
+                  addJewelLog(msgVi, 'info', msgEn);
+                }
+              } else if (data.action === 'depositT3') {
+                if (data.count > 0) {
+                  const targetStrVi = data.targetStorage && data.targetStorage !== 'auto' ? ('Kho ' + data.targetStorage) : 'Kho đồ';
+                  const targetStrEn = data.targetStorage && data.targetStorage !== 'auto' ? ('Storage ' + data.targetStorage) : 'Storage';
+                  const msgVi = '🛡️ Đã cất ' + data.count + ' món trang bị/trang sức Tier 3 vào [' + targetStrVi + '] thành công!';
+                  const msgEn = '🛡️ Successfully deposited ' + data.count + ' Tier 3 gear/accessories into [' + targetStrEn + ']!';
+                  addJewelLog(msgVi, 'success', msgEn);
+                } else if (data.reason) {
+                  addJewelLog('⚠️ ' + data.reason, 'warning');
+                } else {
+                  const msgVi = 'ℹ️ Trong Balo hiện không có đồ Tier 3 (chưa khóa) để cất vào Kho.';
+                  const msgEn = 'ℹ️ No unlocked Tier 3 items in inventory to deposit into storage.';
+                  addJewelLog(msgVi, 'info', msgEn);
                 }
               } else if (data.action === 'withdraw') {
                 if (data.count > 0) {
-                  addJewelLog('📥 Đã rút ' + data.count + ' viên ngọc từ Kho ra Balo!', 'info');
+                  const msgVi = '📥 Đã rút ' + data.count + ' viên ngọc từ Kho ra Balo!';
+                  const msgEn = '📥 Withdrew ' + data.count + ' jewels from storage to inventory!';
+                  addJewelLog(msgVi, 'info', msgEn);
                 } else {
-                  addJewelLog('ℹ️ Trong Kho hiện không có viên ngọc nào để rút ra Balo.', 'info');
+                  const msgVi = 'ℹ️ Trong Kho hiện không có viên ngọc nào để rút ra Balo.';
+                  const msgEn = 'ℹ️ No jewels in storage to withdraw to inventory.';
+                  addJewelLog(msgVi, 'info', msgEn);
                 }
               } else if (data.action === 'fuse') {
                 if (data.fusedCount > 0) {
-                  addJewelLog('🔨 Lò Rèn đã ghép thành công ' + data.fusedCount + ' lượt ngọc mới!', 'success');
+                  const msgVi = '🔨 Lò Rèn đã ghép thành công ' + data.fusedCount + ' lượt ngọc mới!';
+                  const msgEn = '🔨 Workshop successfully fused ' + data.fusedCount + ' new jewel rounds!';
+                  addJewelLog(msgVi, 'success', msgEn);
                 } else {
-                  addJewelLog('ℹ️ Không đủ 6 viên ngọc cùng bậc (chưa khóa) để ghép.', 'warning');
+                  const now = Date.now();
+                  if (typeof window.__lastJewelWarningTs === 'undefined' || (now - window.__lastJewelWarningTs > 15000)) {
+                    window.__lastJewelWarningTs = now;
+                    const msgVi = 'ℹ️ Không đủ 6 viên ngọc cùng bậc (chưa khóa) để ghép.';
+                    const msgEn = 'ℹ️ Not enough 6 jewels of the same tier (unlocked) to fuse.';
+                    addJewelLog(msgVi, 'warning', msgEn);
+                  }
                 }
               } else if (data.action === 'fuseT3') {
                 if (data.fusedCount > 0) {
-                  addJewelLog('🛡️ Lò Rèn đã ghép thành công ' + data.fusedCount + ' món Tier 3!', 'success');
+                  const msgVi = '🛡️ Lò Rèn đã ghép thành công ' + data.fusedCount + ' món Tier 3!';
+                  const msgEn = '🛡️ Workshop successfully fused ' + data.fusedCount + ' Tier 3 items!';
+                  addJewelLog(msgVi, 'success', msgEn);
                 } else {
-                  addJewelLog('ℹ️ Không đủ trang bị/trang sức Tier 3 (chưa khóa) để ghép.', 'warning');
+                  const now = Date.now();
+                  if (typeof window.__lastT3WarningTs === 'undefined' || (now - window.__lastT3WarningTs > 15000)) {
+                    window.__lastT3WarningTs = now;
+                    const msgVi = 'ℹ️ Không đủ trang bị/trang sức Tier 3 (chưa khóa) để ghép.';
+                    const msgEn = 'ℹ️ Not enough Tier 3 gear/accessories (unlocked) to fuse.';
+                    addJewelLog(msgVi, 'warning', msgEn);
+                  }
                 }
               }
             }
@@ -17006,25 +17127,30 @@ function sendEvaluatePoll() {
 
             // Helper function to collect clean candidate items for Gear (contentType=1) or Accessories (contentType=2)
             const collectT3Candidates = (targetContentType) => {
-              return sWorkshop.collectAutoRegisterCandidates(
-                'Fusion',
-                (itemTid, itemId) => {
-                  const live = nn.net.data.item.getItemNotStackUniqueId(itemId);
-                  if (!live || live.isLock) return false;
-                  if (nn.services.itemMove.isEquippedItemId(itemId)) return false;
-                  if (nn.services.steamMarket?.staging?.isStaged(itemId)) return false;
-                  return true;
-                },
-                true,
-                { rating: 3 }
-              ).filter(c => {
-                if (c.ratingType !== 3) return false;
-                const info = sWorkshop.getTableInfo(c.itemTid, c.itemId);
-                return info && info.contentType === targetContentType;
-              }).map(c => {
-                c._itemLevel = c.baseLimitLevel || resolveItemLevel(c.itemTid, c.itemId) || 1;
-                return c;
-              });
+              const allItems = (nn.net && nn.net.data && nn.net.data.item) ? nn.net.data.item.getAllItemNotStack() : [];
+              const candidates = [];
+              for (let it of allItems) {
+                if (!it.isLock && !it._isLock && (it.location === 1 || it.location === 2)) {
+                  if (nn.services.itemMove && nn.services.itemMove.isEquippedItemId && nn.services.itemMove.isEquippedItemId(it.itemId)) continue;
+                  if (nn.services.steamMarket && nn.services.steamMarket.staging && nn.services.steamMarket.staging.isStaged && nn.services.steamMarket.staging.isStaged(it.itemId)) continue;
+
+                  const dbEq = nn.db.equip ? nn.db.equip.get(it.itemTid) : null;
+                  if (!dbEq || dbEq.RatingType !== 3) continue;
+
+                  const info = sWorkshop.getTableInfo(it.itemTid, it.itemId);
+                  if (!info || info.contentType !== targetContentType) continue;
+
+                  const itemLv = (info && info.baseLimitLevel > 0) ? info.baseLimitLevel : ((dbEq && dbEq.LimitLevel) || 1);
+                  candidates.push({
+                    itemTid: it.itemTid,
+                    itemId: it.itemId,
+                    ratingType: dbEq.RatingType,
+                    _itemLevel: itemLv,
+                    location: it.location
+                  });
+                }
+              }
+              return candidates;
             };
 
             // Fuse Tier 3 Gear (requires 6 items from Balo or Kho 1, 2, 3)
@@ -17074,7 +17200,7 @@ function sendEvaluatePoll() {
 
                 sWorkshop.clearFusionStaging();
                 const fusionRes = await sWorkshop.reqFusionAsync(targetTable.FusionID, materials);
-                if (fusionRes && (fusionRes.NetResult === 0 || !fusionRes.NetResult || fusionRes.Data)) {
+                if (fusionRes && (fusionRes.NetResult === 1000 || fusionRes.NetResult === 0 || !fusionRes.NetResult || fusionRes.Data)) {
                   loopGuard++;
                   let rName = '';
                   try {
@@ -17142,7 +17268,7 @@ function sendEvaluatePoll() {
 
                 sWorkshop.clearFusionStaging();
                 const fusionRes = await sWorkshop.reqFusionAsync(targetTable.FusionID, materials);
-                if (fusionRes && (fusionRes.NetResult === 0 || !fusionRes.NetResult || fusionRes.Data)) {
+                if (fusionRes && (fusionRes.NetResult === 1000 || fusionRes.NetResult === 0 || !fusionRes.NetResult || fusionRes.Data)) {
                   loopGuard++;
                   let rName = '';
                   try {
@@ -18346,7 +18472,16 @@ function applyLiveGameData(data) {
     if (isAutoDepositJewelActive && invJewels.length > 0 && !window.__pendingJewelCmd) {
       const availStorage = Math.max(0, (data.jewelsData.storageTotal || 42) - (data.jewelsData.storageUsed || 0));
       if (availStorage > 0) {
-        queueJewelCmd({ action: 'deposit' });
+        queueJewelCmd({ action: 'deposit', targetStorage: autoDepositJewelTargetStorage });
+      }
+    }
+
+    // 3. Check if any T3 gear/accessories in inventory need auto-deposit to storage
+    const t3InvTotal = (data.jewelsData.t3GearInvCount || 0) + (data.jewelsData.t3AccInvCount || 0);
+    if (isAutoDepositT3Active && t3InvTotal > 0 && !window.__pendingJewelCmd) {
+      const availStorage = Math.max(0, (data.jewelsData.storageTotal || 42) - (data.jewelsData.storageUsed || 0));
+      if (availStorage > 0) {
+        queueJewelCmd({ action: 'depositT3', targetStorage: autoDepositT3TargetStorage });
       }
     }
 
@@ -22405,10 +22540,16 @@ function filterEquip() { equipPage = 0; renderEquip(); }
 window.isAutoFuseJewelActive = localStorage.getItem('genesis_auto_fuse_jewel') !== 'false'; // Default TRUE
 window.isIncludeStorageJewelActive = localStorage.getItem('genesis_include_storage_jewel') !== 'false'; // Default TRUE
 window.isAutoDepositJewelActive = localStorage.getItem('genesis_auto_deposit_jewel') !== 'false'; // Default TRUE
+window.autoDepositJewelTargetStorage = localStorage.getItem('genesis_auto_deposit_jewel_target_storage') || 'auto';
+window.isAutoDepositT3Active = localStorage.getItem('genesis_auto_deposit_t3') !== 'false'; // Default TRUE
+window.autoDepositT3TargetStorage = localStorage.getItem('genesis_auto_deposit_t3_target_storage') || 'auto';
 
 let isAutoFuseJewelActive = window.isAutoFuseJewelActive;
 let isIncludeStorageJewelActive = window.isIncludeStorageJewelActive;
 let isAutoDepositJewelActive = window.isAutoDepositJewelActive;
+let autoDepositJewelTargetStorage = window.autoDepositJewelTargetStorage;
+let isAutoDepositT3Active = window.isAutoDepositT3Active;
+let autoDepositT3TargetStorage = window.autoDepositT3TargetStorage;
 
 window.liveJewelData = {
   jewels: [],
@@ -22421,19 +22562,179 @@ window.liveJewelData = {
 };
 let liveJewelData = window.liveJewelData;
 
+function isJewelLangEn() {
+  try {
+    const lang = (typeof localStorage !== 'undefined' && localStorage.getItem('genesis_helper_lang')) || 'vi';
+    return lang !== 'vi';
+  } catch(e) {
+    return false;
+  }
+}
+
+function tJewel(viText, enText) {
+  return isJewelLangEn() ? enText : viText;
+}
+
+function dismissJewelNoticeBanner() {
+  const bannerEl = document.getElementById('jewelUpdateNoticeBanner');
+  if (bannerEl) {
+    bannerEl.style.display = 'none';
+  }
+  try {
+    localStorage.setItem('genesis_jewel_notice_dismissed', 'v3.2');
+  } catch(e) {}
+}
+
+function updateJewelNoticeBanner(lang) {
+  try {
+    const dismissed = localStorage.getItem('genesis_jewel_notice_dismissed');
+    if (dismissed === 'v3.2' || dismissed === 'true') {
+      const bannerEl = document.getElementById('jewelUpdateNoticeBanner');
+      if (bannerEl) bannerEl.style.display = 'none';
+      return;
+    }
+  } catch(e) {}
+
+  if (!lang) {
+    try {
+      lang = (typeof localStorage !== 'undefined' && localStorage.getItem('genesis_helper_lang')) || 'vi';
+    } catch(e) {
+      lang = 'vi';
+    }
+  }
+  const isEn = (lang !== 'vi');
+
+  const bannerEl = document.getElementById('jewelUpdateNoticeBanner');
+  if (bannerEl) {
+    bannerEl.style.display = 'flex';
+  }
+
+  const badgeEl = document.getElementById('jewelNoticeBadge');
+  const titleEl = document.getElementById('jewelNoticeTitle');
+  const descEl = document.getElementById('jewelNoticeDesc');
+  const dlBtnEl = document.getElementById('jewelNoticeDownloadBtn');
+  const guideBtnEl = document.getElementById('jewelNoticeGuideBtn');
+  const closeBtnEl = document.getElementById('jewelNoticeCloseBtn');
+
+  if (badgeEl) {
+    badgeEl.innerText = isEn ? 'New Update' : 'Cập Nhật Mới';
+  }
+  if (titleEl) {
+    titleEl.innerText = isEn 
+      ? 'Web has been updated to a new version, please update the script file to use the new features!'
+      : 'Web đã update bản mới, hãy cập nhật file script để sử dụng những tính năng mới!';
+  }
+  if (descEl) {
+    descEl.innerText = isEn
+      ? 'Includes: Auto-deposit Tier 3 gear & accessories to storage, target storage selection (Vault 1/2/3/Auto) for jewels & T3, and same-level T3 auto-fusion.'
+      : 'Bao gồm: Tự động cất trang bị & trang sức Tier 3 vào kho, chọn kho đích (Kho 1/2/3/Tự động) cho Ngọc & T3, tự động ghép đồ T3 chuẩn cấp.';
+  }
+  if (dlBtnEl) {
+    dlBtnEl.innerHTML = isEn
+      ? '📦 Download New Script (.ZIP)'
+      : '📦 Tải Script Mới (.ZIP)';
+  }
+  if (guideBtnEl) {
+    guideBtnEl.innerText = isEn
+      ? '⚡ Setup Guide (.BAT)'
+      : '⚡ Hướng Dẫn (.BAT)';
+  }
+  if (closeBtnEl) {
+    closeBtnEl.title = isEn ? 'Dismiss notice' : 'Đóng thông báo';
+    closeBtnEl.setAttribute('aria-label', isEn ? 'Dismiss notice' : 'Đóng thông báo');
+  }
+}
+
+function translateJewelLog(text, targetLang) {
+  if (!text) return '';
+  const isEn = (targetLang !== 'vi');
+  if (!isEn) return text;
+
+  const dict = [
+    [/^📦 Đã cất (\d+) viên ngọc vào \[([^\]]+)\] thành công!/, (m, n, t) => `📦 Successfully deposited ${n} jewels into [${t === 'Kho đồ' ? 'Storage' : t.replace('Kho ', 'Storage ')}]!`],
+    [/^🛡️ Đã cất (\d+) món trang bị\/trang sức Tier 3 vào \[([^\]]+)\] thành công!/, (m, n, t) => `🛡️ Successfully deposited ${n} Tier 3 gear/accessories into [${t === 'Kho đồ' ? 'Storage' : t.replace('Kho ', 'Storage ')}]!`],
+    [/^📥 Đã rút (\d+) viên ngọc từ Kho ra Balo!/, (m, n) => `📥 Withdrew ${n} jewels from storage to inventory!`],
+    [/^🔨 Lò Rèn đã ghép thành công (\d+) lượt ngọc mới!/, (m, n) => `🔨 Workshop successfully fused ${n} new jewel rounds!`],
+    [/^🛡️ Lò Rèn đã ghép thành công (\d+) món Tier 3!/, (m, n) => `🛡️ Workshop successfully fused ${n} Tier 3 items!`],
+    [/^ℹ️ Trong Balo hiện không có ngọc rời \(hoặc ngọc đã khóa\) để cất vào Kho\./, () => 'ℹ️ No unlocked loose jewels in inventory to deposit into storage.'],
+    [/^ℹ️ Trong Balo hiện không có đồ Tier 3 \(chưa khóa\) để cất vào Kho\./, () => 'ℹ️ No unlocked Tier 3 items in inventory to deposit into storage.'],
+    [/^ℹ️ Trong Kho hiện không có viên ngọc nào để rút ra Balo\./, () => 'ℹ️ No jewels in storage to withdraw to inventory.'],
+    [/^ℹ️ Không đủ 6 viên ngọc cùng bậc \(chưa khóa\) để ghép\./, () => 'ℹ️ Not enough 6 jewels of the same tier (unlocked) to fuse.'],
+    [/^ℹ️ Không đủ 6 viên ngọc cùng bậc \(chưa khóa\) để ghép \(Hiện có (\d+)\/6 viên Cấp (\d+)\)\./, (m, c, t) => `ℹ️ Not enough 6 jewels of the same tier (unlocked) to fuse (Currently have ${c}/6 Tier ${t}).`],
+    [/^ℹ️ Không đủ trang bị\/trang sức Tier 3 \(chưa khóa\) để ghép\./, () => 'ℹ️ Not enough Tier 3 gear/accessories (unlocked) to fuse.'],
+    [/^🟢 Đã BẬT tự động ghép Trang Bị Tier 3 khi đủ 6 món\./, () => '🟢 Auto-fusion for Tier 3 Gear enabled (when 6 items available).'],
+    [/^🔴 Đã TẮT tự động ghép Trang Bị Tier 3\./, () => '🔴 Auto-fusion for Tier 3 Gear disabled.'],
+    [/^🟢 Đã BẬT tự động ghép Trang Sức Tier 3 khi đủ 3 món\./, () => '🟢 Auto-fusion for Tier 3 Accessories enabled (when 3 items available).'],
+    [/^🔴 Đã TẮT tự động ghép Trang Sức Tier 3\./, () => '🔴 Auto-fusion for Tier 3 Accessories disabled.'],
+    [/^🔒 Đã BẬT: Chỉ ghép trang bị\/trang sức Tier 3 CÙNG CẤP ĐỘ \(Level\)\./, () => '🔒 ENABLED: Only fuse Tier 3 gear/accessories of SAME LEVEL.'],
+    [/^⚠️ Đã TẮT: Ghép trang bị\/trang sức Tier 3 mọi cấp độ \(có thể trộn cấp\)\./, () => '⚠️ DISABLED: Fuse Tier 3 gear/accessories of any level (can mix levels).'],
+    [/^🟢 Đã BẬT tự động ghép ngọc khi đủ 6 viên\./, () => '🟢 Auto-fusion for Jewels enabled (when 6 jewels available).'],
+    [/^🔴 Đã TẮT tự động ghép ngọc\./, () => '🔴 Auto-fusion for Jewels disabled.'],
+    [/^🏛️ Cho phép lò rèn gom ngọc trong cả Balo lẫn Kho đồ\./, () => '🏛️ Allowed workshop to use jewels from both Inventory and Storage.'],
+    [/^🎒 Chỉ cho phép lò rèn dùng ngọc trong Balo\./, () => '🎒 Workshop only allowed to use jewels from Inventory.'],
+    [/^📦 Đã BẬT tự động cất ngọc lẻ vào kho khi farm\./, () => '📦 Auto-deposit loose jewels into storage enabled while farming.'],
+    [/^🔴 Đã TẮT tự động cất ngọc vào kho\./, () => '🔴 Auto-deposit loose jewels into storage disabled.'],
+    [/^🛡️ Đã BẬT tự động cất trang bị\/trang sức T3 vào kho khi farm\./, () => '🛡️ Auto-deposit Tier 3 gear/accessories into storage enabled while farming.'],
+    [/^🔴 Đã TẮT tự động cất đồ T3 vào kho\./, () => '🔴 Auto-deposit Tier 3 items into storage disabled.'],
+    [/^🏛️ Đã đặt kho đích tự động cất ngọc lẻ: \[([^\]]+)\]\./, (m, l) => `🏛️ Set target storage for loose jewels: [${l === 'Tất cả kho (Tự động)' ? 'All Tabs (Auto)' : l.replace('Kho ', 'Storage ')}].`],
+    [/^🏛️ Đã đặt kho đích tự động cất đồ T3: \[([^\]]+)\]\./, (m, l) => `🏛️ Set target storage for Tier 3 items: [${l === 'Tất cả kho (Tự động)' ? 'All Tabs (Auto)' : l.replace('Kho ', 'Storage ')}].`],
+    [/^📦 Đang cất toàn bộ đồ balo \(trang bị, ngọc chưa khóa\) vào \[([^\]]+)\]\.\.\./, (m, l) => `📦 Depositing all inventory items (gear, unlocked jewels) into [${l.replace('Kho ', 'Storage ')}]...`],
+    [/^📦 Đang chuyển toàn bộ ngọc rời từ Balo vào \[([^\]]+)\]\.\.\./, (m, l) => `📦 Transferring all loose jewels from Inventory to [${l.replace('Kho ', 'Storage ')}]...`],
+    [/^🛡️ Đang chuyển toàn bộ trang bị & trang sức Tier 3 từ Balo vào \[([^\]]+)\]\.\.\./, (m, l) => `🛡️ Transferring all Tier 3 gear & accessories from Inventory to [${l.replace('Kho ', 'Storage ')}]...`],
+    [/^📥 Đang rút toàn bộ ngọc rời từ Kho đồ về Balo\.\.\./, () => '📥 Withdrawing all loose jewels from Storage to Inventory...'],
+    [/^🔨 Đã gửi lệnh yêu cầu Lò Rèn ghép ngay Trang Bị & Trang Sức Tier 3/, () => '🔨 Sent command to Workshop to fuse Tier 3 Gear & Accessories.'],
+    [/^⚠️ Bạn chưa chọn bậc ngọc nào trong cài đặt! Hãy tích chọn ít nhất 1 bậc để ghép\./, () => '⚠️ You have not selected any jewel tier in settings! Please check at least 1 tier to fuse.'],
+    [/^⚡ Đang yêu cầu Lò rèn gom 6 viên Cấp (\d+) để ghép lên Cấp (\d+)\.\.\./, (m, a, b) => `⚡ Requesting Workshop to fuse 6x Tier ${a} into Tier ${b}...`],
+    [/^⚡ Đang yêu cầu Lò rèn quét và tự động ghép các bậc đã chọn \[([^\]]+)\] \(6 viên\/lượt\)\.\.\./, (m, t) => `⚡ Requesting Workshop to auto-fuse selected tiers [${t}] (6 jewels/set)...`],
+    [/^Kho (\d+) chưa được mở khóa/, (m, n) => `Storage ${n} is not unlocked yet!`],
+    [/^Kho (\d+) đã đầy/, (m, n) => `Storage ${n} is full (42/42)!`],
+    [/^Tất cả kho đồ đã đầy!/, () => 'All storage vaults are full!'],
+    [/^Hệ thống Lò rèn & Kho ngọc tự động đã sẵn sàng\./, () => 'Automated Jewel Forge & Storage system is ready.'],
+    [/^Đã xóa toàn bộ nhật ký\./, () => 'Activity log cleared.']
+  ];
+
+  for (const item of dict) {
+    const match = text.match(item[0]);
+    if (match) {
+      return item[1](...match);
+    }
+  }
+  return text;
+}
+
 let jewelActivityLogs = [
-  { time: new Date().toLocaleTimeString(), text: 'Hệ thống Lò rèn & Kho ngọc tự động đã sẵn sàng.' }
+  { time: new Date().toLocaleTimeString(), viText: 'Hệ thống Lò rèn & Kho ngọc tự động đã sẵn sàng.', enText: 'Automated Jewel Forge & Storage system is ready.', text: 'Hệ thống Lò rèn & Kho ngọc tự động đã sẵn sàng.' }
 ];
 
-function addJewelLog(text, type = 'info') {
+let __lastJewelLogMsg = '';
+let __lastJewelLogTime = 0;
+
+function addJewelLog(text, type = 'info', enText = null) {
+  const now = Date.now();
+  if (text === __lastJewelLogMsg && (now - __lastJewelLogTime < 1000)) {
+    return; // Prevent duplicate log storms from dual websockets or double clicks
+  }
+  __lastJewelLogMsg = text;
+  __lastJewelLogTime = now;
   const time = new Date().toLocaleTimeString();
-  jewelActivityLogs.unshift({ time, text, type });
+  const viText = text;
+  const englishText = enText || translateJewelLog(text, 'en');
+  jewelActivityLogs.unshift({
+    time,
+    viText,
+    enText: englishText,
+    text: isJewelLangEn() ? englishText : viText,
+    type
+  });
   if (jewelActivityLogs.length > 50) jewelActivityLogs.pop();
   renderJewelLogs();
 }
 
 function clearJewelLogs() {
-  jewelActivityLogs = [{ time: new Date().toLocaleTimeString(), text: 'Đã xóa toàn bộ nhật ký.' }];
+  const isEn = isJewelLangEn();
+  const viText = 'Đã xóa toàn bộ nhật ký.';
+  const enText = 'Activity log cleared.';
+  jewelActivityLogs = [{ time: new Date().toLocaleTimeString(), viText, enText, text: isEn ? enText : viText }];
   renderJewelLogs();
 }
 
@@ -22470,9 +22771,11 @@ function formatJewelFuseLog(item, lang) {
 function renderJewelLogs() {
   const box = document.getElementById('jewelLogBox');
   if (!box) return;
+  const isEn = isJewelLangEn();
   box.innerHTML = jewelActivityLogs.map(function(l) {
-    const cls = l.type === 'success' ? 'jewel-log-success' : l.type === 'info' ? 'jewel-log-info' : '';
-    return '<div class="jewel-log-item"><span class="jewel-log-time">[' + l.time + ']</span> <span class="' + cls + '">' + l.text + '</span></div>';
+    const cls = l.type === 'success' ? 'jewel-log-success' : l.type === 'warning' ? 'jewel-log-warning' : l.type === 'info' ? 'jewel-log-info' : '';
+    const displayText = isEn ? (l.enText || translateJewelLog(l.viText || l.text, 'en')) : (l.viText || l.text);
+    return '<div class="jewel-log-item"><span class="jewel-log-time">[' + l.time + ']</span> <span class="' + cls + '">' + displayText + '</span></div>';
   }).join('');
 }
 
@@ -22545,6 +22848,11 @@ function updateT3Counts(gearCnt, accCnt, gearInv, gearStorage, accInv, accStorag
     }
     const readyLabel = sameLv ? (ready + ' lượt cùng cấp') : (ready + ' lượt');
     aEl.innerHTML = accCnt + ' món' + sub + ' <span style="font-size:12px; color:' + (ready > 0 ? '#7ee787' : '#8b949e') + '">(' + readyLabel + ')</span>';
+  }
+  const t3Badge = document.getElementById('t3InvBadge');
+  if (t3Badge && gearInv !== undefined && accInv !== undefined) {
+    const totalT3Inv = (gearInv || 0) + (accInv || 0);
+    t3Badge.textContent = 'Balo: ' + totalT3Inv + ' món T3';
   }
 }
 
@@ -22695,9 +23003,36 @@ function toggleIncludeStorageJewels() {
 
 function toggleAutoDepositJewels() {
   isAutoDepositJewelActive = !isAutoDepositJewelActive;
+  window.isAutoDepositJewelActive = isAutoDepositJewelActive;
   localStorage.setItem('genesis_auto_deposit_jewel', isAutoDepositJewelActive);
   updateJewelSwitches();
   addJewelLog(isAutoDepositJewelActive ? '📦 Đã BẬT tự động cất ngọc lẻ vào kho khi farm.' : '🔴 Đã TẮT tự động cất ngọc vào kho.', isAutoDepositJewelActive ? 'success' : 'info');
+}
+
+function setAutoDepositJewelTargetStorage(val) {
+  autoDepositJewelTargetStorage = val || 'auto';
+  window.autoDepositJewelTargetStorage = autoDepositJewelTargetStorage;
+  localStorage.setItem('genesis_auto_deposit_jewel_target_storage', autoDepositJewelTargetStorage);
+  updateJewelSwitches();
+  const label = (val === 'auto' || !val) ? 'Tự động (Ưu tiên Tab 1)' : ('Kho ' + val);
+  addJewelLog('🏛️ Đã đặt kho đích tự động cất ngọc lẻ: [' + label + '].', 'info');
+}
+
+function toggleAutoDepositT3() {
+  isAutoDepositT3Active = !isAutoDepositT3Active;
+  window.isAutoDepositT3Active = isAutoDepositT3Active;
+  localStorage.setItem('genesis_auto_deposit_t3', isAutoDepositT3Active);
+  updateJewelSwitches();
+  addJewelLog(isAutoDepositT3Active ? '🛡️ Đã BẬT tự động cất trang bị/trang sức T3 vào kho khi farm.' : '🔴 Đã TẮT tự động cất đồ T3 vào kho.', isAutoDepositT3Active ? 'success' : 'info');
+}
+
+function setAutoDepositT3TargetStorage(val) {
+  autoDepositT3TargetStorage = val || 'auto';
+  window.autoDepositT3TargetStorage = autoDepositT3TargetStorage;
+  localStorage.setItem('genesis_auto_deposit_t3_target_storage', autoDepositT3TargetStorage);
+  updateJewelSwitches();
+  const label = (val === 'auto' || !val) ? 'Tự động (Ưu tiên Tab 1)' : ('Kho ' + val);
+  addJewelLog('🏛️ Đã đặt kho đích tự động cất đồ T3: [' + label + '].', 'info');
 }
 
 function updateJewelSwitches() {
@@ -22706,18 +23041,28 @@ function updateJewelSwitches() {
   const sFuse = document.getElementById('switchAutoFuse');
   const sStorage = document.getElementById('switchIncludeStorage');
   const sDeposit = document.getElementById('switchAutoDeposit');
+  const sDepositT3 = document.getElementById('switchAutoDepositT3');
   const sStatus = document.getElementById('jewelStatAutoStatus');
   const selTabs = document.getElementById('selWarehouseTabs');
+  const selDepJewel = document.getElementById('selAutoDepositJewelTargetStorage');
+  const selDepT3 = document.getElementById('selAutoDepositT3TargetStorage');
 
   if (sFuse) sFuse.className = 'jewel-switch ' + (isAutoFuseJewelActive ? 'active' : '');
   if (sStorage) sStorage.className = 'jewel-switch ' + (isIncludeStorageJewelActive ? 'active' : '');
   if (sDeposit) sDeposit.className = 'jewel-switch ' + (isAutoDepositJewelActive ? 'active' : '');
+  if (sDepositT3) sDepositT3.className = 'jewel-switch ' + (isAutoDepositT3Active ? 'active' : '');
   if (sStatus) {
     sStatus.innerText = isAutoFuseJewelActive ? 'Đang hoạt động' : 'Tạm dừng';
     sStatus.style.color = isAutoFuseJewelActive ? '#7ee787' : '#8b949e';
   }
   if (selTabs) {
     selTabs.value = localStorage.getItem('genesis_warehouse_tabs_mode') || 'auto';
+  }
+  if (selDepJewel) {
+    selDepJewel.value = autoDepositJewelTargetStorage;
+  }
+  if (selDepT3) {
+    selDepT3.value = autoDepositT3TargetStorage;
   }
 }
 
@@ -22789,6 +23134,36 @@ function renderJewelTierCheckboxes() {
 }
 
 function triggerManualJewelFuse(tier) {
+  const jewels = (window.liveJewelData && window.liveJewelData.jewels) || [];
+  if (jewels.length > 0) {
+    if (tier) {
+      const availUnlocked = jewels.filter(j => !j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2)) && j.rating === tier).length;
+      if (availUnlocked < 6) {
+        addJewelLog('ℹ️ Không đủ 6 viên ngọc cùng bậc (chưa khóa) để ghép (Hiện có ' + availUnlocked + '/6 viên Cấp ' + tier + ').', 'warning');
+        return;
+      }
+    } else {
+      if (autoFuseAllowedTiers.length === 0) {
+        addJewelLog('⚠️ Bạn chưa chọn bậc ngọc nào trong cài đặt! Hãy tích chọn ít nhất 1 bậc để ghép.', 'warning');
+        return;
+      }
+      const tierCounts = {};
+      for (let t of autoFuseAllowedTiers) tierCounts[t] = 0;
+      for (let j of jewels) {
+        if (!j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2))) {
+          if (j.rating && autoFuseAllowedTiers.includes(j.rating)) {
+            tierCounts[j.rating] = (tierCounts[j.rating] || 0) + 1;
+          }
+        }
+      }
+      const hasReady = Object.values(tierCounts).some(cnt => cnt >= 6);
+      if (!hasReady) {
+        addJewelLog('ℹ️ Không đủ 6 viên ngọc cùng bậc (chưa khóa) để ghép.', 'warning');
+        return;
+      }
+    }
+  }
+
   if (tier) {
     addJewelLog('⚡ Đang yêu cầu Lò rèn gom 6 viên Cấp ' + tier + ' để ghép lên Cấp ' + (tier + 1) + '...', 'info');
     queueJewelCmd({ action: 'fuse', tier: tier, allowedTiers: [tier], includeStorage: isIncludeStorageJewelActive });
@@ -22803,9 +23178,26 @@ function triggerManualJewelFuse(tier) {
   scheduleNextPoll(100);
 }
 
+function triggerDepositAllBagToStorage() {
+  const sel = document.getElementById('selDepositTargetStorage');
+  const targetStorage = sel ? sel.value : 'auto';
+  const targetLabel = (sel && sel.selectedOptions && sel.selectedOptions[0]) ? sel.selectedOptions[0].text : ('Kho ' + targetStorage);
+  addJewelLog('📦 Đang cất toàn bộ đồ balo (trang bị, ngọc chưa khóa) vào [' + targetLabel + ']...', 'info');
+  queueJewelCmd({ action: 'depositAll', targetStorage: targetStorage });
+  scheduleNextPoll(100);
+}
+
 function triggerDepositJewelsToStorage() {
-  addJewelLog('📦 Đang chuyển toàn bộ ngọc rời từ Balo vào Kho đồ...', 'info');
-  queueJewelCmd({ action: 'deposit' });
+  const targetLabel = (autoDepositJewelTargetStorage === 'auto' || !autoDepositJewelTargetStorage) ? 'Kho đồ' : ('Kho ' + autoDepositJewelTargetStorage);
+  addJewelLog('📦 Đang chuyển toàn bộ ngọc rời từ Balo vào [' + targetLabel + ']...', 'info');
+  queueJewelCmd({ action: 'deposit', targetStorage: autoDepositJewelTargetStorage });
+  scheduleNextPoll(100);
+}
+
+function triggerDepositT3ToStorage() {
+  const targetLabel = (autoDepositT3TargetStorage === 'auto' || !autoDepositT3TargetStorage) ? 'Kho đồ' : ('Kho ' + autoDepositT3TargetStorage);
+  addJewelLog('🛡️ Đang chuyển toàn bộ trang bị & trang sức Tier 3 từ Balo vào [' + targetLabel + ']...', 'info');
+  queueJewelCmd({ action: 'depositT3', targetStorage: autoDepositT3TargetStorage });
   scheduleNextPoll(100);
 }
 
@@ -22831,8 +23223,9 @@ function renderJewelSection() {
   updateJewelSwitches();
   renderJewelTierCheckboxes();
   renderJewelLogs();
+  if (typeof updateJewelNoticeBanner === 'function') updateJewelNoticeBanner();
   
-  const isEn = (localStorage.getItem('genesis_helper_lang') === 'en');
+  const isEn = isJewelLangEn();
   const jewels = liveJewelData.jewels || [];
   const invJewels = jewels.filter(j => j.location === 1);
   const storageJewels = jewels.filter(j => j.location === 2);
@@ -22905,7 +23298,7 @@ function renderJewelSection() {
 function renderTierOverview(jewels) {
   const container = document.getElementById('jewelTierGrid');
   if (!container) return;
-  const isEn = (localStorage.getItem('genesis_helper_lang') === 'en');
+  const isEn = isJewelLangEn();
 
   const tierColors = {
     1: '#8b949e',
@@ -23045,7 +23438,7 @@ function getJewelIconName(itemTid) {
 function renderJewelTable() {
   const tbody = document.getElementById('jewelTableBody');
   if (!tbody) return;
-  const isEn = (localStorage.getItem('genesis_helper_lang') === 'en');
+  const isEn = isJewelLangEn();
 
   const jewels = liveJewelData.jewels || [];
   const q = (document.getElementById('jewelSearchInput')?.value || '').toLowerCase().trim();
@@ -26645,27 +27038,69 @@ window.GenesisGameBridge = {
               if (typeof addJewelLog === 'function') {
                 if (data.action === 'deposit') {
                   if (data.count > 0) {
-                    addJewelLog('📦 Đã cất ' + data.count + ' viên ngọc vào Kho đồ thành công!', 'success');
+                    const targetStrVi = data.targetStorage && data.targetStorage !== 'auto' ? ('Kho ' + data.targetStorage) : 'Kho đồ';
+                    const targetStrEn = data.targetStorage && data.targetStorage !== 'auto' ? ('Storage ' + data.targetStorage) : 'Storage';
+                    const msgVi = '📦 Đã cất ' + data.count + ' viên ngọc vào [' + targetStrVi + '] thành công!';
+                    const msgEn = '📦 Successfully deposited ' + data.count + ' jewels into [' + targetStrEn + ']!';
+                    addJewelLog(msgVi, 'success', msgEn);
+                  } else if (data.reason) {
+                    addJewelLog('⚠️ ' + data.reason, 'warning');
                   } else {
-                    addJewelLog('ℹ️ Trong Balo hiện không có ngọc rời (hoặc ngọc đã khóa) để cất vào Kho.', 'info');
+                    const msgVi = 'ℹ️ Trong Balo hiện không có ngọc rời (hoặc ngọc đã khóa) để cất vào Kho.';
+                    const msgEn = 'ℹ️ No unlocked loose jewels in inventory to deposit into storage.';
+                    addJewelLog(msgVi, 'info', msgEn);
+                  }
+                } else if (data.action === 'depositT3') {
+                  if (data.count > 0) {
+                    const targetStrVi = data.targetStorage && data.targetStorage !== 'auto' ? ('Kho ' + data.targetStorage) : 'Kho đồ';
+                    const targetStrEn = data.targetStorage && data.targetStorage !== 'auto' ? ('Storage ' + data.targetStorage) : 'Storage';
+                    const msgVi = '🛡️ Đã cất ' + data.count + ' món trang bị/trang sức Tier 3 vào [' + targetStrVi + '] thành công!';
+                    const msgEn = '🛡️ Successfully deposited ' + data.count + ' Tier 3 gear/accessories into [' + targetStrEn + ']!';
+                    addJewelLog(msgVi, 'success', msgEn);
+                  } else if (data.reason) {
+                    addJewelLog('⚠️ ' + data.reason, 'warning');
+                  } else {
+                    const msgVi = 'ℹ️ Trong Balo hiện không có đồ Tier 3 (chưa khóa) để cất vào Kho.';
+                    const msgEn = 'ℹ️ No unlocked Tier 3 items in inventory to deposit into storage.';
+                    addJewelLog(msgVi, 'info', msgEn);
                   }
                 } else if (data.action === 'withdraw') {
                   if (data.count > 0) {
-                    addJewelLog('📥 Đã rút ' + data.count + ' viên ngọc từ Kho ra Balo!', 'info');
+                    const msgVi = '📥 Đã rút ' + data.count + ' viên ngọc từ Kho ra Balo!';
+                    const msgEn = '📥 Withdrew ' + data.count + ' jewels from storage to inventory!';
+                    addJewelLog(msgVi, 'info', msgEn);
                   } else {
-                    addJewelLog('ℹ️ Trong Kho hiện không có viên ngọc nào để rút ra Balo.', 'info');
+                    const msgVi = 'ℹ️ Trong Kho hiện không có viên ngọc nào để rút ra Balo.';
+                    const msgEn = 'ℹ️ No jewels in storage to withdraw to inventory.';
+                    addJewelLog(msgVi, 'info', msgEn);
                   }
                 } else if (data.action === 'fuse') {
                   if (data.fusedCount > 0) {
-                    addJewelLog('🔨 Lò Rèn đã ghép thành công ' + data.fusedCount + ' lượt ngọc mới!', 'success');
+                    const msgVi = '🔨 Lò Rèn đã ghép thành công ' + data.fusedCount + ' lượt ngọc mới!';
+                    const msgEn = '🔨 Workshop successfully fused ' + data.fusedCount + ' new jewel rounds!';
+                    addJewelLog(msgVi, 'success', msgEn);
                   } else {
-                    addJewelLog('ℹ️ Không đủ 6 viên ngọc cùng bậc (chưa khóa) để ghép.', 'warning');
+                    const now = Date.now();
+                    if (typeof window.__lastJewelWarningTs === 'undefined' || (now - window.__lastJewelWarningTs > 15000)) {
+                      window.__lastJewelWarningTs = now;
+                      const msgVi = 'ℹ️ Không đủ 6 viên ngọc cùng bậc (chưa khóa) để ghép.';
+                      const msgEn = 'ℹ️ Not enough 6 jewels of the same tier (unlocked) to fuse.';
+                      addJewelLog(msgVi, 'warning', msgEn);
+                    }
                   }
                 } else if (data.action === 'fuseT3') {
                   if (data.fusedCount > 0) {
-                    addJewelLog('🛡️ Lò Rèn đã ghép thành công ' + data.fusedCount + ' món Tier 3!', 'success');
+                    const msgVi = '🛡️ Lò Rèn đã ghép thành công ' + data.fusedCount + ' món Tier 3!';
+                    const msgEn = '🛡️ Workshop successfully fused ' + data.fusedCount + ' Tier 3 items!';
+                    addJewelLog(msgVi, 'success', msgEn);
                   } else {
-                    addJewelLog('ℹ️ Không đủ trang bị/trang sức Tier 3 (chưa khóa) để ghép.', 'warning');
+                    const now = Date.now();
+                    if (typeof window.__lastT3WarningTs === 'undefined' || (now - window.__lastT3WarningTs > 15000)) {
+                      window.__lastT3WarningTs = now;
+                      const msgVi = 'ℹ️ Không đủ trang bị/trang sức Tier 3 (chưa khóa) để ghép.';
+                      const msgEn = 'ℹ️ Not enough Tier 3 gear/accessories (unlocked) to fuse.';
+                      addJewelLog(msgVi, 'warning', msgEn);
+                    }
                   }
                 }
               }
