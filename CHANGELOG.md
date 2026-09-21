@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-21 — Fork launcher correction
+
+- Fix the upstream website being opened by the bundled and embedded BAT launchers.
+- Bundle the fork HTML as `wog-helper.html` and open it locally; do not fall back to the upstream website if it is missing.
+- Preserve upstream bridge/hook JavaScript unchanged and add archive/content regression checks.
+
 ## 2026-09-21 — Upstream synchronization
 
 - Align the fork with upstream `8af64bf` (2026-09-20), including LiveSync 1-Click, updated forge/storage controls, and upstream assets.

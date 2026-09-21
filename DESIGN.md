@@ -28,7 +28,7 @@ Offline Chromium verification passed for 10 tabs, all 3 classes, 3 dialogs, Chin
 
 - Merge upstream `8af64bf7da1e89ff90f2193005b85bf6ff6b0d0c` into the fork, retaining localization, search support, attribution, and reproducible builds.
 - Track the upstream revision in one manifest consumed by both build and verification. Preserve upstream gameplay functions and initial state except the documented presentation/search adapters.
-- Include the upstream `LiveSync_1Click.zip` unchanged. It installs a game-script hook and a local bridge; it is not merely a read-only save importer. The package must never execute during build or verification.
+- The initial synchronization included the upstream `LiveSync_1Click.zip` unchanged; the launcher correction below supersedes archive identity. It installs a game-script hook and a local bridge; it is not merely a read-only save importer. The package must never execute during build or verification.
 - Verification is offline: block external requests, game WebSockets, and Steam launches. Check the new LiveSync help/download UI and package identity in addition to existing localization checks.
 - This update authorizes repository synchronization and push only, not installation, game-file modification, or live automation. Upstream security findings are not represented as fixed by synchronization.
 
@@ -40,3 +40,14 @@ Offline Chromium verification passed for 10 tabs, all 3 classes, 3 dialogs, Chin
 - Passed offline Chromium checks for 8,035 catalog fields, 10 tabs, three classes, four dialogs (including LiveSync), and 1440px/390px layouts. Zero page errors and zero game commands occurred. Five relative LiveSync archive links were present.
 - Added regression checks for supplemental-label fixed points, English reverse aliases, and preservation of the new dropdown helper. A translation alias cycle discovered during integration was corrected in the authoritative build mapping.
 - Rebuilding produced identical HTML SHA-256 `748b130486dff3bcfdd1732df09f1e538c2614a7f93801b6f0d1e793ee88ee3c`. Installer SHA-256 `9034a2db42c9ce560457fe65e0c214b9802abcceec5cd06d7c67ef3049826b8b` matches the pinned upstream blob. No installer execution or Windows-game verification was performed.
+
+## Fork launcher correction (2026-09-21)
+
+- The launcher must open the fork's bundled local `wog-helper.html`, never the upstream website. Missing HTML produces a manual-open message rather than an upstream fallback.
+- Build the archive deterministically from the pinned upstream scripts, changing only the BAT browser destination and its informational message, and adding the generated fork HTML. Preserve both upstream JavaScript files byte-for-byte.
+- The embedded BAT download uses the same authoritative launcher content as the archive. Package generation never runs any installer or game code.
+- Regression checks compare script identities, embedded/archive BAT identity, bundled HTML identity, browser destination, missing-file fallback and deterministic builds. Windows execution remains unverified.
+
+### Launcher verification
+
+Offline regression passed: both game JavaScript files match upstream, BAT changes are confined to the browser destination/message, the embedded BAT equals the archive BAT, and bundled HTML equals the generated fork page. Verified 241 unchanged functions and 76 unchanged declarations (the installer-content declaration is now intentionally replaced). The full offline UI suite passed with zero game commands/page errors. No Windows BAT execution was performed.

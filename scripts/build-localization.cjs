@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const cp = require('node:child_process');
 const acorn = require('acorn');
+const { bat, buildArchive } = require('./livesync-package.cjs');
 const upstream = require('../localization/upstream.json').commit;
 let html = cp.execFileSync('git', ['show', upstream + ':index.html'], {maxBuffer: 12 * 1024 * 1024}).toString();
 const terms = {};
@@ -78,7 +79,13 @@ patch("g.name.toLowerCase().includes(q) || String(g.itemTid).includes(q)", "zhSe
 let runtime = fs.readFileSync('localization/runtime.js', 'utf8');
 for (const [key,value] of Object.entries({__ZH_EXACT__:exact, __ZH_TERMS__:terms, __ZH_PATTERNS__:patterns})) runtime = runtime.replace(key, () => JSON.stringify(value).replace(/</g,'\\u003c'));
 patch('</head>', '<style>\n'+fs.readFileSync('localization/layout.css','utf8')+'\n</style>\n<script>\n'+runtime+'\n</script>\n</head>');
+// Source the embedded download and ZIP launcher from the same content.
+const batStart = html.indexOf('const LIVESYNC_BAT_CONTENT = `');
+const batEnd = html.indexOf('\nfunction downloadLiveSyncBat()', batStart);
+if (batStart < 0 || batEnd < 0) throw Error('Missing embedded BAT declaration');
+html = html.slice(0, batStart) + 'const LIVESYNC_BAT_CONTENT = ' + JSON.stringify(bat) + ';\n' + html.slice(batEnd);
 // Parsing every script prevents localization edits from producing a broken artifact.
 for (const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) acorn.parse(script[1], {ecmaVersion:'latest'});
 fs.writeFileSync('index.html', html);
+fs.writeFileSync('LiveSync_1Click.zip', buildArchive(html));
 console.log(`Built zh-Hant: ${Object.keys(terms).length} glossary entries, ${Object.keys(exact).length} exact display aliases, ${patterns.length} skill patterns.`);

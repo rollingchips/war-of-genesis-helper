@@ -7,7 +7,19 @@ const acorn = require('acorn');
 const {chromium} = require('playwright');
 const html = fs.readFileSync('index.html','utf8');
 const upstream = cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':index.html'],{maxBuffer:12e6}).toString();
-assert(fs.readFileSync('LiveSync_1Click.zip').equals(cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':LiveSync_1Click.zip'])),'Installer archive differs from upstream');
+const {unzipSync,strFromU8}=require('fflate');
+const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip'));
+const originalArchive=unzipSync(cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':LiveSync_1Click.zip']));
+assert.deepEqual(Object.keys(archive).sort(),['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js','wog-helper.html']);
+for(const name of ['install_game_hook_v2.js','livesync_bridge.js']) assert.deepEqual(archive[name],originalArchive[name],'Upstream game script changed');
+assert.equal(strFromU8(archive['wog-helper.html']),html,'Bundled HTML does not match fork');
+const launcher=strFromU8(archive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n');
+assert(launcher.includes('if exist "%~dp0wog-helper.html" (\n    start "" "%~dp0wog-helper.html"'));
+assert(launcher.includes('Open your fork index.html manually.'));
+assert(!launcher.includes('titlee2111.github.io'),'Launcher still targets upstream');
+const expectedLauncher=strFromU8(originalArchive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n').replace('start "" "https://titlee2111.github.io/war-of-genesis-helper/"',[
+'if exist "%~dp0wog-helper.html" (','    start "" "%~dp0wog-helper.html"',') else (','    echo [NOTICE] wog-helper.html is missing. Open your fork index.html manually.',')'].join('\n')).replace('echo        Dang mo Web Helper tai: https://titlee2111.github.io/war-of-genesis-helper/','echo        Opening bundled fork: wog-helper.html');
+assert.equal(launcher,expectedLauncher,'Non-browser BAT behavior changed');
 const changed = new Set(['renderStageTable','getFilteredEquipments','getFilteredJewels','renderJewelTable','updateDOMTranslations','switchLanguage','__i18nTranslateMutations']);
 let preservedFunctions=0, preservedDeclarations=0;
 for (const match of upstream.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) {
@@ -15,7 +27,7 @@ for (const match of upstream.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) {
   for (const node of ast.body) {
     const raw=match[1].slice(node.start,node.end);
     if (node.type==='FunctionDeclaration' && !changed.has(node.id.name)) { assert(html.includes(raw), 'Unexpected function change: '+node.id.name);preservedFunctions++; }
-    if (node.type==='VariableDeclaration') { assert(html.includes(raw),'Unexpected data or initial-state change');preservedDeclarations++; }
+    if (node.type==='VariableDeclaration' && !node.declarations.some(d=>d.id.name==='LIVESYNC_BAT_CONTENT')) { assert(html.includes(raw),'Unexpected data or initial-state change');preservedDeclarations++; }
   }
 }
 for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.parse(match[1],{ecmaVersion:'latest'});
@@ -38,6 +50,7 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     await page.waitForTimeout(150);
     assert.equal(await page.locator('html').getAttribute('lang'),'zh-Hant');
     assert.equal(await page.evaluate(()=>localStorage.getItem('genesis_helper_lang')),'zh-Hant');
+    assert.equal(await page.evaluate(()=>LIVESYNC_BAT_CONTENT),launcher,'Embedded BAT differs from archive');
     const labels=JSON.parse(fs.readFileSync('localization/upstream-ui.json','utf8'));
     for(const target of Object.values(labels)) assert.equal(await page.evaluate(t=>zhText(zhText(t)),target),target,'Supplemental label must be stable');
     const sample=await page.evaluate(()=>({
@@ -104,6 +117,6 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     }
     assert.equal(await page.evaluate(()=>window.__gameCommands),0);
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,installerMatchesUpstream:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
+    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,gameScriptsMatchUpstream:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

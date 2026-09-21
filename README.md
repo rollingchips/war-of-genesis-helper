@@ -116,8 +116,14 @@ This project is open-source under the [MIT License](LICENSE).
 
 This fork includes upstream commit `8af64bf7da1e89ff90f2193005b85bf6ff6b0d0c`. Existing Traditional Chinese catalog/search localization is retained; newly uncovered upstream controls use explicit English labels. The build and tests share `localization/upstream.json`.
 
-The [LiveSync 1-Click package](LiveSync_1Click.zip) is included unchanged from upstream. This is **not a read-only save importer**: its installer modifies the game's AppData `scripts/src/init.bundle.mjs`, may install Node.js, forcibly restarts Genesis.exe, and starts a local bridge. The injected hook supports game actions. Back up affected game data and scripts before considering installation. This repository update does not execute the installer, certify its safety, or establish live-game compatibility.
+The [LiveSync 1-Click package](LiveSync_1Click.zip) includes the unchanged upstream bridge/hook JavaScript, a fork-aware BAT launcher, and the generated fork page `wog-helper.html`. This is **not a read-only save importer**: its installer modifies the game's AppData `scripts/src/init.bundle.mjs`, may install Node.js, forcibly restarts Genesis.exe, and starts a local bridge. The injected hook supports game actions. Back up affected game data and scripts before considering installation. This repository update does not execute the installer, certify its safety, or establish live-game compatibility.
 
 The README's older direct-inspector instructions above describe the previous connection path; the new package is the upstream replacement for the reported September 18 port closure. See DESIGN.md and CHANGELOG.md for the fork's verification scope.
 
 Development: `npm ci`, `npm run build`, `npm test`. Tests use an offline browser with mocked game WebSockets; do not run installer scripts as part of verification.
+
+### Open the fork instead of the upstream page
+
+After pulling this update, extract **all four files** from the updated ZIP into the same folder. The BAT opens the adjacent `wog-helper.html` locally. A missing HTML file prints a manual-open notice; it does not open the upstream site. The page's standalone BAT download uses the same launcher, but it cannot supply the HTML or JavaScript files by itself.
+
+If the bridge is already running, keep its terminal open and open the updated repository `index.html` directly. There is no need to reinstall the game hook just to switch browser pages. Close the upstream page to avoid running two automation interfaces against the same bridge. The bundled HTML is a snapshot; replace it from the freshly built ZIP when updating.
