@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-09-21 — Upstream synchronization
+
+- Align the fork with upstream `8af64bf` (2026-09-20), including LiveSync 1-Click, updated forge/storage controls, and upstream assets.
+- Preserve the existing localization layer and adapt it to the new upstream interface.
+- Centralize the pinned upstream revision and verify the installer archive without executing it.
+- Fix a translation alias cycle introduced by combining the new upstream dictionaries with fork labels; add regression checks.
+- Pass offline checks for 241 unchanged functions, 77 declarations, 8,035 catalog fields, 10 tabs, three classes, four dialogs, archive identity and deterministic rebuilds.
+- Live Windows/game functionality and the new installer are not certified by offline verification.
+
 ## 2026-09-15 — Traditional Chinese fork
 
 - Localize application-authored frontend text and built-in display labels to Traditional Chinese.

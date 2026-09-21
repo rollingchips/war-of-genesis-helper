@@ -111,3 +111,13 @@ Modern browsers enforce strict Mixed Content policies that block unencrypted `ws
 
 ## 📄 License
 This project is open-source under the [MIT License](LICENSE).
+
+## Fork update: 2026-09-21
+
+This fork includes upstream commit `8af64bf7da1e89ff90f2193005b85bf6ff6b0d0c`. Existing Traditional Chinese catalog/search localization is retained; newly uncovered upstream controls use explicit English labels. The build and tests share `localization/upstream.json`.
+
+The [LiveSync 1-Click package](LiveSync_1Click.zip) is included unchanged from upstream. This is **not a read-only save importer**: its installer modifies the game's AppData `scripts/src/init.bundle.mjs`, may install Node.js, forcibly restarts Genesis.exe, and starts a local bridge. The injected hook supports game actions. Back up affected game data and scripts before considering installation. This repository update does not execute the installer, certify its safety, or establish live-game compatibility.
+
+The README's older direct-inspector instructions above describe the previous connection path; the new package is the upstream replacement for the reported September 18 port closure. See DESIGN.md and CHANGELOG.md for the fork's verification scope.
+
+Development: `npm ci`, `npm run build`, `npm test`. Tests use an offline browser with mocked game WebSockets; do not run installer scripts as part of verification.

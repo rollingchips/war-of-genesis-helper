@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const cp = require('node:child_process');
 const acorn = require('acorn');
-const upstream = '068353206c5f043c6a45b49ac2df636fca96af48';
+const upstream = require('../localization/upstream.json').commit;
 let html = cp.execFileSync('git', ['show', upstream + ':index.html'], {maxBuffer: 12 * 1024 * 1024}).toString();
 const terms = {};
 for (const line of fs.readFileSync('localization/zh-Hant.tsv', 'utf8').split(/\r?\n/)) {
@@ -21,7 +21,9 @@ function translate(s) {
   }
   return s.replace(regex, m => terms[m.toLowerCase()]);
 }
+const supplemental = JSON.parse(fs.readFileSync('localization/upstream-ui.json', 'utf8'));
 const exact = {};
+const upstreamTranslations = {};
 function walk(node) {
   if (!node || typeof node !== 'object') return;
   if (node.type === 'ObjectExpression') {
@@ -31,14 +33,26 @@ function walk(node) {
       if (key.endsWith('_vi') && fields[key.slice(0,-3)+'_en']) exact[fields[key.slice(0,-3)+'_en']] = translate(value);
     }
   }
+  if (node.type === 'VariableDeclarator' && /^I18N_MULTI_/.test(node.id.name) && node.init.type === 'ObjectExpression') {
+    for (const p of node.init.properties) {
+      const values = p.value.elements;
+      if (p.key.type === 'Literal' && values?.[5]?.type === 'Literal') {
+        upstreamTranslations[p.key.value] = values[5].value;
+        if (values[0]?.type === 'Literal') upstreamTranslations[values[0].value] = values[5].value;
+      }
+    }
+  }
   if (node.type === 'VariableDeclarator' && node.id.name === 'I18N_DICT') {
-    for (const p of node.init.properties) if (p.key.type === 'Literal' && p.value.type === 'Literal') exact[p.value.value] = translate(p.key.value);
+    for (const p of node.init.properties) if (p.key.type === 'Literal' && p.value.type === 'Literal') exact[p.value.value] = supplemental[p.key.value] || translate(p.key.value);
   }
   for (const value of Object.values(node)) if (Array.isArray(value)) value.forEach(walk); else if (value && typeof value === 'object') walk(value);
 }
 for (const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) walk(acorn.parse(script[1], {ecmaVersion:'latest'}));
+Object.assign(exact, upstreamTranslations, JSON.parse(fs.readFileSync('localization/upstream-ui.json', 'utf8')));
 // Do not override explicit whole-phrase translations with upstream language aliases.
 for (const [key, value] of Object.entries(exact)) if (terms[key.toLowerCase()]) exact[key] = terms[key.toLowerCase()];
+// Explicit output labels are terminal values, not reverse-translation inputs.
+for (const target of Object.values(JSON.parse(fs.readFileSync('localization/upstream-ui.json', 'utf8')))) exact[target] = target;
 function patch(before, after) {
   if (!html.includes(before)) throw Error('Missing patch anchor: ' + before);
   html = html.replace(before, () => after);
@@ -50,9 +64,10 @@ if (start < 0 || end < start) throw Error('Missing language controls');
 html = html.slice(0,start) + '        <div class="lang-switch-group" title="顯示語言"><span class="lang-btn active">繁體中文</span></div>' + html.slice(end);
 patch("const savedLang = localStorage.getItem('genesis_helper_lang') || 'vi';", "const savedLang = 'zh-Hant';");
 // Reuse upstream's non-English data branch without changing its source values.
+patch('function __i18nTranslateMutations() {', 'function __i18nTranslateMutations() {\n  window.applyTraditionalChinese(); return;');
 patch('function switchLanguage(lang) {', "function switchLanguage(lang) {\n  lang = 'zh-Hant';");
 const domStart = html.indexOf('function updateDOMTranslations(lang) {');
-const domEnd = html.indexOf('\nfunction switchLanguage', domStart);
+const domEnd = html.indexOf('\n// ===== LANGUAGE DROPDOWN', domStart);
 html = html.slice(0,domStart) + 'function updateDOMTranslations() {\n  window.applyTraditionalChinese();\n}\n' + html.slice(domEnd);
 patch("if (q && !e.name_vi.toLowerCase().includes(q) && !e.name_en.toLowerCase().includes(q) && !(e.slot_name || '').toLowerCase().includes(q)) return false;", "if (q && !zhSearch(e.name_vi, q) && !zhSearch(e.name_en, q) && !zhSearch(e.slot_name, q)) return false;");
 patch("if (!vName.includes(query) && !eName.includes(query) && !oTexts.includes(query)) return false;", "if (!zhSearch(vName, query) && !zhSearch(eName, query) && !zhSearch(oTexts, query)) return false;");

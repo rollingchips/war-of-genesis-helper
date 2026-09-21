@@ -6,8 +6,9 @@ const {pathToFileURL} = require('node:url');
 const acorn = require('acorn');
 const {chromium} = require('playwright');
 const html = fs.readFileSync('index.html','utf8');
-const upstream = cp.execFileSync('git',['show','068353206c5f043c6a45b49ac2df636fca96af48:index.html'],{maxBuffer:12e6}).toString();
-const changed = new Set(['renderStageTable','getFilteredEquipments','getFilteredJewels','renderJewelTable','updateDOMTranslations','switchLanguage']);
+const upstream = cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':index.html'],{maxBuffer:12e6}).toString();
+assert(fs.readFileSync('LiveSync_1Click.zip').equals(cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':LiveSync_1Click.zip'])),'Installer archive differs from upstream');
+const changed = new Set(['renderStageTable','getFilteredEquipments','getFilteredJewels','renderJewelTable','updateDOMTranslations','switchLanguage','__i18nTranslateMutations']);
 let preservedFunctions=0, preservedDeclarations=0;
 for (const match of upstream.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) {
   const ast=acorn.parse(match[1],{ecmaVersion:'latest'});
@@ -22,9 +23,10 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
   const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   try {
     const context=await browser.newContext({viewport:{width:1440,height:1000}});
-    await context.route('**/*',r=>/^https?:/.test(r.request().url())?r.abort():r.continue());
+    await context.route('**/*',r=>/^(https?|steam):/.test(r.request().url())?r.abort():r.continue());
     await context.addInitScript(()=>{
       window.__gameCommands=0;
+      window.open=()=>{throw Error('External launches prohibited in verification');};
       window.WebSocket=class {static OPEN=1;static CONNECTING=0;constructor(){this.readyState=0;}addEventListener(){}close(){}send(){window.__gameCommands++;throw Error('Game commands prohibited in verification');}};
       // A previous English preference must not override this localized fork.
       localStorage.setItem('genesis_helper_lang','en');
@@ -36,6 +38,8 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     await page.waitForTimeout(150);
     assert.equal(await page.locator('html').getAttribute('lang'),'zh-Hant');
     assert.equal(await page.evaluate(()=>localStorage.getItem('genesis_helper_lang')),'zh-Hant');
+    const labels=JSON.parse(fs.readFileSync('localization/upstream-ui.json','utf8'));
+    for(const target of Object.values(labels)) assert.equal(await page.evaluate(t=>zhText(zhText(t)),target),target,'Supplemental label must be stable');
     const sample=await page.evaluate(()=>({
       plain:zhText('Gây 280% sát thương.'),
       timed:zhText('Hồi 5% HP mỗi 10 giây.'),
@@ -60,7 +64,7 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     const tabs=['tree','stage','stageHistory','dps','profile','training','equip','jewel_lookup','jewel','ai'];
     for(const tab of tabs){
       await page.evaluate(t=>switchMainTab(t),tab);await page.waitForTimeout(30);
-      assert(!/[À-ỹĐđ]/.test(await page.locator('body').innerText()),'Untranslated page: '+tab);
+      assert(!/[À-ỹĐđ]/.test(await page.locator('body').innerText()),'Untranslated page: '+tab+'\n'+(await page.locator('body').innerText()).split('\n').filter(x=>/[À-ỹĐđ]/.test(x)).join('\n'));
     }
     for(const cls of ['Melee','Ranged','Mage']){
       await page.evaluate(c=>{switchMainTab('tree');switchClass(c);},cls);await page.waitForTimeout(30);
@@ -82,10 +86,16 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     await page.waitForTimeout(30);assert((await page.locator('#barPlayerName').innerText()).includes('Gold Knight'));
     assert.equal(await page.evaluate(()=>confirm('Bạn có chắc muốn xóa sạch 20 ải trong lịch sử chạy không?')),false);
     assert.equal(dialogs.pop(),'確定要清除最近 20 次通關紀錄嗎？');
-    for(const name of ['openSaveLocatorModal','openWatchdogModal','openDonateModal']){
+    for(const name of ['openSaveLocatorModal','openWatchdogModal','openDonateModal','openLiveSyncHelpModal']){
       await page.evaluate(n=>window[n](),name);await page.waitForTimeout(30);
-      assert(!/[À-ỹĐđ]/.test(await page.locator('body').innerText()),'Untranslated modal: '+name);
+      assert(!/[À-ỹĐđ]/.test(await page.locator('body').innerText()),'Untranslated modal: '+name+'\n'+(await page.locator('body').innerText()).split('\n').filter(x=>/[À-ỹĐđ]/.test(x)).join('\n'));
     }
+    const downloadLinks=await page.locator('a[href="LiveSync_1Click.zip"]').count();
+    assert(downloadLinks>0,'LiveSync archive download link is missing');
+    assert.equal(await page.evaluate(()=>typeof toggleLangDropdown),'function','Language adapter removed an unrelated function');
+    await page.evaluate(()=>{switchLanguage('en');updateLiveSyncI18n('en');});
+    await page.waitForTimeout(60);
+    assert.equal(await page.locator('#lsBannerBadge').innerText(),'Required for LiveSync','English reverse alias must use the same terminal label');
     await page.reload();await page.waitForTimeout(60);
     for(const width of [1440,390]){
       await page.setViewportSize({width,height:900});await page.waitForTimeout(30);
@@ -94,6 +104,6 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     }
     assert.equal(await page.evaluate(()=>window.__gameCommands),0);
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:3,viewports:[1440,390],gameCommands:0,pageErrors:0}));
+    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,installerMatchesUpstream:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
