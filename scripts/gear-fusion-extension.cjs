@@ -28,7 +28,7 @@ function patchFrontend(html) {
   const controlsStart = html.indexOf('      <!-- TIER 3 GEAR FUSE SWITCH -->');
   const controlsEnd = html.indexOf('      <!-- TIER 3 SAME LEVEL ONLY CHECKBOX OPTION -->', controlsStart);
   if (controlsStart < 0 || controlsEnd < 0) throw Error('Legacy automatic controls missing');
-  html = html.slice(0, controlsStart) + html.slice(controlsEnd);
+  html = html.slice(0, controlsStart) + '      <div id="gearFusionControls"></div>\n\n' + html.slice(controlsEnd);
   const autoStart = html.indexOf('    // Auto-fuse T3 checks');
   const autoEnd = html.indexOf('    // Log any fusion events', autoStart);
   if (autoStart < 0 || autoEnd < 0) throw Error('Legacy automatic scheduler missing');

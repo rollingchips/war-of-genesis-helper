@@ -1,5 +1,14 @@
 # Traditional Chinese Frontend Contract
 
+## Automation card correction (2026-09-22)
+
+- Replace the two original T3 automatic rows in the existing Automation Settings card with one T3 + T4 equipment/accessory switch, using the existing switch styling. No separate feature card, heading or top-of-page panel.
+- Reuse the card's existing same-level checkbox and storage setting as the sole authoritative options for every automatic batch. Preserve their saved preferences and other consumers; remove duplicate extension options. This supersedes the extension-specific same-level/storage startup defaults below. The unified automatic switch still starts OFF regardless of old saved automatic settings.
+- Keep the execution engine, capability guard, item exclusions and receipt handling unchanged. New or modified application labels remain English under the active workspace language constraint; the existing localization is not broadened or removed in this correction.
+- Verify placement in the original card on desktop/mobile, single-option ownership, persisted settings, and option changes reaching the next command. No live-game operation is authorized by these checks.
+
+Verification: the existing offline suite and all eleven fusion regressions pass. At 1440px and 390px the single native-style switch occupies the original T3 rows between jewel fusion and the existing same-level checkbox. The next batch reflects changes to the shared same-level/storage options, and their preferences survive reload while automatic fusion resets OFF. No engine, bridge or hook code changed in this correction; only the bundled Helper HTML changes in the archive. No actual game commands were sent.
+
 ## Scope
 
 This fork localizes all application-authored visible frontend text to Traditional Chinese (zh-Hant): navigation, forms, help, tooltips, dialogs, notifications, dynamic templates, and built-in catalog display names. User-imported values and messages originating in the game are not rewritten. Technical identifiers, proper product names, abbreviations, URLs, file paths, protocol keys, storage keys, and code examples remain compatible.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-22 — Restore automation card placement
+
+- Move the unified T3/T4 equipment/accessory switch into the original Automation Settings card and restore its existing switch styling.
+- Remove the separate fusion panel and duplicate same-level/storage controls; consume the existing card settings, including saved preferences, for each batch.
+- Preserve the game engine and default-off automatic switch; live-game verification remains outstanding. UI language expansion is not included under the active English-label constraint.
+- Pass the existing offline suite and eleven fusion regressions, including original-card placement at desktop/mobile widths, shared-option changes and persisted preferences with automatic fusion reset OFF.
+
 ## 2026-09-22 — Unified Tier 3/4 material fusion
 
 - Add one default-off automatic control for both T3/T4 equipment and accessories and an updated LiveSync capability/engine.

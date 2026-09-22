@@ -67,7 +67,10 @@ test('one offline UI switch schedules all four tier/category combinations withou
   const context=await browser.newContext({viewport:{width,height:1000}});
   await context.route('**/*',r=>/^https?:/.test(r.request().url())?r.abort():r.continue());
   await context.addInitScript(()=>{
+    localStorage.setItem('genesis_update_notice_dismissed_v20260920','true');
     localStorage.setItem('genesis_auto_fuse_gear_t3','true');localStorage.setItem('genesis_auto_fuse_acc_t3','true');
+    if(localStorage.getItem('genesis_include_storage_jewel')===null) localStorage.setItem('genesis_include_storage_jewel','false');
+    if(localStorage.getItem('genesis_fuse_t3_same_level_only')===null) localStorage.setItem('genesis_fuse_t3_same_level_only','true');
     window.WebSocket=class{static OPEN=1;constructor(){this.readyState=0}close(){}send(){throw Error('Real game calls prohibited')}};
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -75,9 +78,15 @@ test('one offline UI switch schedules all four tier/category combinations withou
   await page.evaluate(()=>switchMainTab('jewel'));
   assert.equal(await page.locator('#autoGearFusion').isChecked(),false);assert(await page.locator('#autoGearFusion').isDisabled());
   assert.equal(await page.locator('#switchAutoFuseGearT3, #switchAutoFuseAccT3, #autoT4Gear, #autoT4Acc').count(),0);
-  assert.equal(await page.locator('#gearFusionPanel input[id^="auto"]').count(),1);
+  assert.equal(await page.locator('#gearFusionPanel, #gearFusionSameLevel, #gearFusionStorage').count(),0);
+  assert.equal(await page.locator('.jewel-control-card #autoGearFusion').count(),1);
+  assert.equal(await page.locator('#chkFuseT3SameLevelOnly').count(),1);
+  assert.equal(await page.evaluate(()=>{
+    const row=document.getElementById('gearFusionControls');
+    return row.previousElementSibling.contains(document.getElementById('switchAutoFuse')) && row.nextElementSibling.contains(document.getElementById('chkFuseT3SameLevelOnly'));
+  }),true,'Unified row must replace the original T3 rows, not add a card');
   await page.evaluate(()=>{
-    window.__commands=[];liveWs=new EventTarget();liveWs.readyState=1;queueJewelCmd=c=>window.__commands.push(c);
+    window.__commands=[];liveWs=new EventTarget();liveWs.readyState=1;liveWs.send=()=>{};queueJewelCmd=c=>window.__commands.push(c);
     window.__cap={version:1,instance:'test',available:true,counts:{'3:1':{bag:6,storage:0},'4:1':{bag:6,storage:0},'3:2':{bag:3,storage:0},'4:2':{bag:3,storage:0}},generatedAt:Date.now()};
     wogGearFusionTick({gearFusion:__cap});
   });
@@ -90,10 +99,27 @@ test('one offline UI switch schedules all four tier/category combinations withou
     const previous=Date.now;Date.now=()=>previous()+5001;__cap.generatedAt=Date.now();wogGearFusionTick({gearFusion:__cap});
   });
   commands=await page.evaluate(()=>__commands);assert.deepEqual(commands.map(c=>[c.sourceTier,c.contentType]),[[3,1],[4,1],[3,2],[4,2]]);
+  await page.locator('#chkFuseT3SameLevelOnly').click();
+  await page.locator('#switchIncludeStorage').click();
+  await page.evaluate(()=>{
+    const prior=__commands.findLast(c=>c.action==='fuseGearTiers');
+    wogGearFusionReply({action:'fuseGearTiers',requestId:prior.requestId,success:true,fusedCount:1});
+    const previous=Date.now;Date.now=()=>previous()+5001;__cap.generatedAt=Date.now();wogGearFusionTick({gearFusion:__cap});
+  });
+  commands=await page.evaluate(()=>__commands);
+  assert.equal(commands.at(-1).action,'fuseGearTiers');
+  assert.equal(commands.at(-1).sameLevelOnly,false,'Existing same-level checkbox governs the next batch');
+  assert.equal(commands.at(-1).includeStorage,true,'Existing storage control governs the next batch');
   await page.evaluate(()=>wogGearFusionReply({action:'fuseGearTiers',requestId:__commands.at(-1).requestId,success:false,reason:'Uncertain test result'}));assert.equal(await page.locator('#autoGearFusion').isChecked(),false);
   await page.locator('#autoGearFusion').check();await page.evaluate(()=>liveWs.dispatchEvent(new Event('close')));assert.equal(await page.locator('#autoGearFusion').isChecked(),false);
   await page.evaluate(()=>wogGearFusionTick({gearFusion:{...__cap,generatedAt:1}}));assert(await page.locator('#autoGearFusion').isDisabled());
-  await page.screenshot({path:'/var/tmp/wog-gear-fusion-'+width+'.png',fullPage:true});assert.deepEqual(errors,[]);await context.close();
+  await page.screenshot({path:'/var/tmp/wog-gear-fusion-'+width+'.png',fullPage:true});
+  await page.locator('#gearFusionControls').locator('..').screenshot({path:'/var/tmp/wog-automation-card-'+width+'.png'});
+  await page.reload();await page.evaluate(()=>switchMainTab('jewel'));
+  assert.equal(await page.locator('#autoGearFusion').isChecked(),false,'Reload never enables automatic fusion');
+  assert.equal(await page.locator('#chkFuseT3SameLevelOnly').isChecked(),false,'Existing checkbox preference survives reload');
+  assert.equal(await page.evaluate(()=>isIncludeStorageJewelActive),true,'Existing storage preference survives reload');
+  assert.deepEqual(errors,[]);await context.close();
  }}finally{await browser.close()}
 });
 test('rating 3 OR 4 supported, never mixed together and no ratings 1/2/5',async()=>{

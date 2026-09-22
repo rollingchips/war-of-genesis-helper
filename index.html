@@ -1161,6 +1161,8 @@ body {
         </div>
       </div>
 
+      <div id="gearFusionControls"></div>
+
       <!-- TIER 3 SAME LEVEL ONLY CHECKBOX OPTION -->
       <div style="background:rgba(88, 166, 255, 0.08); border:1px solid rgba(88, 166, 255, 0.25); border-radius:8px; padding:10px 14px; margin-top:10px; margin-bottom:12px; display:flex; align-items:flex-start; gap:10px; cursor:pointer;" onclick="toggleFuseT3SameLevelOnly()">
         <input type="checkbox" id="chkFuseT3SameLevelOnly" style="cursor:pointer; width:17px; height:17px; margin-top:2px; accent-color:#58a6ff;" onclick="event.stopPropagation(); toggleFuseT3SameLevelOnly();">
@@ -27907,7 +27909,7 @@ function checkAndShowUpdateNotice() {
       return 'T' + tier + (type === 1 ? ' equipment: ' : ' accessories: ') + (count ? count.bag + ' bag / ' + count.storage + ' storage' : 'unknown');
     }).join(' · ');
     if (!state.enabled || state.pending || window.__pendingJewelCmd || cap.busy || Date.now() < state.nextAt) return;
-    const includeStorage = el('gearFusionStorage').checked;
+    const includeStorage = isIncludeStorageJewelActive;
     let chosen = null;
     for (let i = 0; i < combinations.length; i++) {
       const index = (state.nextIndex + i) % combinations.length, [tier,type] = combinations[index];
@@ -27917,14 +27919,30 @@ function checkAndShowUpdateNotice() {
     if (!chosen) return;
     const requestId = 'gear-' + crypto.randomUUID(); state.pending = requestId; state.nextIndex = (chosen.index + 1) % combinations.length;
     timer = setTimeout(() => { if (state.pending === requestId) { state.uncertain = true; state.pending = null; stop('No fusion receipt. Check the game before enabling again.'); } }, 15000);
-    queueJewelCmd({action: 'fuseGearTiers', requestId, instance: cap.instance, contentType: chosen.type, sourceTier: chosen.tier, includeStorage, sameLevelOnly: el('gearFusionSameLevel').checked});
+    queueJewelCmd({action: 'fuseGearTiers', requestId, instance: cap.instance, contentType: chosen.type, sourceTier: chosen.tier, includeStorage, sameLevelOnly: isFuseT3SameLevelOnlyActive});
   };
   function mount() {
-    const section = el('jewelSection'); if (!section) return;
-    const box = document.createElement('div'); box.id = 'gearFusionPanel'; box.setAttribute('data-user-content', '');
-    box.style.cssText = 'border:1px solid #f85149;border-radius:8px;padding:12px;margin:12px 0;color:#c9d1d9';
-    box.innerHTML = '<h3 style="color:#ff7b72">Tier 3 + 4 Equipment & Accessory Fusion</h3><p>Consumes 6 same-tier equipment items or 3 same-tier accessories. Never mixes tiers or categories. T1, T2 and T5+ are excluded.</p><p><label><input id="autoGearFusion" type="checkbox" disabled> Auto-fuse T3 + T4 equipment and accessories</label></p><p><label><input id="gearFusionSameLevel" type="checkbox" checked> Same level only (automatic fusion)</label></p><p><label><input id="gearFusionStorage" type="checkbox"> Include storage materials</label></p><p id="gearFusionCounts"></p><p id="gearFusionStatus" role="status">Updated LiveSync connection required. Automation starts off.</p>';
-    section.prepend(box);
+    const box = el('gearFusionControls'); if (!box) return;
+    box.setAttribute('data-user-content', '');
+    box.innerHTML = `<style>
+      #gearFusionControls .gear-fusion-toggle { position:relative; display:block; flex-shrink:0; width:44px; height:22px; }
+      #autoGearFusion { position:absolute; inset:0; width:44px; height:22px; margin:0; opacity:0; z-index:1; cursor:pointer; }
+      #autoGearFusion + .jewel-switch { display:block; box-sizing:border-box; }
+      #autoGearFusion:checked + .jewel-switch { background:#238636; border-color:#2ea043; }
+      #autoGearFusion:checked + .jewel-switch::after { transform:translateX(20px); background:#fff; }
+      #autoGearFusion:disabled { cursor:not-allowed; }
+      #autoGearFusion:disabled + .jewel-switch { opacity:0.5; }
+      #autoGearFusion:focus-visible + .jewel-switch { outline:2px solid #58a6ff; outline-offset:3px; }
+    </style>
+    <label class="jewel-switch-wrap" style="margin:0 0 10px;">
+      <span class="gear-fusion-toggle"><input id="autoGearFusion" type="checkbox" role="switch" aria-labelledby="gearFusionLabel" aria-describedby="gearFusionStatus" disabled><span class="jewel-switch" aria-hidden="true"></span></span>
+      <span style="flex:1;min-width:0;">
+        <span id="gearFusionLabel" style="display:block;font-weight:bold;font-size:13.5px;color:#58a6ff;">T3 + T4 Equipment &amp; Accessories</span>
+        <span style="display:block;font-size:11.5px;color:#8b949e;">Auto-fuse 6 equipment items or 3 accessories per batch. Same tier only.</span>
+        <span id="gearFusionCounts" style="display:block;font-size:11.5px;color:#8b949e;"></span>
+        <span id="gearFusionStatus" role="status" style="display:block;font-size:11.5px;color:#8b949e;">Updated LiveSync connection required. Automation starts off.</span>
+      </span>
+    </label>`;
     el('autoGearFusion').addEventListener('change', e => {
       if (e.target.checked && !available()) {e.target.checked = false; stop('Fresh LiveSync data required.'); return;}
       state.enabled = e.target.checked; note('T3 + T4 automation ' + (state.enabled ? 'enabled' : 'off') + '.');
