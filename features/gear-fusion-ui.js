@@ -4,7 +4,7 @@
   let timer;
   const watched = new WeakSet();
   const el = id => document.getElementById(id);
-  function note(text) { const node = el('gearFusionStatus'); if (node) node.textContent = text; }
+  function note(text) { const node = el('gearFusionStatus'); if (node) node.textContent = window.zhText(text); }
   function stop(text) {
     state.enabled = false;
     if (el('autoGearFusion')) el('autoGearFusion').checked = false;
@@ -38,7 +38,7 @@
     if (!cap.available) { stop(cap.reason || 'Fusion blocked; check the game.'); return; }
     if (el('gearFusionCounts')) el('gearFusionCounts').textContent = combinations.map(([tier,type]) => {
       const count = cap.counts?.[tier + ':' + type];
-      return 'T' + tier + (type === 1 ? ' equipment: ' : ' accessories: ') + (count ? count.bag + ' bag / ' + count.storage + ' storage' : 'unknown');
+      return 'T' + tier + (type === 1 ? ' 裝備：' : ' 飾品：') + (count ? '背包 ' + count.bag + '／倉庫 ' + count.storage : '未知');
     }).join(' · ');
     if (!state.enabled || state.pending || window.__pendingJewelCmd || cap.busy || Date.now() < state.nextAt) return;
     const includeStorage = isIncludeStorageJewelActive;
@@ -55,7 +55,6 @@
   };
   function mount() {
     const box = el('gearFusionControls'); if (!box) return;
-    box.setAttribute('data-user-content', '');
     box.innerHTML = `<style>
       #gearFusionControls .gear-fusion-toggle { position:relative; display:block; flex-shrink:0; width:44px; height:22px; }
       #autoGearFusion { position:absolute; inset:0; width:44px; height:22px; margin:0; opacity:0; z-index:1; cursor:pointer; }

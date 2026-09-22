@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-22 — Complete Traditional Chinese UI
+
+- Replace historical English UI exceptions with the operator-requested Traditional Chinese presentation, covering help, notices, automation controls and dynamic statuses.
+- Preserve the original Automation Settings card and its shared same-level/storage options; translate display values without changing game/protocol behavior.
+- Extend offline language-coverage checks and reproducible bundled HTML verification; live-game functionality remains unverified.
+
+- Offline validation passed: 11 fusion tests, 11 UI tabs, seven dialogs, 442 phrase pairs and 12 dynamic samples at desktop/mobile widths. Reproducible HTML/archive; hook, bridge and launcher unchanged from the previous release.
+
 ## 2026-09-22 — Restore automation card placement
 
 - Move the unified T3/T4 equipment/accessory switch into the original Automation Settings card and restore its existing switch styling.

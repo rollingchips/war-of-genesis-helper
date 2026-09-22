@@ -4,6 +4,7 @@ const cp = require('node:child_process');
 const acorn = require('acorn');
 const { bat, buildArchive } = require('./livesync-package.cjs');
 const upstream = require('../localization/upstream.json').commit;
+const uiPhrases = JSON.parse(fs.readFileSync('localization/ui-phrases.json', 'utf8'));
 let html = cp.execFileSync('git', ['show', upstream + ':index.html'], {maxBuffer: 12 * 1024 * 1024}).toString();
 const terms = {};
 for (const line of fs.readFileSync('localization/zh-Hant.tsv', 'utf8').split(/\r?\n/)) {
@@ -11,6 +12,10 @@ for (const line of fs.readFileSync('localization/zh-Hant.tsv', 'utf8').split(/\r
   const [source, target] = line.split('\t');
   if (!source || !target) throw Error('Invalid translation row');
   terms[source.toLowerCase()] = target;
+}
+// Longer reviewed phrases also occur inside labels with icons or generated counters.
+for (const [source,target] of Object.entries(uiPhrases)) {
+  if (source.length >= 8 && /\s/.test(source)) terms[source.toLowerCase()] = target;
 }
 const patterns = JSON.parse(fs.readFileSync('localization/skill-patterns.json', 'utf8'));
 const esc = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -25,8 +30,12 @@ function translate(s) {
 const supplemental = JSON.parse(fs.readFileSync('localization/upstream-ui.json', 'utf8'));
 const exact = {};
 const upstreamTranslations = {};
+const sourceAliases = [];
 function walk(node) {
   if (!node || typeof node !== 'object') return;
+  if (node.type === 'CallExpression' && ['getLangTextOr','tJewel'].includes(node.callee?.name) && node.arguments[0]?.type === 'Literal' && node.arguments[1]?.type === 'Literal') {
+    sourceAliases.push([node.arguments[0].value, node.arguments[1].value]);
+  }
   if (node.type === 'ObjectExpression') {
     const fields = {};
     for (const p of node.properties) if (p.type === 'Property' && p.value.type === 'Literal' && typeof p.value.value === 'string') fields[p.key.name || p.key.value] = p.value.value;
@@ -44,7 +53,10 @@ function walk(node) {
     }
   }
   if (node.type === 'VariableDeclarator' && node.id.name === 'I18N_DICT') {
-    for (const p of node.init.properties) if (p.key.type === 'Literal' && p.value.type === 'Literal') exact[p.value.value] = supplemental[p.key.value] || translate(p.key.value);
+    for (const p of node.init.properties) if (p.key.type === 'Literal' && p.value.type === 'Literal') {
+      exact[p.value.value] = supplemental[p.key.value] || translate(p.key.value);
+      sourceAliases.push([p.key.value, p.value.value]);
+    }
   }
   for (const value of Object.values(node)) if (Array.isArray(value)) value.forEach(walk); else if (value && typeof value === 'object') walk(value);
 }
@@ -54,6 +66,14 @@ Object.assign(exact, upstreamTranslations, JSON.parse(fs.readFileSync('localizat
 for (const [key, value] of Object.entries(exact)) if (terms[key.toLowerCase()]) exact[key] = terms[key.toLowerCase()];
 // Explicit output labels are terminal values, not reverse-translation inputs.
 for (const target of Object.values(JSON.parse(fs.readFileSync('localization/upstream-ui.json', 'utf8')))) exact[target] = target;
+// Reviewed UI phrases take precedence over upstream reverse aliases and partial glossary matches.
+Object.assign(exact, uiPhrases);
+for (const [source, english] of sourceAliases) {
+  const target = uiPhrases[source] || uiPhrases[english];
+  if (target) { exact[source] = target; exact[english] = target; }
+}
+for (const [source, target] of Object.entries(uiPhrases)) exact[translate(source)] = target;
+for (const target of Object.values({...supplemental, ...uiPhrases})) exact[target] = target;
 function patch(before, after) {
   if (!html.includes(before)) throw Error('Missing patch anchor: ' + before);
   html = html.replace(before, () => after);
@@ -77,7 +97,7 @@ patch("(s.area_name && s.area_name.toLowerCase().includes(query))", "zhSearch(s.
 patch("(s.difficulty && s.difficulty.toLowerCase().includes(query))", "zhSearch(s.difficulty, query)");
 patch("g.name.toLowerCase().includes(q) || String(g.itemTid).includes(q)", "zhSearch(g.name, q) || String(g.itemTid).includes(q)");
 let runtime = fs.readFileSync('localization/runtime.js', 'utf8');
-for (const [key,value] of Object.entries({__ZH_EXACT__:exact, __ZH_TERMS__:terms, __ZH_PATTERNS__:patterns})) runtime = runtime.replace(key, () => JSON.stringify(value).replace(/</g,'\\u003c'));
+for (const [key,value] of Object.entries({__ZH_EXACT__:exact, __ZH_TERMS__:terms, __ZH_PATTERNS__:patterns, __ZH_UI_PHRASES__:{...supplemental,...uiPhrases}, __ZH_UI_PATTERNS__:JSON.parse(fs.readFileSync('localization/ui-patterns.json','utf8'))})) runtime = runtime.replace(key, () => JSON.stringify(value).replace(/</g,'\\u003c'));
 patch('</head>', '<style>\n'+fs.readFileSync('localization/layout.css','utf8')+'\n</style>\n<script>\n'+runtime+'\n</script>\n</head>');
 // Source the embedded download and ZIP launcher from the same content.
 const batStart = html.indexOf('const LIVESYNC_BAT_CONTENT = `');

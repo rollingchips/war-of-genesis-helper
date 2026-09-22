@@ -2,6 +2,10 @@
 (function () {
   const exact = __ZH_EXACT__;
   const terms = __ZH_TERMS__;
+  const uiPhrases = __ZH_UI_PHRASES__;
+  const uiLookup = new Map(Object.entries(uiPhrases).map(([source,target]) => [source.normalize('NFC').toLowerCase(),target]));
+  for (const target of Object.values(uiPhrases)) uiLookup.set(target.normalize('NFC').toLowerCase(),target);
+  const uiPatterns = __ZH_UI_PATTERNS__.map(([source,target]) => [new RegExp(source, 'u'), target]);
   const patterns = __ZH_PATTERNS__.map(([source, target]) => {
     const escaped = source.split('{}').map(escapeRegExp).join('(\\d+(?:\\.\\d+)?)');
     return [new RegExp(escaped, 'giu'), target];
@@ -15,6 +19,25 @@
     if (cache.has(text)) return cache.get(text);
     const trimmed = text.trim();
     let result;
+    const reviewed = uiLookup.get(trimmed.normalize('NFC').toLowerCase());
+    if (reviewed !== undefined) {
+      result = text.replace(trimmed, () => reviewed);
+      if (cache.size > 12000) cache.clear();
+      cache.set(text,result); return result;
+    }
+    for (const [pattern, target] of uiPatterns) {
+      if (pattern.test(trimmed)) {
+        result = text.replace(trimmed, () => trimmed.replace(pattern, target));
+        if (cache.size > 12000) cache.clear();
+        cache.set(text, result); return result;
+      }
+    }
+    // Catalog names may be composed with a tier suffix; keep the same canonical name translation.
+    const tierSuffix = trimmed.match(/^(.*?)\s*\((?:Tier|階)\s+(\d+)\)$/u);
+    if (tierSuffix && Object.hasOwn(exact, tierSuffix[1])) {
+      result = text.replace(trimmed, () => translate(tierSuffix[1]) + '（T' + tierSuffix[2] + '）');
+      cache.set(text, result); return result;
+    }
     if (Object.hasOwn(exact, trimmed)) {
       result = text.slice(0, text.indexOf(trimmed)) + exact[trimmed] + text.slice(text.indexOf(trimmed) + trimmed.length);
     } else {
@@ -23,6 +46,15 @@
         result = result.replace(pattern, (...args) => target.replace(/\{(\d+)\}/g, (_, i) => args[Number(i) + 1]));
       }
       result = result.replace(phrases, match => terms[match.toLowerCase()]);
+    }
+    // Resolve reviewed whole-phrase aliases after fragment substitution, in bounded steps.
+    const visited = new Set([text]);
+    for (let i = 0; i < 4; i++) {
+      const key = result.trim();
+      if (!Object.hasOwn(exact, key)) break;
+      const next = result.replace(key, () => exact[key]);
+      if (next === result || visited.has(next)) break;
+      visited.add(next); result = next;
     }
     if (cache.size > 12000) cache.clear();
     cache.set(text, result);
@@ -36,11 +68,11 @@
     window[method] = (message, ...args) => original(translate(String(message)), ...args);
   }
   function excluded(element) {
-    return !element || element.closest('script, style, code, pre, textarea, [data-user-content]');
+    return !element || element.closest('script, style, code, pre, [data-user-content]');
   }
   function translateNode(node) {
     if (node.nodeType === Node.TEXT_NODE) {
-      if (excluded(node.parentElement)) return;
+      if (excluded(node.parentElement) || node.parentElement.closest('textarea')) return;
       if (node.parentElement.id === 'barPlayerName' && node.nodeValue.trim() !== 'Tân Thủ (Chưa nạp save)') return;
       const value = translate(node.nodeValue);
       if (value !== node.nodeValue) node.nodeValue = value;
@@ -53,6 +85,7 @@
         if (after !== before) node.setAttribute(attr, after);
       }
     }
+    if (node.matches('textarea')) return;
     for (const child of node.childNodes) translateNode(child);
   }
   window.applyTraditionalChinese = () => translateNode(document.body);

@@ -111,7 +111,7 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     assert.equal(await page.evaluate(()=>typeof toggleLangDropdown),'function','Language adapter removed an unrelated function');
     await page.evaluate(()=>{switchLanguage('en');updateLiveSyncI18n('en');});
     await page.waitForTimeout(60);
-    assert.equal(await page.locator('#lsBannerBadge').innerText(),'Required for LiveSync','English reverse alias must use the same terminal label');
+    assert.equal(await page.locator('#lsBannerBadge').innerText(),'🔥 即時同步必要更新','English reverse alias must use the same Traditional Chinese terminal label');
     await page.reload();await page.waitForTimeout(60);
     for(const width of [1440,390]){
       await page.setViewportSize({width,height:900});await page.waitForTimeout(30);

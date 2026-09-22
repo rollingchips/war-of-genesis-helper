@@ -1055,7 +1055,7 @@ Skill Tree	技能樹
 Auto Save & Pts	自動儲存與點數
 Auto Save	自動儲存
 Auto Fuse	自動合成
-Auto Jewel Forge & Storage	自動宝石鍛造與倉庫
+Auto Jewel Forge & Storage	自動寶石鍛造與倉庫
 Combat Breakdown	戰鬥分析
 Money/s	金幣／秒
 Gold/s	金幣／秒
@@ -1373,3 +1373,107 @@ Hiệp sĩ (Melee)	騎士（近戰）
 Cung thủ (Ranged)	弓箭手（遠程）
 Lv.	等級
 File Explorer	檔案總管
+Equipment Level Requirement	裝備等級需求
+Equipment Drop Rate	裝備掉落率
+Critical Hit	暴擊命中
+Natural Recovery Amount	自然恢復量
+Movement Speed	移動速度
+Evasion	閃避
+Accuracy	命中
+Damage Taken	承受傷害
+Lightning Damage Res	雷電傷害抗性
+Poison Damage Resistance	中毒傷害抗性
+Fire Damage Res	火焰傷害抗性
+All Elemental Damage Resistance	全元素傷害抗性
+Lightning Hit	雷電命中
+Poison Hit	中毒命中
+Fire Hit	火焰命中
+Lightning Resistance	雷電抗性
+Poison Resistance	中毒抗性
+Fire Resistance	火焰抗性
+All Elemental Resistance	全元素抗性
+Stun Resistance	暈眩抗性
+Lightning Damage	雷電傷害
+Fire Damage	火焰傷害
+Crit Damage Res	暴擊傷害抗性
+Inlaid	已鑲嵌
+Equipment 等級 Requirement	裝備等級需求
+傷害 Taken	承受傷害
+Lightning 傷害 Res	雷電傷害抗性
+毒 傷害 Resistance	中毒傷害抗性
+Fire 傷害 Res	火焰傷害抗性
+全部 Elemental 傷害 Resistance	全元素傷害抗性
+毒 Hit	中毒命中
+毒 Resistance	中毒抗性
+全部 Elemental Resistance	全元素抗性
+Lightning 傷害	雷電傷害
+Fire 傷害	火焰傷害
+Crit 傷害 Res	暴擊傷害抗性
+free slots	個空位
+免費 slots	個空位
+slots	格
+Tabs	個倉庫
+tiers	階
+jewels	顆寶石
+Tier	階
+Need	需要
+Has	擁有
+Real-time	即時
+Realtime	即時
+Cloud	雲端
+Equipment	裝備
+Accessories	飾品
+Expedition Wings	遠征之翼
+Explorer's Rune	探險符文
+Machina	攻城兵器
+Magic	魔法
+Strife	鬥爭
+App	應用程式
+Crypto	加密貨幣
+Recorded Runs:	已記錄場次：
+Latest:	最新：
+CAREER HIGH	歷史最高紀錄
+Survived	存活
+General Dmg:	一般傷害：
+Effective:	實際效果：
+Upgrade Cost:	升級費用：
+Effects:	效果：
+Ready:	可合成：
+locked	已鎖定
+Showing	顯示
+listings - Base:	筆上架－參考價：
+listings	筆上架
+Page	頁次
+items	件物品
+📦 Store	📦 存入
+📥 Take	📥 取出
+Gold / Sec	金幣／秒
+EXP / Sec	經驗值／秒
+Gold/Hour	金幣／小時
+EXP / Hour	經驗值／小時
+more Gold compared to current	比目前關卡獲得更多金幣
+Harvest rate	金幣獲取速度
+Total Monster HP	怪物總生命值
+Avg clear	平均通關
+Time to Level	達到等級所需時間
+approx.	約
+hours of continuous AFK	小時連續掛機
+Leveling rate	升級速度
+Clear reward	通關獎勵
+Mobs & Boss	小怪與首領
+Recommendation	建議
+Optimal for Gold! Switch to	金幣效率最佳！可切換至
+Optimal for EXP! Switch to	經驗值效率最佳！可切換至
+if you want more EXP	以取得更多經驗值
+if you want more Gold	以取得更多金幣
+Switch to	切換至
+for Gold, or	以取得金幣，或
+for EXP	以取得經驗值
+Perfect! Current stage is the best for BOTH Gold and EXP!	目前關卡的金幣與經驗值效率皆為最佳！
+Cleared & unlocked for free AFK farming.	已通關並解鎖，可自由掛機。
+Leveling speed: Maximum EXP gain across all unlocked stages.	升級速度：已解鎖關卡中的最高經驗值收益。
+Unlocked Stages Only	僅顯示已解鎖關卡
+No extra description.	沒有其他說明。
+Increases Boss item drop rate.	提高首領物品掉落率。
+
+通关时间	通關時間

@@ -1,0 +1,170 @@
+[
+  [
+    "^📦 Successfully deposited (\\d+) jewels into \\[(?:Storage|Kho)(?: (\\d+))?\\]!$",
+    "📦 已將 $1 顆寶石存入倉庫 $2！"
+  ],
+  [
+    "^🛡️ Successfully deposited (\\d+) Tier 3 gear/accessories into \\[(?:Storage|Kho)(?: (\\d+))?\\]!$",
+    "🛡️ 已將 $1 件 T3 裝備／飾品存入倉庫 $2！"
+  ],
+  [
+    "^📥 Withdrew (\\d+) jewels from storage to inventory!$",
+    "📥 已將 $1 顆寶石從倉庫取回背包！"
+  ],
+  [
+    "^🔨 Workshop successfully fused (\\d+) new jewel rounds!$",
+    "🔨 已完成 $1 批寶石合成！"
+  ],
+  [
+    "^🛡️ Workshop successfully fused (\\d+) Tier 3 items!$",
+    "🛡️ 已完成 $1 件 T3 物品合成！"
+  ],
+  [
+    "^🏛️ Set target storage for loose jewels: \\[All Tabs \\(Auto\\)\\]\\.$",
+    "🏛️ 寶石存放目標已設為：所有倉庫（自動）。"
+  ],
+  [
+    "^🏛️ Set target storage for Tier 3 items: \\[All Tabs \\(Auto\\)\\]\\.$",
+    "🏛️ T3 物品存放目標已設為：所有倉庫（自動）。"
+  ],
+  [
+    "^🏛️ Set target storage for loose jewels: \\[Storage (\\d+)\\]\\.$",
+    "🏛️ 寶石存放目標已設為：倉庫 $1。"
+  ],
+  [
+    "^🏛️ Set target storage for Tier 3 items: \\[Storage (\\d+)\\]\\.$",
+    "🏛️ T3 物品存放目標已設為：倉庫 $1。"
+  ],
+  [
+    "^📦 Depositing all inventory items \\(gear, unlocked jewels\\) into \\[Storage (\\d+)\\]\\.\\.\\.$",
+    "📦 正在將背包物品（裝備與未鎖定寶石）存入倉庫 $1…"
+  ],
+  [
+    "^📦 Transferring all loose jewels from Inventory to \\[Storage (\\d+)\\]\\.\\.\\.$",
+    "📦 正在將背包內所有未鑲嵌寶石存入倉庫 $1…"
+  ],
+  [
+    "^🛡️ Transferring all Tier 3 gear & accessories from Inventory to \\[Storage (\\d+)\\]\\.\\.\\.$",
+    "🛡️ 正在將背包內所有 T3 裝備與飾品存入倉庫 $1…"
+  ],
+  [
+    "^⚡ Requesting Workshop to fuse 6x Tier (\\d+) into Tier (\\d+)\\.\\.\\.$",
+    "⚡ 正在要求鍛造爐將 6 顆 $1 階寶石合成為 $2 階…"
+  ],
+  [
+    "^⚡ Requesting Workshop to auto-fuse selected tiers \\[([\\d, ]+)\\] \\(6 jewels/set\\)\\.\\.\\.$",
+    "⚡ 正在要求鍛造爐合成所選階級 [$1]（每批 6 顆）…"
+  ],
+  [
+    "^Storage (\\d+) is not unlocked yet!$",
+    "倉庫 $1 尚未解鎖！"
+  ],
+  [
+    "^Storage (\\d+) is full \\(42/42\\)!$",
+    "倉庫 $1 已滿（42／42）！"
+  ],
+  [
+    "^🎉 Workshop fused 6x \\[Tier (\\d+)\\] jewels ➔ Received 1x \\[(.*) \\(Tier (\\d+)\\)\\]!$",
+    "🎉 已合成 6 顆 T$1 寶石 ➔ 獲得 1 顆 [$2]（T$3）！"
+  ],
+  [
+    "^🎉 Workshop fused 6x \\[Tier (\\d+)\\] jewels ➔ Received 1x \\[(.*)\\]!$",
+    "🎉 已合成 6 顆 T$1 寶石 ➔ 獲得 1 顆 [$2]！"
+  ],
+  [
+    "^🎉 Workshop (?:successfully )?fused 6 jewels ➔ Received 1x \\[(.*?)\\]!$",
+    "🎉 已合成 6 顆寶石 ➔ 獲得 1 顆 [$1]！"
+  ],
+  [
+    "^ℹ️ Not enough 6 jewels of the same tier \\(unlocked\\) to fuse \\(Currently have (\\d+)/6 Tier (\\d+)\\)\\.$",
+    "ℹ️ 未鎖定的同階寶石不足 6 顆（目前有 $1／6 顆 $2 階寶石）。"
+  ],
+  [
+    "^Has (\\d+)/6 jewels \\(Need 6\\)$",
+    "持有 $1／6 顆寶石（需要 6 顆）"
+  ],
+  [
+    "^(\\d+) / (\\d+) slots \\((\\d+) Tabs\\)$",
+    "$1／$2 格（$3 個倉庫）"
+  ],
+  [
+    "^(\\d+) free slots$",
+    "剩餘 $1 個空位"
+  ],
+  [
+    "^(\\d+) tiers$",
+    "$1 個階級"
+  ],
+  [
+    "^Showing (\\d+) / (\\d+) items$",
+    "顯示 $1／$2 件物品"
+  ],
+  [
+    "^Showing (\\d+) / (\\d+) jewels$",
+    "顯示 $1／$2 顆寶石"
+  ],
+  [
+    "^Tier (\\d+) \\((\\d+)x\\)$",
+    "$1 階（$2 批）"
+  ],
+  [
+    "^Tier 7 \\(Legendary\\)$",
+    "7 階（傳說）"
+  ],
+  [
+    "^(?:View|Open) on Steam Community Market \\((\\d+) listings - Base: \\$([\\d.]+)\\)$",
+    "在 Steam 社群市集查看（$1 筆上架－參考價：$$$2）"
+  ],
+  [
+    "^⏳ Steam market cooldown \\((\\d+)s\\)$",
+    "⏳ Steam 市集冷卻中（$1 秒）"
+  ],
+  [
+    "^⏳ Please wait (\\d+)s between Steam requests\\.\\.\\.$",
+    "⏳ Steam 請求之間請等待 $1 秒…"
+  ],
+  [
+    "^⚠️ Steam error: (.*)$",
+    "⚠️ Steam 錯誤：$1"
+  ],
+  [
+    "^🟢 Updated real-time Steam price for \"(.*)\"(.*)$",
+    "🟢 已更新「$1」的 Steam 即時價格$2"
+  ],
+  [
+    "^⚠️ No listings found for \"(.*)\"(.*)$",
+    "⚠️ 找不到「$1」的上架資訊$2"
+  ],
+  [
+    "^🔄 Fetching real-time Steam price for \"(.*)\"(.*)$",
+    "🔄 正在查詢「$1」的 Steam 即時價格$2"
+  ],
+  [
+    "^🔄 Fetching real-time market prices for (\\d+) items\\.\\.\\.$",
+    "🔄 正在查詢 $1 件物品的即時市集價格…"
+  ],
+  [
+    "^At battle start, increases ATK by (.*?) for ([\\d.]+)s\\.$",
+    "戰鬥開始時，攻擊力提高 $1，持續 $2 秒。"
+  ],
+  [
+    "^At combat start, increases ATK for ([\\d.]+)s\\.$",
+    "戰鬥開始時，提高攻擊力，持續 $1 秒。"
+  ],
+  [
+    "^Every ([\\d.]+)s, PvE DEF increases by (.*?) for ([\\d.]+)s\\.$",
+    "每 $1 秒，PvE 防禦提高 $2，持續 $3 秒。"
+  ],
+  [
+    "^Every ([\\d.]+)s, PvE ATK increases by (.*?) for ([\\d.]+)s\\.$",
+    "每 $1 秒，PvE 攻擊提高 $2，持續 $3 秒。"
+  ],
+  [
+    "^Every ([\\d.]+)s, increases PvE DEF for ([\\d.]+)s\\.$",
+    "每 $1 秒，提高 PvE 防禦，持續 $2 秒。"
+  ],
+  [
+    "^Boss drop rate increased by (.*?)\\.$",
+    "首領物品掉落率提高 $1。"
+  ]
+]

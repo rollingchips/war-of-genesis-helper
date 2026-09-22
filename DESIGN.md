@@ -1,5 +1,15 @@
 # Traditional Chinese Frontend Contract
 
+## Full Traditional Chinese UI completion (2026-09-22)
+
+- The operator explicitly requests Traditional Chinese for the entire WOG Helper UI. This supersedes all historical English-label exceptions below. Labels, explanations, placeholders, tooltips, accessibility labels, dialogs, notifications and application-authored dynamic statuses must be Traditional Chinese. Product names, standard abbreviations, commands, paths, URLs and game/user-provided data retain their identities.
+- Reuse the existing embedded localization layer and glossary; add reviewed full-phrase and parameterized translations instead of another translation service. English and Vietnamese source aliases must converge to the same stable Traditional Chinese output without mixed-language fragments or observer loops.
+- Keep the one T3 + T4 equipment/accessory switch in the original Automation Settings card. Use its existing same-level checkbox and storage setting. Do not add controls, change layouts or modify automation/recipe logic for this language change.
+- Translate application-owned fusion failure reasons at the presentation boundary; preserve raw protocol values and unknown game errors. Game hook, bridge and launcher execution behavior remain unchanged. Source code, comments and technical documentation remain English.
+- Audit all tabs, hidden/help dialogs, dynamic templates and attributes in offline Chromium; exercise fusion statuses and shared controls, preserve nicknames and command examples, verify deterministic HTML/archive output. No installer or game operation is part of validation.
+
+Verification: the full offline suite passes, including 11 fusion regressions, all 11 UI tabs, seven dialogs, 442 reviewed phrase/fixed-point pairs, 12 representative dynamic messages, textarea/user-value preservation and desktop/mobile card checks (1440px/390px). Existing 241 functions, 76 declarations and 8,035 catalog fields remain verified. Rebuilding the HTML and ZIP is byte-identical; the hook, bridge and launcher match the preceding package exactly. No live-game operation or Windows installer execution was performed.
+
 ## Automation card correction (2026-09-22)
 
 - Replace the two original T3 automatic rows in the existing Automation Settings card with one T3 + T4 equipment/accessory switch, using the existing switch styling. No separate feature card, heading or top-of-page panel.
