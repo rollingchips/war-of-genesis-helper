@@ -6,12 +6,15 @@ const {pathToFileURL} = require('node:url');
 const acorn = require('acorn');
 const {chromium} = require('playwright');
 const html = fs.readFileSync('index.html','utf8');
-const upstream = cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':index.html'],{maxBuffer:12e6}).toString();
+const originalUpstream = cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':index.html'],{maxBuffer:12e6}).toString();
+const {patchFrontend, patchHook}=require('./gear-fusion-extension.cjs');
+const upstream = patchFrontend(originalUpstream);
 const {unzipSync,strFromU8}=require('fflate');
 const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip'));
 const originalArchive=unzipSync(cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':LiveSync_1Click.zip']));
 assert.deepEqual(Object.keys(archive).sort(),['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js','wog-helper.html']);
-for(const name of ['install_game_hook_v2.js','livesync_bridge.js']) assert.deepEqual(archive[name],originalArchive[name],'Upstream game script changed');
+assert.equal(strFromU8(archive['install_game_hook_v2.js']),patchHook(strFromU8(originalArchive['install_game_hook_v2.js'])));
+for(const name of ['livesync_bridge.js']) assert.deepEqual(archive[name],originalArchive[name],'Upstream game script changed');
 assert.equal(strFromU8(archive['wog-helper.html']),html,'Bundled HTML does not match fork');
 const launcher=strFromU8(archive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n');
 assert(launcher.includes('if exist "%~dp0wog-helper.html" (\n    start "" "%~dp0wog-helper.html"'));
@@ -117,6 +120,6 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     }
     assert.equal(await page.evaluate(()=>window.__gameCommands),0);
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,gameScriptsMatchUpstream:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
+    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,bridgeMatchesUpstream:true,fusionHookMatchesSource:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

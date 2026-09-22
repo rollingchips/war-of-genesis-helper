@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-22 — Unified Tier 3/4 material fusion
+
+- Add one default-off automatic control for both T3/T4 equipment and accessories and an updated LiveSync capability/engine.
+- Use operator-confirmed six equipment / three accessory same-tier inputs (rating 3 or 4); preserve item protections, validate recipes in game, serialize batches and stop on uncertain outcomes.
+- Bundle reproducible feature sources and offline regression checks; real game execution remains unverified.
+
 ## 2026-09-21 — Fork launcher correction
 
 - Fix the upstream website being opened by the bundled and embedded BAT launchers.
@@ -24,3 +30,9 @@
 - Support Chinese equipment, jewel and stage searches; retain original item identities and option values.
 - Wrap longer header labels on mobile without horizontal overflow.
 - Verify 8,035 catalog fields, 10 tabs, three classes and three dialogs in offline Chromium with no page errors or game commands.
+
+### Unified fusion verification
+
+- Pass eleven dedicated offline tests plus the existing localization/browser suite; deterministic HTML/archive rebuild verified.
+- Add installation and verification-boundary documentation in `features/README.md`.
+- Windows installer execution, actual fusion results and live inventory behavior remain unverified.

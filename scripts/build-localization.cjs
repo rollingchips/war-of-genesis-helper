@@ -84,6 +84,7 @@ const batStart = html.indexOf('const LIVESYNC_BAT_CONTENT = `');
 const batEnd = html.indexOf('\nfunction downloadLiveSyncBat()', batStart);
 if (batStart < 0 || batEnd < 0) throw Error('Missing embedded BAT declaration');
 html = html.slice(0, batStart) + 'const LIVESYNC_BAT_CONTENT = ' + JSON.stringify(bat) + ';\n' + html.slice(batEnd);
+html = require('./gear-fusion-extension.cjs').patchFrontend(html);
 // Parsing every script prevents localization edits from producing a broken artifact.
 for (const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) acorn.parse(script[1], {ecmaVersion:'latest'});
 fs.writeFileSync('index.html', html);
