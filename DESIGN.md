@@ -1,5 +1,14 @@
 # Traditional Chinese Frontend Contract
 
+## English launcher console (2026-09-22)
+
+- Operator requests English for the BAT execution window only; the Helper browser UI remains Traditional Chinese.
+- Translate authored BAT echo messages and bridge console log text displayed in that window. Preserve filenames, paths, variables, commands, labels, control flow, ports, protocol values, game hooks and embedded template expressions. Windows/Node-provided errors retain their original language.
+- Use one build-time console translation mapping; the archive and browser-downloaded BAT must remain identical. Keep launcher output ASCII English and avoid new batch metacharacters. Translate bridge log arguments only, never response bodies or game data.
+- Verify unchanged executable BAT lines and bridge AST outside allowlisted log text; check packaging, parsing and deterministic builds without executing the installer, launching Steam or connecting to the game. Windows execution remains unverified.
+
+Verification: 29 BAT prompts and 14 bridge log template parts translate to English. All non-echo BAT lines remain identical to the existing fork launcher; the bridge AST matches upstream except those log parts, including unchanged template expressions. Embedded/archive BAT identity, CRLF output, unchanged game hook, deterministic rebuild and the full offline browser/fusion suite pass. No Windows execution was performed.
+
 ## Full Traditional Chinese UI completion (2026-09-22)
 
 - The operator explicitly requests Traditional Chinese for the entire WOG Helper UI. This supersedes all historical English-label exceptions below. Labels, explanations, placeholders, tooltips, accessibility labels, dialogs, notifications and application-authored dynamic statuses must be Traditional Chinese. Product names, standard abbreviations, commands, paths, URLs and game/user-provided data retain their identities.

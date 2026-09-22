@@ -14,7 +14,8 @@ const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip'));
 const originalArchive=unzipSync(cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':LiveSync_1Click.zip']));
 assert.deepEqual(Object.keys(archive).sort(),['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js','wog-helper.html']);
 assert.equal(strFromU8(archive['install_game_hook_v2.js']),patchHook(strFromU8(originalArchive['install_game_hook_v2.js'])));
-for(const name of ['livesync_bridge.js']) assert.deepEqual(archive[name],originalArchive[name],'Upstream game script changed');
+const {englishBat,englishBridge}=require('./console-english.cjs');
+assert.equal(strFromU8(archive['livesync_bridge.js']),englishBridge(strFromU8(originalArchive['livesync_bridge.js'])),'Bridge differs from log-only translation');
 assert.equal(strFromU8(archive['wog-helper.html']),html,'Bundled HTML does not match fork');
 const launcher=strFromU8(archive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n');
 assert(launcher.includes('if exist "%~dp0wog-helper.html" (\n    start "" "%~dp0wog-helper.html"'));
@@ -22,7 +23,9 @@ assert(launcher.includes('Open your fork index.html manually.'));
 assert(!launcher.includes('titlee2111.github.io'),'Launcher still targets upstream');
 const expectedLauncher=strFromU8(originalArchive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n').replace('start "" "https://titlee2111.github.io/war-of-genesis-helper/"',[
 'if exist "%~dp0wog-helper.html" (','    start "" "%~dp0wog-helper.html"',') else (','    echo [NOTICE] wog-helper.html is missing. Open your fork index.html manually.',')'].join('\n')).replace('echo        Dang mo Web Helper tai: https://titlee2111.github.io/war-of-genesis-helper/','echo        Opening bundled fork: wog-helper.html');
-assert.equal(launcher,expectedLauncher,'Non-browser BAT behavior changed');
+assert.equal(launcher,englishBat(expectedLauncher),'BAT differs from English display mapping');
+const commands=script=>script.split('\n').filter(line=>!/^\s*echo(?:\.|\s|$)/i.test(line));
+assert.deepEqual(commands(launcher),commands(expectedLauncher),'Executable BAT commands changed');
 const changed = new Set(['renderStageTable','getFilteredEquipments','getFilteredJewels','renderJewelTable','updateDOMTranslations','switchLanguage','__i18nTranslateMutations']);
 let preservedFunctions=0, preservedDeclarations=0;
 for (const match of upstream.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) {
@@ -120,6 +123,6 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     }
     assert.equal(await page.evaluate(()=>window.__gameCommands),0);
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,bridgeMatchesUpstream:true,fusionHookMatchesSource:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
+    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,bridgeLogOnlyChangesVerified:true,fusionHookMatchesSource:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

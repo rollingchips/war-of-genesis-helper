@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-22 — English launcher console
+
+- Translate the launcher prompts and same-window bridge logs to English, while keeping the Helper UI Traditional Chinese.
+- Preserve installation, process handling, game/hook behavior and protocols; generate matching embedded/archive BAT content.
+- Passed 29 BAT prompt / 14 bridge log-part checks, executable-command/AST preservation, package identity, deterministic rebuild and all existing offline UI/fusion tests. No Windows installer execution or live-game verification.
+
 ## 2026-09-22 — Complete Traditional Chinese UI
 
 - Replace historical English UI exceptions with the operator-requested Traditional Chinese presentation, covering help, notices, automation controls and dynamic statuses.

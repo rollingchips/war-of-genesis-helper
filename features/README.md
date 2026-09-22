@@ -19,3 +19,5 @@ Offline mocked-game, browser, parsing, archive and reproducibility checks are av
 Sources: `gear-fusion-engine.js` owns execution, `gear-fusion-ui.js` owns controls; `scripts/gear-fusion-extension.cjs` applies explicit patches to the pinned upstream. No new external service or dependency is needed.
 
 The Helper UI is Traditional Chinese, including authored notices, help, dialogs and dynamic statuses. Product names, standard acronyms, code examples and unknown game/user data are not rewritten. This language update does not change the engine or hook.
+
+The BAT execution window and authored LiveSync Bridge logs use English. The browser UI remains Traditional Chinese. Keep the BAT, bridge, hook and bundled HTML from the same archive together; OS/runtime errors may use the system language.

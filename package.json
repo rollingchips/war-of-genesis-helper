@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build-localization.cjs",
-    "test": "node scripts/verify-localization.cjs && node --test scripts/verify-gear-fusion.cjs && node scripts/verify-ui-language.cjs"
+    "test": "node scripts/verify-console.cjs && node scripts/verify-localization.cjs && node --test scripts/verify-gear-fusion.cjs && node scripts/verify-ui-language.cjs"
   },
   "devDependencies": {
     "acorn": "8.18.0",
