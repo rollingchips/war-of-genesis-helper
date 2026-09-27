@@ -87,7 +87,7 @@ const properNames=String.raw`War of Genesis(?::)?(?: Idle Loot)?(?: Helper)?|Gen
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});await scan('layout '+width);
   assert.equal(await page.locator('.jewel-control-card #autoGearFusion').count(),1);
-  assert.equal(await page.locator('#chkFuseT3SameLevelOnly').count(),1);
+  assert.equal(await page.locator('#chkFuseT3SameLevelOnly').count(),0);
   assert.equal(await page.locator('#gearFusionPanel, #gearFusionSameLevel, #gearFusionStorage').count(),0);
   await page.locator('#gearFusionControls').locator('..').screenshot({path:'/var/tmp/wog-full-zh-card-'+width+'.png'});
  }

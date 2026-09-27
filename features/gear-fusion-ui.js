@@ -1,6 +1,6 @@
 (() => {
   const state = {enabled: false, pending: null, nextIndex: 0, nextAt: 0, lastAt: 0, capability: null, uncertain: false};
-  const combinations = [[3, 1], [4, 1], [3, 2], [4, 2]];
+  const combinations = [[1,1],[2,1],[3,1],[4,1],[1,2],[2,2],[3,2],[4,2]];
   let timer;
   const watched = new WeakSet();
   const el = id => document.getElementById(id);
@@ -19,18 +19,19 @@
     if (data.action !== 'fuseGearTiers' || !state.pending || data.requestId !== state.pending) return;
     clearTimeout(timer); state.pending = null; state.nextAt = Date.now() + 5000;
     if (data.success !== true) stop(data.reason || 'Fusion stopped; check the game.');
-    else note(data.fusedCount === 1 ? 'Fusion completed; materials reconciled.' : 'Waiting for a game-validated batch.');
+    else note(data.fusedCount === 1 ? 'Fusion completed; materials reconciled.' : (data.reason || 'Waiting for a game-validated batch.'));
   };
   window.wogGearFusionTick = data => {
     const cap = data?.gearFusion;
-    if (!cap || cap.version !== 1 || !connected() || !Number.isFinite(cap.generatedAt) || Date.now() - cap.generatedAt > 8000 || cap.generatedAt > Date.now() + 1000) {
-      state.capability = null; if (el('autoGearFusion')) el('autoGearFusion').disabled = true;
+    window.wogWorkshopCapability = cap;
+    if (!cap || cap.version !== 2 || !connected() || !Number.isFinite(cap.generatedAt) || Date.now() - cap.generatedAt > 8000 || cap.generatedAt > Date.now() + 1000) {
+      state.capability = null; window.wogWorkshopCapability = null; if (el('autoGearFusion')) el('autoGearFusion').disabled = true;
       stop('Updated LiveSync connection required.'); return;
     }
     const ws = socket();
     if (!watched.has(ws)) {
       watched.add(ws);
-      ws.addEventListener?.('close', () => { state.capability = null; stop('Disconnected. Re-enable fusion only after reconnecting.'); }, {once: true});
+      ws.addEventListener?.('close', () => { state.capability = null; window.wogWorkshopCapability = null; stop('Disconnected. Re-enable fusion only after reconnecting.'); }, {once: true});
     }
     state.capability = cap; state.lastAt = Date.now();
     if (el('autoGearFusion')) el('autoGearFusion').disabled = !cap.available || state.uncertain;
@@ -40,7 +41,7 @@
       const count = cap.counts?.[tier + ':' + type];
       return 'T' + tier + (type === 1 ? ' 裝備：' : ' 飾品：') + (count ? '背包 ' + count.bag + '／倉庫 ' + count.storage : '未知');
     }).join(' · ');
-    if (!state.enabled || state.pending || window.__pendingJewelCmd || cap.busy || Date.now() < state.nextAt) return;
+    if (!state.enabled || state.pending || window.wogJewelPending || window.__pendingJewelCmd || cap.busy || Date.now() < state.nextAt) return;
     const includeStorage = isIncludeStorageJewelActive;
     let chosen = null;
     for (let i = 0; i < combinations.length; i++) {
@@ -51,7 +52,7 @@
     if (!chosen) return;
     const requestId = 'gear-' + crypto.randomUUID(); state.pending = requestId; state.nextIndex = (chosen.index + 1) % combinations.length;
     timer = setTimeout(() => { if (state.pending === requestId) { state.uncertain = true; state.pending = null; stop('No fusion receipt. Check the game before enabling again.'); } }, 15000);
-    queueJewelCmd({action: 'fuseGearTiers', requestId, instance: cap.instance, contentType: chosen.type, sourceTier: chosen.tier, includeStorage, sameLevelOnly: isFuseT3SameLevelOnlyActive});
+    queueJewelCmd({action: 'fuseGearTiers', requestId, instance: cap.instance, contentType: chosen.type, sourceTier: chosen.tier, includeStorage, sameLevelOnly: false});
   };
   function mount() {
     const box = el('gearFusionControls'); if (!box) return;
@@ -68,15 +69,15 @@
     <label class="jewel-switch-wrap" style="margin:0 0 10px;">
       <span class="gear-fusion-toggle"><input id="autoGearFusion" type="checkbox" role="switch" aria-labelledby="gearFusionLabel" aria-describedby="gearFusionStatus" disabled><span class="jewel-switch" aria-hidden="true"></span></span>
       <span style="flex:1;min-width:0;">
-        <span id="gearFusionLabel" style="display:block;font-weight:bold;font-size:13.5px;color:#58a6ff;">T3 + T4 Equipment &amp; Accessories</span>
-        <span style="display:block;font-size:11.5px;color:#8b949e;">Auto-fuse 6 equipment items or 3 accessories per batch. Same tier only.</span>
+        <span id="gearFusionLabel" style="display:block;font-weight:bold;font-size:13.5px;color:#58a6ff;">T4 及以下裝備／飾品</span>
+        <span style="display:block;font-size:11.5px;color:#8b949e;">T1～T4，每批 6 件裝備或 3 件飾品；不混階、不限等級。</span>
         <span id="gearFusionCounts" style="display:block;font-size:11.5px;color:#8b949e;"></span>
         <span id="gearFusionStatus" role="status" style="display:block;font-size:11.5px;color:#8b949e;">Updated LiveSync connection required. Automation starts off.</span>
       </span>
     </label>`;
     el('autoGearFusion').addEventListener('change', e => {
       if (e.target.checked && !available()) {e.target.checked = false; stop('Fresh LiveSync data required.'); return;}
-      state.enabled = e.target.checked; note('T3 + T4 automation ' + (state.enabled ? 'enabled' : 'off') + '.');
+      state.enabled = e.target.checked; note(state.enabled ? '已啟用 T4 及以下自動合成。' : '已關閉 T4 及以下自動合成。');
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();

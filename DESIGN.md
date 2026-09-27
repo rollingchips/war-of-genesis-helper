@@ -1,5 +1,17 @@
 # Traditional Chinese Frontend Contract
 
+## T4-and-below fusion and jewel preservation (2026-09-27)
+
+- Supersedes the previous T3/T4 and shared same-level contract. Automatic gear fusion consumes exact source tiers 1 through 4, with six equipment items or three accessories per batch. Never mix tiers or categories; levels may differ. Remove the same-level checkbox and ignore its old persisted preference, including manual legacy T3 requests. Keep one switch in the original automation card, default OFF, and the existing storage preference. Label the feature "T4 及以下裝備／飾品".
+- Keep lock/equipped/market protections and authoritative game recipe validation. Deterministically try bounded alternative candidate batches instead of repeatedly selecting only the first rejected batch. Cache a rejected inventory/options fingerprint; changed inventory/options triggers reevaluation. Distinguish insufficient quantity, missing recipe and validator rejection in receipts/UI. Do not bypass game validation to satisfy the quantity threshold.
+- Selectively port jewel preservation from upstream d09f5f8832360e03090b414ef23139c9d36c61ba (base-type or exact tier item-TID matching, T1–T6 controls, staged selection excluding preserved jewels). Do not import unrelated auto-reconnect/popup actions or claim a full upstream merge. Keep the base upstream revision unchanged and record feature provenance.
+- Persist preservation locally using upstream's genesis_autofuse_preserved_jewel_types key. Protect preserved jewels in BOTH automatic and manual jewel fusion. An explicit capability/version guard prevents old hooks from executing a protected fusion. No preservation-unaware fallback. Jewel batches must be selected from a fresh inventory, stage only the chosen six, and stop on uncertainty. Keep existing allowed-tier and storage settings.
+- Serialize all workshop actions. A timed-out request remains uncertain and blocks further submissions; never retry it automatically. UI uses receipts and version-2 capability data. Browser UI is Traditional Chinese; launcher/bridge console remains English.
+- Verify mocked execution, candidate rejection/reselection, eight tier/category combinations, mixed levels, protections, stale/old hook rejection, jewel base/exact-tier preservation, storage, persisted options, timeout and packaging. Build and archive deterministically. No installer execution, game connection or real item consumption is authorized by offline checks.
+
+
+Verification: mocked engine and packaged-hook lifecycle tests cover both gear and jewel fusion, preservation, exclusions, request correlation, timeout blocking and alternative batches. Offline Chromium checks cover all eight gear tier/category combinations, saved preferences, old-hook rejection, Traditional Chinese UI and desktop/mobile layout. HTML and ZIP rebuild identically. No Windows installer or live-game operation was executed.
+
 ## English launcher console (2026-09-22)
 
 - Operator requests English for the BAT execution window only; the Helper browser UI remains Traditional Chinese.

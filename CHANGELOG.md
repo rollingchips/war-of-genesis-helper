@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-27 — T4-and-below fusion and jewel preservation
+
+- Remove same-level restriction; include source tiers T1–T4 with fixed 6 equipment / 3 accessory batches.
+- Repair rejected-first-batch starvation and explain no-action results without repeated unchanged-inventory checks.
+- Port upstream jewel preservation semantics to matched UI/hook, with capability gating and no old-hook fallback.
+- Retain localization, original controls placement, item protections and English launcher console. Offline browser, engine, localization, packaging and deterministic-build checks pass; live game remains unverified.
+
+
 ## 2026-09-22 — English launcher console
 
 - Translate the launcher prompts and same-window bridge logs to English, while keeping the Helper UI Traditional Chinese.
