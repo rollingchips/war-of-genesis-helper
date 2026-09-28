@@ -1,5 +1,14 @@
 # Traditional Chinese Frontend Contract
 
+## Workshop fault containment (2026-09-28)
+
+- A blocked or uncertain workshop pauses every browser automation producer (gear, jewel fusion, jewel deposit and T3 deposit), not only the gear switch. Busy capability suppresses dispatch without changing user preferences; blocked capability turns automatic preferences off. Never clear an uncertain game lock automatically.
+- Preserve the first post-submission fault in the hook capability and a separate browser diagnostic panel/session storage; repeated busy responses cannot overwrite it. Distinguish transient busy from blocked. Record only bounded response shape and result code, never inventory/account payloads.
+- Clear the diagnostic display explicitly without unlocking execution. A fresh hook instance can clear the browser interlock, but must not re-enable automatic switches. Existing success criteria remain unchanged: the original live failure cannot be inferred from the screenshot.
+- Validate a blocked capability against all command types, repeated polling, persistent diagnostics, transient busy and hook fault receipts in offline tests. No live installer or game operations.
+
+Verification: 21 offline regressions passed, including 600 attempted dispatches under a blocked workshop producing zero sends, all automatic producers disabled, diagnostic persistence across reload and transient-busy recovery. The HTML/archive remain reproducible; no live game was accessed.
+
 ## T4-and-below fusion and jewel preservation (2026-09-27)
 
 - Supersedes the previous T3/T4 and shared same-level contract. Automatic gear fusion consumes exact source tiers 1 through 4, with six equipment items or three accessories per batch. Never mix tiers or categories; levels may differ. Remove the same-level checkbox and ignore its old persisted preference, including manual legacy T3 requests. Keep one switch in the original automation card, default OFF, and the existing storage preference. Label the feature "T4 及以下裝備／飾品".

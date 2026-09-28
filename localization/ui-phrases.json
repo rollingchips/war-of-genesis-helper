@@ -446,5 +446,7 @@
   "No matching game recipe": "找不到對應的遊戲合成配方。",
   "Insufficient unpreserved jewels": "未保留且符合條件的同階寶石不足 6 顆。",
   "Required jewel preservation checks are unavailable": "目前無法執行寶石保留檢查，請更新 LiveSync。",
-  "Invalid or duplicate request identity": "指令無效或重複，未再次執行。"
+  "Invalid or duplicate request identity": "指令無效或重複，未再次執行。",
+  "Workshop blocked; check the game.": "鍛造結果未確認；已暫停所有自動合成與入庫，請檢查遊戲。",
+  "Workshop busy; wait for the current action.": "鍛造正在處理目前指令，請稍候。"
 }

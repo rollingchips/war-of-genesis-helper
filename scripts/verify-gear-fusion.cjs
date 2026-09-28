@@ -187,3 +187,29 @@ test('built hook routes jewel preservation without the legacy unfiltered fallbac
 test('exact jewel tier preservation does not protect unrelated tiers of that type',async()=>{
  const j=jewels();j.f.items.forEach(i=>i.itemTid=195102);const result=await j.f.engine.executeJewel(j.cmd({allowedTiers:[2],preservedTypes:[195101]}));assert.equal(result.fusedCount,1);assert.equal(j.sent.length,6);
 });
+test('first post-submission fault survives capability polling and rejected later commands',async()=>{
+ const f=setup({reply:999});const receipt=await f.engine.execute(f.command());assert.equal(receipt.uncertain,true);
+ const first=JSON.stringify(f.engine.status().fault);assert.equal(f.engine.status().fault.response.code,'999');
+ await f.engine.execute(f.command());assert.equal(JSON.stringify(f.engine.status().fault),first);
+ assert.equal(f.engine.status().reason,receipt.reason);
+});
+test('blocked workshop stops all producers and retains first error outside rolling logs',async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{
+ const context=await browser.newContext();await context.route('**/*',r=>/^https?:/.test(r.request().url())&&!r.request().url().startsWith(testUrl)?r.abort():r.continue());
+ await context.addInitScript(()=>{window.WebSocket=class{static OPEN=1;constructor(){this.readyState=0}close(){}send(){throw Error('No game')}};localStorage.setItem('genesis_update_notice_dismissed_v20260920','true');});
+ const page=await context.newPage();await page.goto(testUrl);
+ const result=await page.evaluate(()=>{
+  window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(s)};
+  const cap={version:2,jewelPreservation:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null}},generatedAt:Date.now()};
+  wogWorkshopStatus(cap);
+  for(let n=0;n<100;n++){for(const action of ['fuse','fuseGearTiers','deposit','depositT3','withdraw','toggleStorage'])queueJewelCmd({action});wogWorkshopStatus(cap);}
+  wogWorkshopReceipt({uncertain:true,reason:'later error'});
+  return {sent:__sent.length,jewel:isAutoFuseJewelActive,deposit:isAutoDepositJewelActive,t3:isAutoDepositT3Active,fault:JSON.parse(sessionStorage.getItem('wog_workshop_first_fault')),text:document.getElementById('workshopFirstFault').textContent};
+ });
+ assert.equal(result.sent,0);assert.equal(result.jewel,false);assert.equal(result.deposit,false);assert.equal(result.t3,false);assert.equal(result.fault.response.code,'999');assert(!result.text.includes('later error'));
+ await page.reload();assert((await page.locator('#workshopFirstFault').innerText()).includes('999'));
+ await page.evaluate(()=>{window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(s)};wogWorkshopStatus({instance:'b',available:true,busy:true});queueJewelCmd({action:'deposit'});});assert.equal(await page.evaluate(()=>__sent.length),0);
+ await page.evaluate(()=>{wogWorkshopStatus({instance:'b',available:true,busy:false});queueJewelCmd({action:'deposit'});});assert.equal(await page.evaluate(()=>__sent.length),1);
+ await context.close();
+ }finally{await browser.close()}
+});

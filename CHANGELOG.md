@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-28 — Workshop fault containment
+
+- Fix continued automatic deposit dispatch after an uncertain fusion disabled only the gear switch.
+- Pause every workshop automation on blocked/uncertain state; suppress transient busy dispatch.
+- Preserve the first error separately from rolling logs and expose bounded response-shape diagnostics. Do not guess the original live failure or loosen success validation.
+- Passed 21 offline regressions, full localization/browser/archive checks and deterministic rebuild. Windows/game execution remains unverified.
+
 ## 2026-09-27 — T4-and-below fusion and jewel preservation
 
 - Remove same-level restriction; include source tiers T1–T4 with fixed 6 equipment / 3 accessory batches.

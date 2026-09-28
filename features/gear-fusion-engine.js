@@ -1,5 +1,6 @@
 function createGearFusion(getGame, timeoutMs = 10000) {
-  let busy = false, blocked = false, lastSnapshot = 0;
+  let busy = false, blocked = false, lastSnapshot = 0, fault = null;
+  const responseShape = r => ({kind:Array.isArray(r)?"array":r===null?"null":typeof r, code: typeof r?.NetResult === "number" || typeof r?.NetResult === "string" ? String(r.NetResult).slice(0,40) : null, length:Array.isArray(r)?r.length:null});
   const seen = new Map();
   const rejected = new Map();
   const instance = 't4-' + Date.now() + '-' + Math.random().toString(36).slice(2);
@@ -26,7 +27,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     return {n, w, raw, rows};
   }
   function status() {
-    const base = {version: 2, jewelPreservation: 1, instance, busy, blocked, generatedAt: Date.now()};
+    const base = {version: 2, jewelPreservation: 1, instance, busy, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
     try {
       const {rows} = inventory(); lastSnapshot = Date.now();
       const counts = {};
@@ -72,7 +73,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     seen.set(cmd.requestId, true);
     if (busy || blocked || cmd.instance !== instance || (![1, 2].includes(cmd.contentType) || ![1, 2, 3, 4].includes(cmd.sourceTier)) || Date.now() - lastSnapshot > 10000) return {...receipt, success: false, reason: 'Unavailable, stale or busy fusion session'};
     busy = true;
-    let sent = false, timer;
+    let sent = false, timer, responseInfo;
     try {
       const data = inventory();
       data.w.setFusionContentType(cmd.contentType);
@@ -89,14 +90,15 @@ function createGearFusion(getGame, timeoutMs = 10000) {
       const pending = Promise.resolve(fresh.w.reqFusionAsync(plan.table.FusionID, plan.materials));
       const response = await Promise.race([pending, new Promise((_, reject) => {timer = setTimeout(() => reject(Error('Fusion timed out; reconcile in game before restarting LiveSync')), timeoutMs);})]);
       clearTimeout(timer);
+      responseInfo=responseShape(response);
       if (!response || ![0, 1000].includes(response.NetResult)) throw Error('Fusion response was unsuccessful or uncertain');
       const after = fresh.n.net.data.item.getAllItemNotStack();
       if (!Array.isArray(after) || plan.items.some(i => after.some(x => String(x.itemId) === i.id))) throw Error('Fusion materials are not reconciled; check the game before restarting LiveSync');
       try { fresh.n.msgBroker.publish('onUpdateWorkShopFusion'); } catch (_) {}
       return {...receipt, success: true, fusedCount: 1};
     } catch (e) {
-      if (sent) blocked = true;
-      return {...receipt, success: false, uncertain: sent, reason: e.message};
+      if (sent) {blocked = true;if(!fault)fault={reason:e.message,response:responseInfo,requestId:cmd.requestId};}
+      return {...receipt, success: false, uncertain: sent, reason: e.message, response:responseInfo};
     } finally { clearTimeout(timer); busy = false; }
   }
   async function executeJewel(cmd) {
@@ -105,7 +107,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     if (seen.size>=10000) return {...receipt,success:false,reason:'Session request limit reached'};
     seen.set(cmd.requestId,true);
     if (busy || blocked || cmd.instance!==instance || Date.now()-lastSnapshot>10000 || !Array.isArray(cmd.preservedTypes) || cmd.preservedTypes.some(x=>!Number.isInteger(x)||x<=0)) return {...receipt,success:false,reason:'Unavailable, stale or busy fusion session'};
-    busy=true;let sent=false,timer;
+    busy=true;let sent=false,timer,responseInfo;
     try {
       const {n,w}=inventory();
       if (!['stageFusionItem','isFusionStagingFull','reqFusionStagedAsync'].every(k=>typeof w[k]==='function')) throw Error('Required jewel preservation checks are unavailable');
@@ -133,13 +135,14 @@ function createGearFusion(getGame, timeoutMs = 10000) {
       sent=true;
       const response=await Promise.race([Promise.resolve(w.reqFusionStagedAsync()),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Fusion timed out; reconcile in game before restarting LiveSync')),timeoutMs);})]);
       clearTimeout(timer);
+      responseInfo=responseShape(response);
       // Staged jewel API returns result items, unlike the direct equipment API.
       if(!Array.isArray(response)||response.length===0)throw Error('Fusion response was unsuccessful or uncertain');
       const after=n.net.data.item.getAllItemNotStack();
       if(!Array.isArray(after)||selected.some(i=>after.some(x=>String(x.itemId)===String(i.itemId))))throw Error('Fusion materials are not reconciled; check the game before restarting LiveSync');
       w.clearFusionStaging();try{n.msgBroker.publish('onUpdateWorkShopFusion');}catch(_){}
       return {...receipt,success:true,fusedCount:1};
-    }catch(e){if(sent)blocked=true;return {...receipt,success:false,uncertain:sent,reason:e.message};}
+    }catch(e){if(sent){blocked=true;if(!fault)fault={reason:e.message,response:responseInfo,requestId:cmd.requestId};}return {...receipt,success:false,uncertain:sent,reason:e.message,response:responseInfo};}
     finally{clearTimeout(timer);busy=false;}
   }
   return {status, execute, executeJewel, locked: () => busy || blocked};

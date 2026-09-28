@@ -10,6 +10,7 @@
     if (el('autoGearFusion')) el('autoGearFusion').checked = false;
     note(text);
   }
+  window.wogGearFusionPause = stop;
   function socket() {
     return (typeof liveWs !== 'undefined' && liveWs?.readyState === 1) ? liveWs : window.GenesisGameBridge?.ws;
   }
@@ -23,6 +24,7 @@
   };
   window.wogGearFusionTick = data => {
     const cap = data?.gearFusion;
+    window.wogWorkshopStatus?.(cap);
     window.wogWorkshopCapability = cap;
     if (!cap || cap.version !== 2 || !connected() || !Number.isFinite(cap.generatedAt) || Date.now() - cap.generatedAt > 8000 || cap.generatedAt > Date.now() + 1000) {
       state.capability = null; window.wogWorkshopCapability = null; if (el('autoGearFusion')) el('autoGearFusion').disabled = true;
@@ -51,7 +53,7 @@
     }
     if (!chosen) return;
     const requestId = 'gear-' + crypto.randomUUID(); state.pending = requestId; state.nextIndex = (chosen.index + 1) % combinations.length;
-    timer = setTimeout(() => { if (state.pending === requestId) { state.uncertain = true; state.pending = null; stop('No fusion receipt. Check the game before enabling again.'); } }, 15000);
+    timer = setTimeout(() => { if (state.pending === requestId) { state.uncertain = true; state.pending = null; window.wogWorkshopReceipt?.({uncertain:true,reason:'No fusion receipt. Check the game before enabling again.'}); stop('No fusion receipt. Check the game before enabling again.'); } }, 15000);
     queueJewelCmd({action: 'fuseGearTiers', requestId, instance: cap.instance, contentType: chosen.type, sourceTier: chosen.tier, includeStorage, sameLevelOnly: false});
   };
   function mount() {

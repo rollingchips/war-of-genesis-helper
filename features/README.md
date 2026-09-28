@@ -27,3 +27,7 @@ The BAT execution window and authored LiveSync Bridge logs use English. The brow
 Expand **寶石保留設定** in the existing Automation Settings card. Green buttons preserve a whole jewel type (**全部**) or its exact tier (**T1** through **T6**). The saved policy applies to manual and automatic jewel fusion and is checked again inside the game hook. Existing allowed-tier and storage settings still apply. Update both the bundled page and hook; older hooks are intentionally refused.
 
 This release selectively ports upstream preservation matching from `d09f5f8832360e03090b414ef23139c9d36c61ba`; it does not import unrelated upstream reconnect behavior or claim a full upstream version upgrade.
+
+## Workshop fault containment
+
+A blocked or uncertain fusion pauses gear fusion, jewel fusion and both automatic deposit producers. The first error is retained in the hook and **鍛造首筆錯誤** panel, separate from rolling activity logs, with bounded response-type/result-code diagnostics. Clearing that display does not unlock the game. Temporary busy state merely defers dispatch. Check actual inventory before starting a fresh hook session; automation remains off until explicitly enabled. The original live failure reported on September 28 is not yet diagnosed; this update fixes continued dispatch and lost diagnostics without relaxing result validation.

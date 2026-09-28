@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const engine = fs.readFileSync(path.join(__dirname, '../features/gear-fusion-engine.js'), 'utf8');
+const workshopUI = fs.readFileSync(path.join(__dirname, '../features/workshop-status-ui.js'), 'utf8');
 const jewelUI = fs.readFileSync(path.join(__dirname, '../features/jewel-preservation-ui.js'), 'utf8');
 const ui = fs.readFileSync(path.join(__dirname, '../features/gear-fusion-ui.js'), 'utf8');
 function once(source, before, after) {
@@ -21,7 +22,10 @@ function patchHook(source) {
   const originalJewelAction = globalThis.__runJewelAction;
   let workshopActionBusy = false;
   globalThis.__runJewelAction = async function(cmd) {
-    if (workshopActionBusy || globalThis.__wogGearFusion.locked()) return JSON.stringify({action: cmd.action, requestId: cmd.requestId, success: false, reason: 'Workshop busy or unreconciled'});
+    if (workshopActionBusy || globalThis.__wogGearFusion.locked()) {
+      const state=globalThis.__wogGearFusion.status();
+      return JSON.stringify({action:cmd.action,requestId:cmd.requestId,success:false,code:state.blocked?'WORKSHOP_BLOCKED':'WORKSHOP_BUSY',uncertain:state.blocked,reason:state.blocked?(state.fault?.reason||'Workshop blocked; check the game.'):'Workshop busy; wait for the current action.',response:state.fault?.response});
+    }
     workshopActionBusy = true;
     try { return await originalJewelAction(cmd); }
     finally { workshopActionBusy = false; }
@@ -51,11 +55,11 @@ function patchFrontend(html) {
   html = once(html, 'function applyLiveGameData(data) {', 'function applyLiveGameData(data) {\n  if (window.wogGearFusionTick) window.wogGearFusionTick(data && data.jewelsData);');
   const marker = 'if (data && data.action) {';
   if (html.split(marker).length !== 3) throw Error('Expected both LiveSync action handlers');
-  html = html.replaceAll(marker, marker + '\n            if (window.wogGearFusionReply) window.wogGearFusionReply(data);\n            if (window.wogJewelPreservationReply) window.wogJewelPreservationReply(data);');
+  html = html.replaceAll(marker, marker + '\n            if (window.wogWorkshopReceipt) window.wogWorkshopReceipt(data);\n            if (window.wogGearFusionReply) window.wogGearFusionReply(data);\n            if (window.wogJewelPreservationReply) window.wogJewelPreservationReply(data);');
   // Upstream preservation semantics applied to both manual and automatic counts.
   html=html.replaceAll('if (!j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2)))', 'if (!j.isLock && !window.isJewelPreserved(j) && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2)))');
   html=html.replaceAll('jewels.filter(j => !j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2))', 'jewels.filter(j => !j.isLock && !window.isJewelPreserved(j) && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2))');
   html=html.replaceAll('const isSameLv = cmd.sameLevelOnly !== undefined ? cmd.sameLevelOnly : (cfg && cfg.sameLevelOnly);','const isSameLv = false;');
-  return once(html, '</body>', '<script>\n' + ui + '\n</script>\n<script>\n'+jewelUI+'\n</script>\n</body>');
+  return once(html, '</body>', '<script>\n'+workshopUI+'\n</script>\n<script>\n' + ui + '\n</script>\n<script>\n'+jewelUI+'\n</script>\n</body>');
 }
 module.exports = {patchHook, patchFrontend};
