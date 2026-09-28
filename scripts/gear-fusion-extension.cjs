@@ -24,7 +24,7 @@ function patchHook(source) {
   globalThis.__runJewelAction = async function(cmd) {
     if (workshopActionBusy || globalThis.__wogGearFusion.locked()) {
       const state=globalThis.__wogGearFusion.status();
-      return JSON.stringify({action:cmd.action,requestId:cmd.requestId,success:false,code:state.blocked?'WORKSHOP_BLOCKED':'WORKSHOP_BUSY',uncertain:state.blocked,reason:state.blocked?(state.fault?.reason||'Workshop blocked; check the game.'):'Workshop busy; wait for the current action.',response:state.fault?.response});
+      return JSON.stringify({action:cmd.action,requestId:cmd.requestId,success:!state.blocked && cmd.action==='fuseGearTiers',fusedCount:0,code:state.blocked?'WORKSHOP_BLOCKED':'WORKSHOP_BUSY',uncertain:state.blocked,reason:state.blocked?(state.fault?.reason||'Workshop blocked; check the game.'):'Workshop busy; wait for the current action.',response:state.fault?.response,diagnostics:state.fault?.diagnostics});
     }
     workshopActionBusy = true;
     try { return await originalJewelAction(cmd); }

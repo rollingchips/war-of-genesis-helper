@@ -4,10 +4,13 @@ function createGearFusion(getGame, timeoutMs = 10000) {
   const seen = new Map();
   const rejected = new Map();
   const instance = 't4-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  function gameBusy() { return getGame()?.services?.workshop?._bRequesting !== false; }
+  const deferred = receipt => ({...receipt, success:true, fusedCount:0, code:'WORKSHOP_BUSY', reason:'Workshop busy; wait for the current action.'});
   function inventory() {
     const n = getGame(), w = n.services.workshop;
-    if (!w || !['getTableInfo', 'findFusionTable', 'validateFusionMaterials', 'reqFusionAsync', 'clearFusionStaging', 'setFusionContentType', 'setAutoRegisterRating', 'setAutoRegisterIncludeStorage'].every(k => typeof w[k] === 'function') ||
+    if (!w || !['getTableInfo', 'findFusionTable', 'validateFusionMaterials', 'reqFusionAsync'].every(k => typeof w[k] === 'function') ||
         typeof n.services.itemMove?.isEquippedItemId !== 'function' || typeof n.services.steamMarket?.staging?.isStaged !== 'function') throw Error('Required item safety checks are unavailable');
+    if (typeof w._bRequesting !== 'boolean' || typeof n.db.fusion?.get !== 'function') throw Error('Required workshop preflight checks are unavailable');
     const raw = n.net.data.item.getAllItemNotStack();
     if (!Array.isArray(raw) || raw.length > 5000) throw Error('Unsupported inventory');
     const ids = new Set(), rows = [];
@@ -27,7 +30,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     return {n, w, raw, rows};
   }
   function status() {
-    const base = {version: 2, jewelPreservation: 1, instance, busy, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
+    const base = {version: 2, jewelPreservation: 1, instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
     try {
       const {rows} = inventory(); lastSnapshot = Date.now();
       const counts = {};
@@ -72,20 +75,25 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     if (seen.size >= 10000) return {...receipt, success: false, reason: 'Session request limit reached'};
     seen.set(cmd.requestId, true);
     if (busy || blocked || cmd.instance !== instance || (![1, 2].includes(cmd.contentType) || ![1, 2, 3, 4].includes(cmd.sourceTier)) || Date.now() - lastSnapshot > 10000) return {...receipt, success: false, reason: 'Unavailable, stale or busy fusion session'};
+    if (gameBusy()) return deferred(receipt);
     busy = true;
-    let sent = false, timer, responseInfo;
+    let sent = false, timer, responseInfo, diagnostics = {phase:'selection', contentType:cmd.contentType, sourceTier:cmd.sourceTier};
     try {
       const data = inventory();
-      data.w.setFusionContentType(cmd.contentType);
-      data.w.setAutoRegisterRating('Fusion', cmd.sourceTier);
-      data.w.setAutoRegisterIncludeStorage('Fusion', cmd.includeStorage === true);
+      // Explicit materials need no staging/settings mutations or UI events.
       const plan = select(data, cmd);
       if (!plan.items) return {...receipt, success: true, fusedCount: 0, ...plan};
       // Re-check the authoritative materials immediately before submission.
       const fresh = inventory();
+      const recipe = fresh.n.db.fusion.get(plan.table.FusionID);
+      diagnostics = {...diagnostics, phase:'preflight', requesting:fresh.w._bRequesting, fusionId:plan.table.FusionID, groupId:recipe?.GroupID ?? null, recipeFound:!!recipe, materialCount:plan.materials.length, recipeContentType:recipe?.ContentType ?? null, recipeRating:recipe?.MaterialRating ?? null, recipeCount:recipe?.MaterialRatingCnt ?? null};
+      if (gameBusy()) return deferred(receipt);
+      if (!recipe || recipe.FusionID !== plan.table.FusionID || recipe.ContentType !== cmd.contentType || recipe.MaterialRating !== cmd.sourceTier || recipe.MaterialRatingCnt !== plan.materials.length) throw Error('Game recipe changed before submission');
       if (!plan.items.every(i => fresh.rows.some(x => x.id === i.id && x.itemTid === i.itemTid && x.type === i.type && x.rating === i.rating && x.level === i.level && (x.location === 1 || cmd.includeStorage === true))) ||
-          fresh.w.validateFusionMaterials(plan.table, plan.materials) !== true) throw Error('Materials changed before submission');
-      fresh.w.clearFusionStaging();
+          (diagnostics.materialsValid = fresh.w.validateFusionMaterials(recipe, plan.materials) === true) !== true) throw Error('Materials changed before submission');
+      diagnostics.requesting = fresh.w._bRequesting;
+      if (gameBusy()) return deferred(receipt);
+      diagnostics.phase = 'workshop-call';
       sent = true;
       const pending = Promise.resolve(fresh.w.reqFusionAsync(plan.table.FusionID, plan.materials));
       const response = await Promise.race([pending, new Promise((_, reject) => {timer = setTimeout(() => reject(Error('Fusion timed out; reconcile in game before restarting LiveSync')), timeoutMs);})]);
@@ -97,8 +105,8 @@ function createGearFusion(getGame, timeoutMs = 10000) {
       try { fresh.n.msgBroker.publish('onUpdateWorkShopFusion'); } catch (_) {}
       return {...receipt, success: true, fusedCount: 1};
     } catch (e) {
-      if (sent) {blocked = true;if(!fault)fault={reason:e.message,response:responseInfo,requestId:cmd.requestId};}
-      return {...receipt, success: false, uncertain: sent, reason: e.message, response:responseInfo};
+      if (sent) {blocked = true;if(!fault)fault={reason:e.message,response:responseInfo,requestId:cmd.requestId,diagnostics};}
+      return {...receipt, success: false, uncertain: sent, reason: e.message, response:responseInfo, diagnostics};
     } finally { clearTimeout(timer); busy = false; }
   }
   async function executeJewel(cmd) {
@@ -107,10 +115,11 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     if (seen.size>=10000) return {...receipt,success:false,reason:'Session request limit reached'};
     seen.set(cmd.requestId,true);
     if (busy || blocked || cmd.instance!==instance || Date.now()-lastSnapshot>10000 || !Array.isArray(cmd.preservedTypes) || cmd.preservedTypes.some(x=>!Number.isInteger(x)||x<=0)) return {...receipt,success:false,reason:'Unavailable, stale or busy fusion session'};
+    if (gameBusy()) return deferred(receipt);
     busy=true;let sent=false,timer,responseInfo;
     try {
       const {n,w}=inventory();
-      if (!['stageFusionItem','isFusionStagingFull','reqFusionStagedAsync'].every(k=>typeof w[k]==='function')) throw Error('Required jewel preservation checks are unavailable');
+      if (!['clearFusionStaging','setFusionContentType','setAutoRegisterIncludeStorage','stageFusionItem','isFusionStagingFull','reqFusionStagedAsync'].every(k=>typeof w[k]==='function')) throw Error('Required jewel preservation checks are unavailable');
       const tiers=cmd.tier!=null?[cmd.tier]:cmd.allowedTiers;
       if (!Array.isArray(tiers)||!tiers.length||tiers.some(t=>!Number.isInteger(t)||t<1||t>6)) throw Error('No allowed tiers configured');
       // Upstream d09f5f8: a base TID preserves all tiers; an exact TID preserves one.
@@ -129,9 +138,11 @@ function createGearFusion(getGame, timeoutMs = 10000) {
       for(const tier of tiers){const group=rows.filter(i=>n.db.item.get(i.itemTid).RatingType===tier);if(group.length>=6){selected=group.slice(0,6);break;}}
       if(!selected.length)return {...receipt,success:true,fusedCount:0,reason:'Insufficient unpreserved jewels'};
       const fresh=eligible();if(!selected.every(i=>fresh.some(x=>String(x.itemId)===String(i.itemId)&&x.itemTid===i.itemTid)))throw Error('Materials changed before submission');
+      if (gameBusy()) return deferred(receipt);
       w.clearFusionStaging();w.setFusionContentType(20);w.setAutoRegisterIncludeStorage('Fusion',cmd.includeStorage===true);
       for(const i of selected)w.stageFusionItem(i.itemTid,i.itemId);
       if(w.isFusionStagingFull()!==true){w.clearFusionStaging();return {...receipt,success:true,fusedCount:0,reason:'Game rejected candidate materials'};}
+      if (gameBusy()) return deferred(receipt);
       sent=true;
       const response=await Promise.race([Promise.resolve(w.reqFusionStagedAsync()),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Fusion timed out; reconcile in game before restarting LiveSync')),timeoutMs);})]);
       clearTimeout(timer);
@@ -145,5 +156,5 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     }catch(e){if(sent){blocked=true;if(!fault)fault={reason:e.message,response:responseInfo,requestId:cmd.requestId};}return {...receipt,success:false,uncertain:sent,reason:e.message,response:responseInfo};}
     finally{clearTimeout(timer);busy=false;}
   }
-  return {status, execute, executeJewel, locked: () => busy || blocked};
+  return {status, execute, executeJewel, locked: () => busy || blocked || gameBusy()};
 }

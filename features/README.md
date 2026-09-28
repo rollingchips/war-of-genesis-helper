@@ -31,3 +31,9 @@ This release selectively ports upstream preservation matching from `d09f5f883236
 ## Workshop fault containment
 
 A blocked or uncertain fusion pauses gear fusion, jewel fusion and both automatic deposit producers. The first error is retained in the hook and **鍛造首筆錯誤** panel, separate from rolling activity logs, with bounded response-type/result-code diagnostics. Clearing that display does not unlock the game. Temporary busy state merely defers dispatch. Check actual inventory before starting a fresh hook session; automation remains off until explicitly enabled. The original live failure reported on September 28 is not yet diagnosed; this update fixes continued dispatch and lost diagnostics without relaxing result validation.
+
+## Native workshop preflight
+
+The matched hook now respects the game's own busy flag for every workshop action. Direct equipment calls do not change workshop tabs/settings or clear staging. The selected recipe is re-read and protected materials are revalidated immediately before the API call. The capability includes `preflight: 1` for support diagnostics.
+
+An API-entered fault stores bounded call-time recipe/busy/validation diagnostics in the same first-error panel and session storage. This does not prove a network request was sent. Null, exceptions and timeout still block subsequent operations; no automatic unlock is introduced. Offline coverage includes the operator-supplied native service body but does not establish the cause of the historical null or a successful live game run.

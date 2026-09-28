@@ -2,10 +2,10 @@
 (() => {
   const key='wog_workshop_first_fault';let fault=null,paused=false,instance=null,cap=null;
   try{fault=JSON.parse(sessionStorage.getItem(key)||'null');}catch(_){}
-  function draw(){const node=document.getElementById('workshopFirstFault');if(node)node.textContent=fault?new Date(fault.at).toLocaleString()+' · '+window.zhText(fault.reason)+(fault.response?' · 回傳類型：'+({array:'陣列',object:'物件',undefined:'未提供',null:'空值',string:'文字',number:'數值',boolean:'布林值'}[fault.response.kind]||'未知')+'；結果碼：'+(fault.response.code??'未提供'):''):'尚無未確認的鍛造錯誤。';}
-  function pause(reason,response){
+  function draw(){const node=document.getElementById('workshopFirstFault');if(node)node.textContent=fault?new Date(fault.at).toLocaleString()+' · '+window.zhText(fault.reason)+(fault.response?' · 回傳類型：'+({array:'陣列',object:'物件',undefined:'未提供',null:'空值',string:'文字',number:'數值',boolean:'布林值'}[fault.response.kind]||'未知')+'；結果碼：'+(fault.response.code??'未提供'):'')+(fault.diagnostics?' · 階段：'+({selection:'選料',preflight:'送出前驗證','workshop-call':'呼叫遊戲合成'}[fault.diagnostics.phase]||'未知')+'；配方：'+(fault.diagnostics.fusionId??'未提供')+'；遊戲忙碌：'+(fault.diagnostics.requesting===false?'否':fault.diagnostics.requesting===true?'是':'未知')+'；材料驗證：'+(fault.diagnostics.materialsValid===true?'通過':fault.diagnostics.materialsValid===false?'不通過':'未完成'):''):'尚無未確認的鍛造錯誤。';}
+  function pause(reason,response,diagnostics){
     paused=true;
-    if(!fault){fault={at:Date.now(),reason:reason||'Workshop blocked; check the game.',response};try{sessionStorage.setItem(key,JSON.stringify(fault));}catch(_){}draw();}
+    if(!fault){fault={at:Date.now(),reason:reason||'Workshop blocked; check the game.',response,diagnostics};try{sessionStorage.setItem(key,JSON.stringify(fault));}catch(_){}draw();}
     isAutoFuseJewelActive=false;isAutoDepositJewelActive=false;isAutoDepositT3Active=false;
     window.isAutoFuseJewelActive=false;window.isAutoDepositJewelActive=false;window.isAutoDepositT3Active=false;
     for(const name of ['genesis_auto_fuse_jewel','genesis_auto_deposit_jewel','genesis_auto_deposit_t3'])localStorage.setItem(name,'false');
@@ -16,10 +16,10 @@
     cap=value||null;
     if(!cap||typeof cap.instance!=='string'||!cap.instance)return;
     if(instance!==cap.instance){if(instance!==null)paused=false;instance=cap.instance;}
-    if(cap.blocked)pause(cap.fault?.reason||cap.reason,cap.fault?.response);
+    if(cap.blocked)pause(cap.fault?.reason||cap.reason,cap.fault?.response,cap.fault?.diagnostics);
   };
   window.wogWorkshopReceipt=data=>{
-    if(data.uncertain||data.code==='WORKSHOP_BLOCKED')pause(data.reason,data.response);
+    if(data.uncertain||data.code==='WORKSHOP_BLOCKED')pause(data.reason,data.response,data.diagnostics);
   };
   const send=queueJewelCmd;
   queueJewelCmd=function(cmd){

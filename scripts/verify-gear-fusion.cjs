@@ -13,9 +13,9 @@ function setup({count=6,type=1,reply=1000,consume=true}={}) {
   let items = Array.from({length:count},(_,i)=>({itemId:i+1,itemTid:i+1,location:1,isLock:false}));
   const db = new Map(items.map(i=>[i.itemTid,{RatingType:4,LimitLevel:20}]));
   const equipped = new Set(), staged = new Set(); let calls=0, selected=[];
-  const w={setFusionContentType(){},setAutoRegisterRating(){},setAutoRegisterIncludeStorage(){},getTableInfo:()=>({contentType:type,baseLimitLevel:20}),findFusionTable:(t,r,l)=>t===type&&[1,2,3,4].includes(r)&&l===20?{FusionID:404}:null,
+  const w={_bRequesting:false,setFusionContentType(){},setAutoRegisterRating(){},setAutoRegisterIncludeStorage(){},getTableInfo:()=>({contentType:type,baseLimitLevel:20}),findFusionTable:(t,r,l)=>t===type&&[1,2,3,4].includes(r)&&l===20?{FusionID:404,GroupID:3000,ContentType:t,MaterialRating:r,MaterialRatingCnt:t===1?6:3}:null,
     validateFusionMaterials:(_,ms)=>ms.length===(type===1?6:3),clearFusionStaging(){},reqFusionAsync:async(_,ms)=>{calls++;selected=ms;if(consume)items=items.filter(i=>!ms.some(m=>m.itemId===i.itemId));return {NetResult:reply,Data:{}};}};
-  const n={services:{workshop:w,itemMove:{isEquippedItemId:id=>equipped.has(id)},steamMarket:{staging:{isStaged:id=>staged.has(id)}}},net:{data:{item:{getAllItemNotStack:()=>items}}},db:{equip:{get:id=>db.get(id)}},msgBroker:{publish(){}}};
+  const n={services:{workshop:w,itemMove:{isEquippedItemId:id=>equipped.has(id)},steamMarket:{staging:{isStaged:id=>staged.has(id)}}},net:{data:{item:{getAllItemNotStack:()=>items}}},db:{equip:{get:id=>db.get(id)},fusion:{get:id=>id===404?w.findFusionTable(type,db.values().next().value.RatingType,20):null}},msgBroker:{publish(){}}};
   const engine=factory(()=>n,30);let seq=0;
   const command=extra=>({action:'fuseGearTiers',instance:engine.status().instance,requestId:'test-'+(++seq),contentType:type,sourceTier:4,sameLevelOnly:true,includeStorage:false,...extra});
   return {engine,n,w,db,equipped,staged,command,get items(){return items},set items(v){items=v},get calls(){return calls},get selected(){return selected}};
@@ -200,16 +200,63 @@ test('blocked workshop stops all producers and retains first error outside rolli
  const page=await context.newPage();await page.goto(testUrl);
  const result=await page.evaluate(()=>{
   window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(s)};
-  const cap={version:2,jewelPreservation:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null}},generatedAt:Date.now()};
+  const cap={version:2,jewelPreservation:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null},diagnostics:{phase:'workshop-call',fusionId:10603,requesting:false,materialsValid:true}},generatedAt:Date.now()};
   wogWorkshopStatus(cap);
   for(let n=0;n<100;n++){for(const action of ['fuse','fuseGearTiers','deposit','depositT3','withdraw','toggleStorage'])queueJewelCmd({action});wogWorkshopStatus(cap);}
   wogWorkshopReceipt({uncertain:true,reason:'later error'});
   return {sent:__sent.length,jewel:isAutoFuseJewelActive,deposit:isAutoDepositJewelActive,t3:isAutoDepositT3Active,fault:JSON.parse(sessionStorage.getItem('wog_workshop_first_fault')),text:document.getElementById('workshopFirstFault').textContent};
  });
- assert.equal(result.sent,0);assert.equal(result.jewel,false);assert.equal(result.deposit,false);assert.equal(result.t3,false);assert.equal(result.fault.response.code,'999');assert(!result.text.includes('later error'));
- await page.reload();assert((await page.locator('#workshopFirstFault').innerText()).includes('999'));
+ assert.equal(result.sent,0);assert.equal(result.jewel,false);assert.equal(result.deposit,false);assert.equal(result.t3,false);assert.equal(result.fault.response.code,'999');assert(!result.text.includes('later error'));assert.equal(result.fault.diagnostics.fusionId,10603);assert(result.text.includes('配方：10603'));assert(result.text.includes('材料驗證：通過'));
+ await page.reload();assert((await page.locator('#workshopFirstFault').innerText()).includes('999'));assert((await page.locator('#workshopFirstFault').innerText()).includes('10603'));
  await page.evaluate(()=>{window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(s)};wogWorkshopStatus({instance:'b',available:true,busy:true});queueJewelCmd({action:'deposit'});});assert.equal(await page.evaluate(()=>__sent.length),0);
  await page.evaluate(()=>{wogWorkshopStatus({instance:'b',available:true,busy:false});queueJewelCmd({action:'deposit'});});assert.equal(await page.evaluate(()=>__sent.length),1);
  await context.close();
  }finally{await browser.close()}
+});
+
+test('native busy defers gear and jewels without mutation or a persistent fault',async()=>{
+ const f=setup();let mutations=0;for(const k of ['clearFusionStaging','setFusionContentType','setAutoRegisterRating','setAutoRegisterIncludeStorage'])f.w[k]=()=>{mutations++};
+ f.w._bRequesting=true;assert.equal(f.engine.status().busy,true);assert.equal(f.engine.status().available,true);
+ const receipt=await f.engine.execute(f.command());assert.equal(receipt.code,'WORKSHOP_BUSY');assert.equal(receipt.fusedCount,0);assert.equal(f.calls,0);assert.equal(mutations,0);assert.equal(f.engine.status().blocked,false);
+ f.w._bRequesting=false;assert.equal((await f.engine.execute(f.command())).fusedCount,1);assert.equal(mutations,0);
+ const j=jewels();j.f.w._bRequesting=true;assert.equal((await j.f.engine.executeJewel(j.cmd())).code,'WORKSHOP_BUSY');assert.equal(j.sent.length,0);
+});
+test('fresh authoritative recipe and native busy are checked immediately before the call',async()=>{
+ for(const mutate of [f=>f.n.db.fusion.get=()=>null,f=>f.n.db.fusion.get=()=>({FusionID:404,GroupID:3000,ContentType:2,MaterialRating:4,MaterialRatingCnt:6}),f=>delete f.w._bRequesting]){
+  const f=setup();mutate(f);const receipt=await f.engine.execute(f.command());assert.equal(f.calls,0);assert.equal(f.engine.status().blocked,false);assert.notEqual(receipt.uncertain,true);
+ }
+ const f=setup();let checks=0;f.w.validateFusionMaterials=()=>{if(++checks===2)f.w._bRequesting=true;return true};
+ assert.equal((await f.engine.execute(f.command())).code,'WORKSHOP_BUSY');assert.equal(f.calls,0);assert.equal(f.engine.status().blocked,false);
+ const x=setup();let count=0;x.w.validateFusionMaterials=()=>++count===1;
+ assert.equal((await x.engine.execute(x.command())).reason,'Materials changed before submission');assert.equal(x.calls,0);
+});
+test('operator-provided native service body succeeds without staging or settings side effects',async()=>{
+ const f=setup();const submit=f.w.reqFusionAsync;let networkCalls=0;
+ f.n.net.manager={gameSession:{reqItemFusion:async(group,materials)=>{networkCalls++;assert.equal(group,3000);return submit(404,materials)}}};
+ // Exact operator-provided service logic: the busy flag is set synchronously.
+ f.w.reqFusionAsync=vm.runInNewContext(`(async function(fusionTid,materials){if(this._bRequesting)return E_LogPort.Service,null;this._bRequesting=!0;try{var sendMaterials,fusion=nn.db.fusion.get(fusionTid);return fusion?(sendMaterials=materials??this.collectFusionMaterials(fusionTid),this.validateFusionMaterials(fusion,sendMaterials)?await nn.net.manager.gameSession.reqItemFusion(fusion.GroupID,sendMaterials):(E_LogPort.Service,sendMaterials.length,null)):(E_LogPort.Service,null)}finally{this._bRequesting=!1}})`,{nn:f.n,E_LogPort:{Service:0}});
+ for(const k of ['clearFusionStaging','setFusionContentType','setAutoRegisterRating','setAutoRegisterIncludeStorage'])f.w[k]=()=>{throw Error('Unexpected game UI mutation')};
+ const receipt=await f.engine.execute(f.command());assert.equal(receipt.fusedCount,1);assert.equal(networkCalls,1);assert.equal(f.w._bRequesting,false);
+});
+test('null after passing preflight retains bounded call-time evidence and blocks retry',async()=>{
+ const f=setup();let calls=0;f.w.reqFusionAsync=async()=>{calls++;return null};
+ const receipt=await f.engine.execute(f.command());assert.equal(receipt.uncertain,true);assert.equal(receipt.response.kind,'null');assert.equal(receipt.diagnostics.phase,'workshop-call');assert.equal(receipt.diagnostics.materialsValid,true);assert.equal(receipt.diagnostics.requesting,false);assert.equal(receipt.diagnostics.fusionId,404);
+ assert(!JSON.stringify(receipt.diagnostics).includes('itemId'));assert.equal(f.engine.status().fault.diagnostics.fusionId,404);
+ await f.engine.execute(f.command());assert.equal(calls,1);
+});
+test('packaged hook blocks deposits while native workshop is busy and defers gear',async()=>{
+ const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip')),source=strFromU8(archive['install_game_hook_v2.js']);
+ const ast=require('acorn').parse(source,{ecmaVersion:'latest'});const decl=ast.body.find(n=>n.type==='VariableDeclaration'&&n.declarations.some(d=>d.id.name==='hook')).declarations.find(d=>d.id.name==='hook');
+ const hook=vm.runInNewContext(source.slice(decl.init.start,decl.init.end));const f=setup(),context={nn:f.n,setInterval(){},setTimeout,clearTimeout,console};vm.createContext(context);vm.runInContext(hook,context);
+ f.w._bRequesting=true;
+ for(const action of ['deposit','depositT3','withdraw','fuse','fuseGearTiers']){const receipt=JSON.parse(await context.__runJewelAction({action,requestId:'busy-'+action}));assert.equal(receipt.code,'WORKSHOP_BUSY');assert.equal(receipt.uncertain,false);assert.equal(receipt.success,action==='fuseGearTiers');}
+ assert.equal(f.calls,0);assert.equal(context.__wogGearFusion.status().blocked,false);
+});
+
+test('protection changed during preflight never submits and network throws remain uncertain',async()=>{
+ const f=setup();const read=f.n.net.data.item.getAllItemNotStack;let reads=0;
+ f.n.net.data.item.getAllItemNotStack=()=>{if(++reads===3)f.items[0].isLock=true;return read()};
+ const result=await f.engine.execute(f.command());assert.equal(result.success,false);assert.equal(result.uncertain,false);assert.equal(f.calls,0);assert.equal(f.engine.status().blocked,false);
+ const x=setup();let calls=0;x.w.reqFusionAsync=async()=>{calls++;throw Error('Network response interrupted')};
+ const failed=await x.engine.execute(x.command());assert.equal(failed.uncertain,true);assert.equal(failed.diagnostics.materialsValid,true);await x.engine.execute(x.command());assert.equal(calls,1);
 });

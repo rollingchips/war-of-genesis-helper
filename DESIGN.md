@@ -1,5 +1,17 @@
 # Traditional Chinese Frontend Contract
 
+## Game workshop preflight and non-invasive equipment calls (2026-09-28)
+
+- Live operator diagnostics show valid mixed-level T3 equipment and accessory recipes. The supplied game `reqFusionAsync` returns null before its network call when busy, the recipe is absent or materials fail validation; the supplied network method otherwise returns a response or throws. This narrows investigation but does not prove which branch caused the historical fault.
+- Direct equipment fusion passes an explicit FusionID and material array. Do not change workshop content/settings or clear staging on this path: those calls publish game UI events and are unnecessary for the explicit-material API. Never bypass the workshop API or call the network endpoint directly.
+- Respect the game's `_bRequesting` in capability and the shared hook dispatch guard, in addition to the helper lock. Require an observable boolean busy state; unavailable safety checks fail closed. Busy is a transient no-action state, not proof of an uncertain submission. Recheck it immediately before each gear/jewel request. Do not clear a game busy flag, retry within a command, or unlock a prior uncertain operation.
+- Re-read the selected FusionID through the game database and validate that authoritative row plus fresh protected inventory immediately before gear submission. Missing recipe or changed/rejected materials cause zero API calls. Keep fixed 6/3 quantities, T1-T4 scope and item protections unchanged.
+- Persist bounded call-time diagnostics (phase, requesting, recipe ID/group/content/rating/count, validation outcome, source tier/category and material count) with the first fault, in receipts and browser session storage. No account data or item IDs. A null after entering the API remains blocked: do not infer non-submission solely from a later inventory snapshot or reinterpret it as success.
+- Test with the operator-provided game service method body, including busy/recipe/material guards, network rejection, null/timeout containment and native successful inventory reconciliation. Verify packaged hook guarding for deposits as well as fusions. Offline tests do not certify the historical root cause or live compatibility.
+
+Verification: 27 offline regressions passed. All 11 UI tabs, seven dialogs, 452 phrase pairs and desktop/mobile checks passed with zero real game commands and zero page errors. Rebuilt HTML and ZIP are byte-identical. No live game or installer was run.
+
+
 ## Workshop fault containment (2026-09-28)
 
 - A blocked or uncertain workshop pauses every browser automation producer (gear, jewel fusion, jewel deposit and T3 deposit), not only the gear switch. Busy capability suppresses dispatch without changing user preferences; blocked capability turns automatic preferences off. Never clear an uncertain game lock automatically.

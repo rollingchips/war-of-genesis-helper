@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-28 — Game workshop preflight
+
+- Stop touching game staging/settings for explicit-material equipment fusion.
+- Respect native workshop busy state across all helper workshop commands; revalidate authoritative recipe/materials before submitting.
+- Capture call-time diagnostics alongside the first fault. Preserve fail-closed handling for null, timeout and unreconciled results.
+- Passed 27 offline regressions, full language/browser/archive checks and a byte-identical HTML/ZIP rebuild. Historical null cause and live-game operation remain unverified.
+
 ## 2026-09-28 — Workshop fault containment
 
 - Fix continued automatic deposit dispatch after an uncertain fusion disabled only the gear switch.
