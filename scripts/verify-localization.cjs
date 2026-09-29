@@ -15,7 +15,7 @@ const originalArchive=unzipSync(cp.execFileSync('git',['show',require('../locali
 assert.deepEqual(Object.keys(archive).sort(),['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js','wog-helper.html']);
 assert.equal(strFromU8(archive['install_game_hook_v2.js']),patchHook(strFromU8(originalArchive['install_game_hook_v2.js'])));
 const {englishBat,englishBridge}=require('./console-english.cjs');
-assert.equal(strFromU8(archive['livesync_bridge.js']),englishBridge(strFromU8(originalArchive['livesync_bridge.js'])),'Bridge differs from log-only translation');
+assert.equal(strFromU8(archive['livesync_bridge.js']),require('./bridge-receipts.cjs').patchBridge(englishBridge(strFromU8(originalArchive['livesync_bridge.js']))),'Bridge differs from receipt patch');
 assert.equal(strFromU8(archive['wog-helper.html']),html,'Bundled HTML does not match fork');
 const launcher=strFromU8(archive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n');
 assert(launcher.includes('if exist "%~dp0wog-helper.html" (\n    start "" "%~dp0wog-helper.html"'));
@@ -123,6 +123,6 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     }
     assert.equal(await page.evaluate(()=>window.__gameCommands),0);
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,bridgeLogOnlyChangesVerified:true,fusionHookMatchesSource:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
+    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,bridgeReceiptPatchVerified:true,fusionHookMatchesSource:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

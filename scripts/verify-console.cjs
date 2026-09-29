@@ -25,11 +25,11 @@ function ast(source, original) {
  walk(tree);if(original)assert.equal(count,Object.keys(mapping.bridge).length);
  return tree;
 }
-assert.deepEqual(ast(strFromU8(after['livesync_bridge.js']),false),ast(strFromU8(before['livesync_bridge.js']),true),'Bridge expressions/control flow/protocol changed');
+assert.deepEqual(ast(strFromU8(after['livesync_bridge.js']),false),ast(require('./bridge-receipts.cjs').patchBridge(require('./console-english.cjs').englishBridge(strFromU8(before['livesync_bridge.js']))),false),'Bridge expressions/control flow/protocol changed');
 const bat=strFromU8(after['cai_dat_livesync.bat']);
 assert.equal(bat.replace(/\r\n/g,'').includes('\n'),false,'BAT must use CRLF');
 for(const value of Object.values(mapping.bat))assert(bat.includes(value),'Missing English prompt: '+value);
 for(const source of Object.keys(mapping.bat))assert(!bat.includes(source),'Old Vietnamese prompt remains: '+source);
 assert(bat.includes('node "%~dp0install_game_hook_v2.js"'));
 assert(bat.includes('node "%~dp0livesync_bridge.js"'));
-console.log(JSON.stringify({englishBatPrompts:Object.keys(mapping.bat).length,englishBridgeParts:Object.keys(mapping.bridge).length,bridgeExecutableAstPreserved:true,windowsExecution:false}));
+console.log(JSON.stringify({englishBatPrompts:Object.keys(mapping.bat).length,englishBridgeParts:Object.keys(mapping.bridge).length,bridgeMatchesReceiptPatch:true,windowsExecution:false}));

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-29 — Bridge receipt deadline repair
+
+- Replace the 2.5-second action cutoff/profile fallback with a 12-second correlated receipt wait.
+- Use unique bridge IPC IDs and ignore stale results; fail closed on missing/error replies without retries or inferred success.
+- 33 offline regression tests passed, plus full UI/language/archive checks; historical live fusion outcome remains unknown.
+
 ## 2026-09-29 — T5-and-below automatic fusion
 
 - Extend equipment/accessory input tiers to T1-T5 inclusive; keep T6+ excluded and fixed 6/3 same-tier batches.

@@ -135,3 +135,9 @@ Offline regression passed: both game JavaScript files match upstream, BAT change
 ### Unified offline verification (2026-09-22)
 
 Eleven unified fusion tests pass, covering fixed 6/3 counts even with a permissive validator, exactly one UI switch, all four tier/category combinations, no mixed-tier batches, legacy auto scheduler removal, lock/equip/market/storage/tier/level exclusions, recipe/safety API absence, duplicate inventory and commands, stale session identity, uncertain replies, timeout serialization, actual generated hook routing and offline desktop/mobile controls. The existing localization suite passes (8,035 catalog fields, ten tabs, three classes, four dialogs). Generated HTML and archive are byte-identical after rebuilding. Zero real game commands or installer executions occurred. These results do not establish actual game API correctness; real-game verification remains outstanding.
+
+## Correlated bridge action receipts (2026-09-29)
+
+The bridge must wait up to 12 seconds for the hook (whose fusion deadline is 10 seconds), within the browser 15-second receipt deadline. Each dispatched action has a bridge-generated IPC identity; only its matching result can settle it. Never substitute a profile for an action result. Missing/error results emit an explicit uncertain transport receipt and latch the bridge action queue closed until restart, without claiming cancellation or retrying. Queued actions are rejected while blocked. No game success is inferred from fresh profiles. Verify the generated bridge queue offline with fake files/timers, including replies after 2.5 seconds, stale IDs, errors and timeout containment.
+
+Verification: 33 offline regressions passed (including five generated-bridge IPC cases), full desktop/mobile localization and archive checks passed. No Windows installer or live game action was executed.

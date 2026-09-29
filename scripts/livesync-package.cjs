@@ -19,7 +19,7 @@ const bat = englishBat(originalBat.replace(sourceLaunch, localLaunch).replace(
   'echo        Opening bundled fork: wog-helper.html'
 ));
 function buildArchive(html) {
-  const entries = { ...files, 'livesync_bridge.js': strToU8(englishBridge(strFromU8(files['livesync_bridge.js']))), 'install_game_hook_v2.js': strToU8(require('./gear-fusion-extension.cjs').patchHook(strFromU8(files['install_game_hook_v2.js']))), 'cai_dat_livesync.bat': strToU8(bat.replace(/\n/g, '\r\n')), 'wog-helper.html': strToU8(html) };
+  const entries = { ...files, 'livesync_bridge.js': strToU8(require('./bridge-receipts.cjs').patchBridge(englishBridge(strFromU8(files['livesync_bridge.js'])))), 'install_game_hook_v2.js': strToU8(require('./gear-fusion-extension.cjs').patchHook(strFromU8(files['install_game_hook_v2.js']))), 'cai_dat_livesync.bat': strToU8(bat.replace(/\n/g, '\r\n')), 'wog-helper.html': strToU8(html) };
   return zipSync(Object.fromEntries(Object.entries(entries).map(([name, bytes]) => [name, [bytes, { mtime: new Date(2026, 0, 1, 0, 0, 0) }]])), { level: 6 });
 }
 module.exports = { bat, buildArchive };

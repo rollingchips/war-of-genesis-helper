@@ -450,5 +450,12 @@
   "Workshop blocked; check the game.": "鍛造結果未確認；已暫停所有自動合成與入庫，請檢查遊戲。",
   "Workshop busy; wait for the current action.": "鍛造正在處理目前指令，請稍候。",
   "Required workshop preflight checks are unavailable": "遊戲鍛造的送出前檢查不可用，已停止操作。",
-  "Game recipe changed before submission": "送出前遊戲配方已變更，未執行合成。"
+  "Game recipe changed before submission": "送出前遊戲配方已變更，未執行合成。",
+  "Bridge action result uncertain; check the game before restarting LiveSync.": "Bridge 上一筆結果不明；重啟 LiveSync 前請先確認遊戲。",
+  "Bridge queue delay; command not submitted. Check the game before restarting LiveSync.": "Bridge 排隊逾時，這筆指令未送出；重啟前請先確認遊戲。",
+  "Bridge paused; queued command not submitted.": "Bridge 已暫停，排隊中的指令未送出。",
+  "Game action returned no usable receipt. Check the game before restarting LiveSync.": "遊戲未傳回可用的操作回覆；重啟 LiveSync 前請先確認遊戲。",
+  "Bridge action timed out. Check the game before restarting LiveSync.": "Bridge 等待操作回覆逾時；重啟 LiveSync 前請先確認遊戲。",
+  "Bridge receipt read failed. Check the game before restarting LiveSync.": "Bridge 讀取操作回覆失敗；重啟 LiveSync 前請先確認遊戲。",
+  "Bridge action dispatch failed. Check the game before restarting LiveSync.": "Bridge 傳送操作指令發生錯誤；重啟 LiveSync 前請先確認遊戲。"
 }
