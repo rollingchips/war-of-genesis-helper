@@ -4,6 +4,10 @@ This fork provides a Traditional Chinese (`zh-Hant`) frontend. Download `index.h
 
 Upstream attribution and MIT licensing are retained. Game identifiers, calculations, assets and automation behavior are preserved. The localization was verified offline; live game automation was not exercised.
 
+## Direct runtime files
+
+Use the repository root `cai_dat_livesync.bat`, `install_game_hook_v2.js`, `livesync_bridge.js` and `index.html` together. Close the old Helper and Bridge before updating. The BAT opens adjacent `index.html`; no separate ZIP is produced. The personal UI omits LiveSync setup/download panels but retains connection controls and fault diagnostics.
+
 ## Localization maintenance
 
 - `npm ci` installs development-only tooling.

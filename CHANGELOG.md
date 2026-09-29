@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-29 — Direct files and personal interface
+
+- Replace ZIP delivery with root-level BAT, hook, Bridge and index.html; launcher opens index.html.
+- Remove LiveSync installation/download/help blocks and obsolete update announcement, retaining operational controls and error diagnostics.
+- 33 offline regressions, direct-file identity checks and desktop/mobile UI/language checks passed; Bridge/hook match the preceding repair byte-for-byte. No live game operation.
+
 ## 2026-09-29 — Bridge receipt deadline repair
 
 - Replace the 2.5-second action cutoff/profile fallback with a 12-second correlated receipt wait.

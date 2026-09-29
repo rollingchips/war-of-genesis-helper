@@ -55,7 +55,7 @@ test('stale hook identity rejects before any action',async()=>{
  const f=setup();assert.equal((await f.engine.execute(f.command({instance:'old-hook'}))).success,false);assert.equal(f.calls,0);
 });
 test('built installer parses, injects executable engine and routes action without executing installer',async()=>{
- const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip')),source=strFromU8(archive['install_game_hook_v2.js']);
+ const archive=Object.fromEntries(['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js'].map(name=>[name,fs.readFileSync(name)])),source=strFromU8(archive['install_game_hook_v2.js']);
  const ast=require('acorn').parse(source,{ecmaVersion:'latest'});
  const decl=ast.body.find(n=>n.type==='VariableDeclaration'&&n.declarations.some(d=>d.id.name==='hook')).declarations.find(d=>d.id.name==='hook');
  const hook=vm.runInNewContext(source.slice(decl.init.start,decl.init.end));require('acorn').parse(hook,{ecmaVersion:'latest'});
@@ -183,7 +183,7 @@ test('jewel preservation UI persists, sends policy and rejects old hooks offline
  }finally{await browser.close()}
 });
 test('built hook routes jewel preservation without the legacy unfiltered fallback',async()=>{
- const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip')),source=strFromU8(archive['install_game_hook_v2.js']);
+ const archive=Object.fromEntries(['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js'].map(name=>[name,fs.readFileSync(name)])),source=strFromU8(archive['install_game_hook_v2.js']);
  const ast=require('acorn').parse(source,{ecmaVersion:'latest'});const decl=ast.body.find(n=>n.type==='VariableDeclaration'&&n.declarations.some(d=>d.id.name==='hook')).declarations.find(d=>d.id.name==='hook');
  const hook=vm.runInNewContext(source.slice(decl.init.start,decl.init.end));const j=jewels(),context={nn:j.f.n,setInterval(){},setTimeout,clearTimeout,console};vm.createContext(context);vm.runInContext(hook,context);
  const cap=context.__wogGearFusion.status();const result=JSON.parse(await context.__runJewelAction({...j.cmd({preservedTypes:[195100]}),instance:cap.instance}));
@@ -250,7 +250,7 @@ test('null after passing preflight retains bounded call-time evidence and blocks
  await f.engine.execute(f.command());assert.equal(calls,1);
 });
 test('packaged hook blocks deposits while native workshop is busy and defers gear',async()=>{
- const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip')),source=strFromU8(archive['install_game_hook_v2.js']);
+ const archive=Object.fromEntries(['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js'].map(name=>[name,fs.readFileSync(name)])),source=strFromU8(archive['install_game_hook_v2.js']);
  const ast=require('acorn').parse(source,{ecmaVersion:'latest'});const decl=ast.body.find(n=>n.type==='VariableDeclaration'&&n.declarations.some(d=>d.id.name==='hook')).declarations.find(d=>d.id.name==='hook');
  const hook=vm.runInNewContext(source.slice(decl.init.start,decl.init.end));const f=setup(),context={nn:f.n,setInterval(){},setTimeout,clearTimeout,console};vm.createContext(context);vm.runInContext(hook,context);
  f.w._bRequesting=true;

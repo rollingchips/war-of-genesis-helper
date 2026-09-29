@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const {unzipSync,strFromU8}=require('fflate');
 function setup(){
- const source=strFromU8(unzipSync(fs.readFileSync('LiveSync_1Click.zip'))['livesync_bridge.js']);
+ const source=strFromU8(Object.fromEntries(['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js'].map(name=>[name,fs.readFileSync(name)]))['livesync_bridge.js']);
  const part=source.slice(source.indexOf('const evalQueue = [];'),source.indexOf('// ── Steam Community Market Query Engine'));
  let now=0,tick=null;const files=new Map(),sent=[],immediate=[];
  const ctx={crypto:{randomBytes:()=>Buffer.from('session')},Date:{now:()=>now},getCandidateDirs:()=>['/game'],path:require('node:path'),

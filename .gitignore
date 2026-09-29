@@ -24,5 +24,3 @@ Desktop.ini
 
 # Localization development dependencies
 node_modules/
-
-!LiveSync_1Click.zip

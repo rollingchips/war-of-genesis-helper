@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),cp=require('nod
 const {unzipSync,strFromU8}=require('fflate');
 const mapping=require('../localization/console-en.json');
 const before=unzipSync(cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':LiveSync_1Click.zip']));
-const after=unzipSync(fs.readFileSync('LiveSync_1Click.zip'));
+const after=Object.fromEntries(['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js'].map(name=>[name,fs.readFileSync(name)]));
 function ast(source, original) {
  const tree=acorn.parse(source,{ecmaVersion:'latest'});
  let count=0;

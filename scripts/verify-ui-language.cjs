@@ -43,7 +43,7 @@ const properNames=String.raw`War of Genesis(?::)?(?: Idle Loot)?(?: Helper)?|Gen
  for(const tab of ['tree','stage','stageHistory','dps','profile','training','equip','jewel_lookup','jewel','ai','community']){
   await page.evaluate(t=>switchMainTab(t),tab);await scan(tab);
  }
- for(const fn of ['openSaveLocatorModal','openWatchdogModal','openDonateModal','openLiveSyncHelpModal','openImportBuildModal','openCloudConfigModal','openUpdateNoticeModal']){
+ for(const fn of ['openSaveLocatorModal','openDonateModal','openImportBuildModal','openCloudConfigModal']){
   await page.evaluate(n=>window[n](),fn);await scan(fn);
   await page.evaluate(()=>{document.querySelectorAll('[id$="Modal"]').forEach(e=>e.style.display='none')});
  }
@@ -83,7 +83,7 @@ const properNames=String.raw`War of Genesis(?::)?(?: Idle Loot)?(?: Helper)?|Gen
  assert.equal(await page.evaluate(()=>Array.from(document.querySelectorAll('textarea')).find(x=>x.value==='Gold Knight JSON code')?.value),'Gold Knight JSON code');
  assert.equal(await page.evaluate(()=>confirm('Are you sure you want to delete this build? This action will permanently remove it from the list.')),false);
  assert.equal(dialogs.pop(),'確定要刪除此配置嗎？此操作會將它從列表永久移除。');
- await page.evaluate(()=>{switchMainTab('jewel');closeUpdateNoticeModal()});
+ await page.evaluate(()=>{switchMainTab('jewel')});
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});await scan('layout '+width);
   assert.equal(await page.locator('.jewel-control-card #autoGearFusion').count(),1);
@@ -92,6 +92,6 @@ const properNames=String.raw`War of Genesis(?::)?(?: Idle Loot)?(?: Helper)?|Gen
   await page.locator('#gearFusionControls').locator('..').screenshot({path:'/var/tmp/wog-full-zh-card-'+width+'.png'});
  }
  assert.equal(await page.evaluate(()=>__gameCommands),0);assert.deepEqual(errors,[]);
- console.log(JSON.stringify({tabs:11,modals:7,phrases:Object.keys(phrases).length,dynamicSamples:samples.length,viewports:[1440,390],gameCommands:0,pageErrors:0}));
+ console.log(JSON.stringify({tabs:11,modals:4,phrases:Object.keys(phrases).length,dynamicSamples:samples.length,viewports:[1440,390],gameCommands:0,pageErrors:0}));
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

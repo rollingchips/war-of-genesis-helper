@@ -8,21 +8,22 @@ const {chromium} = require('playwright');
 const html = fs.readFileSync('index.html','utf8');
 const originalUpstream = cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':index.html'],{maxBuffer:12e6}).toString();
 const {patchFrontend, patchHook}=require('./gear-fusion-extension.cjs');
-const upstream = patchFrontend(originalUpstream);
+const upstream = require('./personal-ui.cjs').personalUI(patchFrontend(originalUpstream));
 const {unzipSync,strFromU8}=require('fflate');
-const archive=unzipSync(fs.readFileSync('LiveSync_1Click.zip'));
+const archive=Object.fromEntries(['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js'].map(name=>[name,fs.readFileSync(name)]));
 const originalArchive=unzipSync(cp.execFileSync('git',['show',require('../localization/upstream.json').commit+':LiveSync_1Click.zip']));
-assert.deepEqual(Object.keys(archive).sort(),['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js','wog-helper.html']);
+assert.deepEqual(Object.keys(archive).sort(),['cai_dat_livesync.bat','install_game_hook_v2.js','livesync_bridge.js']);
 assert.equal(strFromU8(archive['install_game_hook_v2.js']),patchHook(strFromU8(originalArchive['install_game_hook_v2.js'])));
 const {englishBat,englishBridge}=require('./console-english.cjs');
 assert.equal(strFromU8(archive['livesync_bridge.js']),require('./bridge-receipts.cjs').patchBridge(englishBridge(strFromU8(originalArchive['livesync_bridge.js']))),'Bridge differs from receipt patch');
-assert.equal(strFromU8(archive['wog-helper.html']),html,'Bundled HTML does not match fork');
+assert(!fs.existsSync('LiveSync_1Click.zip'),'Retired ZIP exists');
+assert(!html.includes('onclick="openLiveSyncHelpModal()"'),'Dynamic help link remains');
 const launcher=strFromU8(archive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n');
-assert(launcher.includes('if exist "%~dp0wog-helper.html" (\n    start "" "%~dp0wog-helper.html"'));
+assert(launcher.includes('if exist "%~dp0index.html" (\n    start "" "%~dp0index.html"'));
 assert(launcher.includes('Open your fork index.html manually.'));
 assert(!launcher.includes('titlee2111.github.io'),'Launcher still targets upstream');
 const expectedLauncher=strFromU8(originalArchive['cai_dat_livesync.bat']).replace(/\r\n/g,'\n').replace('start "" "https://titlee2111.github.io/war-of-genesis-helper/"',[
-'if exist "%~dp0wog-helper.html" (','    start "" "%~dp0wog-helper.html"',') else (','    echo [NOTICE] wog-helper.html is missing. Open your fork index.html manually.',')'].join('\n')).replace('echo        Dang mo Web Helper tai: https://titlee2111.github.io/war-of-genesis-helper/','echo        Opening bundled fork: wog-helper.html');
+'if exist "%~dp0index.html" (','    start "" "%~dp0index.html"',') else (','    echo [NOTICE] index.html is missing. Open your fork index.html manually.',')'].join('\n')).replace('echo        Dang mo Web Helper tai: https://titlee2111.github.io/war-of-genesis-helper/','echo        Opening bundled fork: index.html');
 assert.equal(launcher,englishBat(expectedLauncher),'BAT differs from English display mapping');
 const commands=script=>script.split('\n').filter(line=>!/^\s*echo(?:\.|\s|$)/i.test(line));
 assert.deepEqual(commands(launcher),commands(expectedLauncher),'Executable BAT commands changed');
@@ -56,7 +57,7 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     await page.waitForTimeout(150);
     assert.equal(await page.locator('html').getAttribute('lang'),'zh-Hant');
     assert.equal(await page.evaluate(()=>localStorage.getItem('genesis_helper_lang')),'zh-Hant');
-    assert.equal(await page.evaluate(()=>LIVESYNC_BAT_CONTENT),launcher,'Embedded BAT differs from archive');
+    assert.equal(await page.evaluate(()=>typeof LIVESYNC_BAT_CONTENT),'undefined');
     const labels=JSON.parse(fs.readFileSync('localization/upstream-ui.json','utf8'));
     for(const target of Object.values(labels)) assert.equal(await page.evaluate(t=>zhText(zhText(t)),target),target,'Supplemental label must be stable');
     const sample=await page.evaluate(()=>({
@@ -105,16 +106,18 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     await page.waitForTimeout(30);assert((await page.locator('#barPlayerName').innerText()).includes('Gold Knight'));
     assert.equal(await page.evaluate(()=>confirm('Bạn có chắc muốn xóa sạch 20 ải trong lịch sử chạy không?')),false);
     assert.equal(dialogs.pop(),'確定要清除最近 20 次通關紀錄嗎？');
-    for(const name of ['openSaveLocatorModal','openWatchdogModal','openDonateModal','openLiveSyncHelpModal']){
+    for(const name of ['openSaveLocatorModal','openDonateModal']){
       await page.evaluate(n=>window[n](),name);await page.waitForTimeout(30);
       assert(!/[À-ỹĐđ]/.test(await page.locator('body').innerText()),'Untranslated modal: '+name+'\n'+(await page.locator('body').innerText()).split('\n').filter(x=>/[À-ỹĐđ]/.test(x)).join('\n'));
     }
     const downloadLinks=await page.locator('a[href="LiveSync_1Click.zip"]').count();
-    assert(downloadLinks>0,'LiveSync archive download link is missing');
+    assert.equal(downloadLinks,0,'Retired ZIP link remains');
+    assert.equal(await page.locator('#watchdogModal,#liveSyncDownloadCallout,#jewelUpdateNoticeBanner,#updateNoticeModal,[onclick*=openLiveSyncHelpModal]').count(),0);
+    assert.equal(await page.locator('#liveSyncToggleBtn,#wsStatusBadge,#workshopFirstFault').count(),3);
     assert.equal(await page.evaluate(()=>typeof toggleLangDropdown),'function','Language adapter removed an unrelated function');
     await page.evaluate(()=>{switchLanguage('en');updateLiveSyncI18n('en');});
     await page.waitForTimeout(60);
-    assert.equal(await page.locator('#lsBannerBadge').innerText(),'🔥 即時同步必要更新','English reverse alias must use the same Traditional Chinese terminal label');
+
     await page.reload();await page.waitForTimeout(60);
     for(const width of [1440,390]){
       await page.setViewportSize({width,height:900});await page.waitForTimeout(30);
@@ -123,6 +126,6 @@ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi))acorn.pa
     }
     assert.equal(await page.evaluate(()=>window.__gameCommands),0);
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:4,downloadLinks,bridgeReceiptPatchVerified:true,fusionHookMatchesSource:true,bundledForkVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
+    console.log(JSON.stringify({preservedFunctions,preservedDeclarations,catalogFields:catalog.length,tabs:tabs.length,classes:3,modals:2,downloadLinks,bridgeReceiptPatchVerified:true,fusionHookMatchesSource:true,directFilesVerified:true,viewports:[1440,390],gameCommands:0,pageErrors:0}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
