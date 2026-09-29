@@ -13,7 +13,7 @@ function setup({count=6,type=1,reply=1000,consume=true}={}) {
   let items = Array.from({length:count},(_,i)=>({itemId:i+1,itemTid:i+1,location:1,isLock:false}));
   const db = new Map(items.map(i=>[i.itemTid,{RatingType:4,LimitLevel:20}]));
   const equipped = new Set(), staged = new Set(); let calls=0, selected=[];
-  const w={_bRequesting:false,setFusionContentType(){},setAutoRegisterRating(){},setAutoRegisterIncludeStorage(){},getTableInfo:()=>({contentType:type,baseLimitLevel:20}),findFusionTable:(t,r,l)=>t===type&&[1,2,3,4].includes(r)&&l===20?{FusionID:404,GroupID:3000,ContentType:t,MaterialRating:r,MaterialRatingCnt:t===1?6:3}:null,
+  const w={_bRequesting:false,setFusionContentType(){},setAutoRegisterRating(){},setAutoRegisterIncludeStorage(){},getTableInfo:()=>({contentType:type,baseLimitLevel:20}),findFusionTable:(t,r,l)=>t===type&&[1,2,3,4,5].includes(r)&&l===20?{FusionID:404,GroupID:3000,ContentType:t,MaterialRating:r,MaterialRatingCnt:t===1?6:3}:null,
     validateFusionMaterials:(_,ms)=>ms.length===(type===1?6:3),clearFusionStaging(){},reqFusionAsync:async(_,ms)=>{calls++;selected=ms;if(consume)items=items.filter(i=>!ms.some(m=>m.itemId===i.itemId));return {NetResult:reply,Data:{}};}};
   const n={services:{workshop:w,itemMove:{isEquippedItemId:id=>equipped.has(id)},steamMarket:{staging:{isStaged:id=>staged.has(id)}}},net:{data:{item:{getAllItemNotStack:()=>items}}},db:{equip:{get:id=>db.get(id)},fusion:{get:id=>id===404?w.findFusionTable(type,db.values().next().value.RatingType,20):null}},msgBroker:{publish(){}}};
   const engine=factory(()=>n,30);let seq=0;
@@ -27,7 +27,7 @@ test('validator accepting undersized batches cannot change the fixed quantity',a
  const f=setup({count:5});f.w.validateFusionMaterials=()=>true;assert.equal((await f.engine.execute(f.command())).fusedCount,0);assert.equal(f.calls,0);
 });
 test('locked, equipped, staged, other tier, storage and unknown level never consumed',async()=>{
- for(const mutation of [f=>f.items[0].isLock=true,f=>f.items[0]._isLock=true,f=>delete f.items[0].isLock,f=>f.equipped.add(1),f=>f.staged.add(1),f=>f.db.get(1).RatingType=5,f=>f.items[0].location=2,f=>f.w.getTableInfo=()=>({contentType:1})]){
+ for(const mutation of [f=>f.items[0].isLock=true,f=>f.items[0]._isLock=true,f=>delete f.items[0].isLock,f=>f.equipped.add(1),f=>f.staged.add(1),f=>f.db.get(1).RatingType=6,f=>f.items[0].location=2,f=>f.w.getTableInfo=()=>({contentType:1})]){
  const f=setup(); if(mutation.toString().includes('getTableInfo'))f.db.get(1).LimitLevel=undefined;
  mutation(f);assert.equal((await f.engine.execute(f.command())).fusedCount,0);assert.equal(f.calls,0);}
  const f=setup();f.items[0].location=2;assert.equal((await f.engine.execute(f.command({includeStorage:true}))).fusedCount,1);
@@ -63,7 +63,7 @@ test('built installer parses, injects executable engine and routes action withou
  const cap=context.__wogGearFusion.status();const result=JSON.parse(await context.__runJewelAction({...f.command(),instance:cap.instance}));
  assert.equal(result.fusedCount,1);assert.equal(f.calls,1);
 });
-test('one offline UI switch schedules all eight tier/category combinations without legacy auto controls',async()=>{
+test('one offline UI switch schedules all ten tier/category combinations without legacy auto controls',async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try {for(const width of [1440,390]){
   const context=await browser.newContext({viewport:{width,height:1000}});
@@ -89,18 +89,23 @@ test('one offline UI switch schedules all eight tier/category combinations witho
   }),true,'Unified row must replace the original T3 rows, not add a card');
   await page.evaluate(()=>{
     window.__commands=[];liveWs=new EventTarget();liveWs.readyState=1;liveWs.send=()=>{};queueJewelCmd=c=>window.__commands.push(c);
-    window.__cap={version:2,jewelPreservation:1,instance:'test',available:true,counts:Object.fromEntries([1,2,3,4].flatMap(t=>[1,2].map(c=>[t+':'+c,{bag:c===1?6:3,storage:0}]))),generatedAt:Date.now()};
+    window.__cap={version:2,jewelPreservation:1,gearSourceTiers:[1,2,3,4,5],instance:'test',available:true,counts:Object.fromEntries([1,2,3,4,5].flatMap(t=>[1,2].map(c=>[t+':'+c,{bag:c===1?6:3,storage:0}]))),generatedAt:Date.now()};
     wogGearFusionTick({gearFusion:__cap});
   });
   assert.equal(await page.evaluate(()=>__commands.length),0);
+  assert.equal(await page.locator('#gearFusionLabel').innerText(),'T5 及以下裝備／飾品');
+  await page.evaluate(()=>wogGearFusionTick({gearFusion:{...__cap,gearSourceTiers:undefined}}));
+  assert(await page.locator('#autoGearFusion').isDisabled());
+  assert.equal(await page.evaluate(()=>__commands.length),0);
+  await page.evaluate(()=>wogGearFusionTick({gearFusion:__cap}));
   await page.locator('#autoGearFusion').check();await page.evaluate(()=>wogGearFusionTick({gearFusion:__cap}));
   let commands=await page.evaluate(()=>window.__commands);assert.equal(commands.length,1);assert.equal(commands[0].sameLevelOnly,false);assert.equal(commands[0].includeStorage,false);
   await page.evaluate(()=>{wogGearFusionTick({gearFusion:__cap});wogGearFusionReply({action:'fuseGearTiers',requestId:'wrong',success:true});wogGearFusionTick({gearFusion:__cap});});assert.equal(await page.evaluate(()=>__commands.length),1);
-  for(let i=0;i<7;i++)await page.evaluate(()=>{
+  for(let i=0;i<9;i++)await page.evaluate(()=>{
     wogGearFusionReply({action:'fuseGearTiers',requestId:__commands.at(-1).requestId,success:true,fusedCount:1});
     const previous=Date.now;Date.now=()=>previous()+5001;__cap.generatedAt=Date.now();wogGearFusionTick({gearFusion:__cap});
   });
-  commands=await page.evaluate(()=>__commands);assert.deepEqual(commands.map(c=>[c.sourceTier,c.contentType]),[[1,1],[2,1],[3,1],[4,1],[1,2],[2,2],[3,2],[4,2]]);
+  commands=await page.evaluate(()=>__commands);assert.deepEqual(commands.map(c=>[c.sourceTier,c.contentType]),[[1,1],[2,1],[3,1],[4,1],[5,1],[1,2],[2,2],[3,2],[4,2],[5,2]]);
   await page.locator('#switchIncludeStorage').click();
   await page.evaluate(()=>{
     const prior=__commands.findLast(c=>c.action==='fuseGearTiers');
@@ -129,10 +134,10 @@ test('tiers never mix and out-of-range tiers are rejected',async()=>{
  assert.equal((await f.engine.execute(f.command({sourceTier:3}))).fusedCount,0);
  assert.equal((await f.engine.execute(f.command({sourceTier:4}))).fusedCount,0);assert.equal(f.calls,0);
  f.items.forEach(i=>f.db.get(i.itemTid).RatingType=3);assert.equal((await f.engine.execute(f.command({sourceTier:3}))).fusedCount,1);
- for(const tier of [0,5,6]) { const x=setup();x.items.forEach(i=>x.db.get(i.itemTid).RatingType=tier);await x.engine.execute(x.command({sourceTier:tier}));assert.equal(x.calls,0); }
+ for(const tier of [0,6,7]) { const x=setup();x.items.forEach(i=>x.db.get(i.itemTid).RatingType=tier);await x.engine.execute(x.command({sourceTier:tier}));assert.equal(x.calls,0); }
 });
 
-test('all four tiers supported independently',async()=>{for(const tier of [1,2,3,4]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).fusedCount,1);}});
+test('all five tiers supported independently',async()=>{for(const tier of [1,2,3,4,5]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).fusedCount,1);}});
 test('rejected head finds alternate six; unchanged rejected inventory is not retried',async()=>{
  const f=setup({count:7});f.w.validateFusionMaterials=(_,ms)=>ms.length===6&&!ms.some(i=>i.itemId===1);
  assert.equal((await f.engine.execute(f.command())).fusedCount,1);assert(!f.selected.some(i=>i.itemId===1));
@@ -259,4 +264,16 @@ test('protection changed during preflight never submits and network throws remai
  const result=await f.engine.execute(f.command());assert.equal(result.success,false);assert.equal(result.uncertain,false);assert.equal(f.calls,0);assert.equal(f.engine.status().blocked,false);
  const x=setup();let calls=0;x.w.reqFusionAsync=async()=>{calls++;throw Error('Network response interrupted')};
  const failed=await x.engine.execute(x.command());assert.equal(failed.uncertain,true);assert.equal(failed.diagnostics.materialsValid,true);await x.engine.execute(x.command());assert.equal(calls,1);
+});
+
+test('T5 equipment and accessories consume only protected-filtered T5 batches, never T6 or mixed T4/T5',async()=>{
+ for(const [type,count] of [[1,6],[2,3]]) {
+  const f=setup({type,count:count+1});f.items.forEach(i=>f.db.get(i.itemTid).RatingType=5);f.db.get(count+1).RatingType=6;
+  const cap=f.engine.status();assert.deepEqual(Array.from(cap.gearSourceTiers),[1,2,3,4,5]);assert.equal(cap.counts['5:'+type].bag,count);assert.equal(cap.counts['6:'+type],undefined);
+  assert.equal((await f.engine.execute(f.command({sourceTier:5}))).fusedCount,1);assert.equal(f.selected.length,count);assert.equal(f.items.length,1);assert.equal(f.db.get(f.items[0].itemTid).RatingType,6);
+  for(const protect of [x=>x.items[0].isLock=true,x=>x.equipped.add(1),x=>x.staged.add(1),x=>x.db.get(1).RatingType=4]) {
+   const x=setup({type,count});x.items.forEach(i=>x.db.get(i.itemTid).RatingType=5);protect(x);
+   assert.equal((await x.engine.execute(x.command({sourceTier:5}))).fusedCount,0);assert.equal(x.calls,0);
+  }
+ }
 });

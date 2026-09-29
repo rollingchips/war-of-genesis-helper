@@ -1,6 +1,5 @@
 (() => {
   const state = {enabled: false, pending: null, nextIndex: 0, nextAt: 0, lastAt: 0, capability: null, uncertain: false};
-  const combinations = [[1,1],[2,1],[3,1],[4,1],[1,2],[2,2],[3,2],[4,2]];
   let timer;
   const watched = new WeakSet();
   const el = id => document.getElementById(id);
@@ -26,10 +25,12 @@
     const cap = data?.gearFusion;
     window.wogWorkshopStatus?.(cap);
     window.wogWorkshopCapability = cap;
-    if (!cap || cap.version !== 2 || !connected() || !Number.isFinite(cap.generatedAt) || Date.now() - cap.generatedAt > 8000 || cap.generatedAt > Date.now() + 1000) {
+    if (!cap || cap.version !== 2 || !Array.isArray(cap.gearSourceTiers) || !cap.gearSourceTiers.includes(5) || !connected() || !Number.isFinite(cap.generatedAt) || Date.now() - cap.generatedAt > 8000 || cap.generatedAt > Date.now() + 1000) {
       state.capability = null; window.wogWorkshopCapability = null; if (el('autoGearFusion')) el('autoGearFusion').disabled = true;
       stop('Updated LiveSync connection required.'); return;
     }
+    const tiers = [...new Set(cap.gearSourceTiers)].filter(t => Number.isInteger(t) && t >= 1 && t <= 5).sort((a,b) => a-b);
+    const combinations = [1,2].flatMap(type => tiers.map(tier => [tier,type]));
     const ws = socket();
     if (!watched.has(ws)) {
       watched.add(ws);
@@ -71,15 +72,15 @@
     <label class="jewel-switch-wrap" style="margin:0 0 10px;">
       <span class="gear-fusion-toggle"><input id="autoGearFusion" type="checkbox" role="switch" aria-labelledby="gearFusionLabel" aria-describedby="gearFusionStatus" disabled><span class="jewel-switch" aria-hidden="true"></span></span>
       <span style="flex:1;min-width:0;">
-        <span id="gearFusionLabel" style="display:block;font-weight:bold;font-size:13.5px;color:#58a6ff;">T4 及以下裝備／飾品</span>
-        <span style="display:block;font-size:11.5px;color:#8b949e;">T1～T4，每批 6 件裝備或 3 件飾品；不混階、不限等級。</span>
+        <span id="gearFusionLabel" style="display:block;font-weight:bold;font-size:13.5px;color:#58a6ff;">T5 及以下裝備／飾品</span>
+        <span style="display:block;font-size:11.5px;color:#8b949e;">T1～T5，每批 6 件裝備或 3 件飾品；不混階、不限等級。</span>
         <span id="gearFusionCounts" style="display:block;font-size:11.5px;color:#8b949e;"></span>
         <span id="gearFusionStatus" role="status" style="display:block;font-size:11.5px;color:#8b949e;">Updated LiveSync connection required. Automation starts off.</span>
       </span>
     </label>`;
     el('autoGearFusion').addEventListener('change', e => {
       if (e.target.checked && !available()) {e.target.checked = false; stop('Fresh LiveSync data required.'); return;}
-      state.enabled = e.target.checked; note(state.enabled ? '已啟用 T4 及以下自動合成。' : '已關閉 T4 及以下自動合成。');
+      state.enabled = e.target.checked; note(state.enabled ? '已啟用 T5 及以下自動合成。' : '已關閉 T5 及以下自動合成。');
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();

@@ -1,5 +1,13 @@
 # Traditional Chinese Frontend Contract
 
+## T5-and-below source materials (2026-09-29, operator 27579)
+
+- Supersedes the T1-T4 input ceiling: automatic equipment/accessory fusion includes source tiers T1 through T5 inclusive, not merely outputs up to T5. T6 and above are excluded. Keep exact batches of six equipment items or three accessories, no mixed tiers/categories, mixed levels allowed, and every existing protection/preflight/uncertainty rule. Jewel preservation and jewel tier settings are unchanged.
+- Keep one default-off switch in the original card, labeled "T5 及以下裝備／飾品". The game engine owns the supported source-tier list and exposes it in capability; the browser uses that list, bounded to this requested ceiling, for counts and round-robin scheduling. A hook lacking T5 capability cannot enable the new automatic switch.
+- Update matching HTML/hook archive together. Verify all ten tier/category combinations, T5 protection and quantities, T6 exclusion, no mixed T4/T5 batch, old-hook refusal, and deterministic packaging. No live game/installer execution.
+
+Verification: 28 offline regressions passed, including all ten browser-scheduled tier/category combinations at desktop/mobile widths, T5 quantities/protections and T6 exclusion. Full language/archive checks passed; HTML/ZIP rebuilt byte-identically. Live game compatibility remains unverified.
+
 ## Game workshop preflight and non-invasive equipment calls (2026-09-28)
 
 - Live operator diagnostics show valid mixed-level T3 equipment and accessory recipes. The supplied game `reqFusionAsync` returns null before its network call when busy, the recipe is absent or materials fail validation; the supplied network method otherwise returns a response or throws. This narrows investigation but does not prove which branch caused the historical fault.

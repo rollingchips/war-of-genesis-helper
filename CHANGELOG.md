@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-29 — T5-and-below automatic fusion
+
+- Extend equipment/accessory input tiers to T1-T5 inclusive; keep T6+ excluded and fixed 6/3 same-tier batches.
+- Update Traditional Chinese labels and gate the scheduler on the hook's supported-tier capability. Preserve jewel settings, busy checks and uncertain-result blocking.
+- Passed 28 offline regressions, full language/browser/archive checks and byte-identical rebuilds. T5 live game behavior remains unverified.
+
 ## 2026-09-28 — Game workshop preflight
 
 - Stop touching game staging/settings for explicit-material equipment fusion.

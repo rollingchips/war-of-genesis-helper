@@ -1,4 +1,5 @@
 function createGearFusion(getGame, timeoutMs = 10000) {
+  const sourceTiers = Object.freeze([1, 2, 3, 4, 5]);
   let busy = false, blocked = false, lastSnapshot = 0, fault = null;
   const responseShape = r => ({kind:Array.isArray(r)?"array":r===null?"null":typeof r, code: typeof r?.NetResult === "number" || typeof r?.NetResult === "string" ? String(r.NetResult).slice(0,40) : null, length:Array.isArray(r)?r.length:null});
   const seen = new Map();
@@ -21,7 +22,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
       ids.add(id);
       if ((typeof i.isLock !== 'boolean' && typeof i._isLock !== 'boolean') || i.isLock || i._isLock || ![1, 2].includes(i.location) || n.services.itemMove.isEquippedItemId(i.itemId) || n.services.steamMarket.staging.isStaged(i.itemId)) continue;
       const eq = n.db.equip.get(i.itemTid);
-      if (!eq || ![1, 2, 3, 4].includes(eq.RatingType)) continue;
+      if (!eq || !sourceTiers.includes(eq.RatingType)) continue;
       const info = w.getTableInfo(i.itemTid, i.itemId);
       const level = info?.baseLimitLevel > 0 ? info.baseLimitLevel : eq.LimitLevel;
       if (![1, 2].includes(info?.contentType) || !Number.isFinite(level) || level <= 0) continue;
@@ -30,11 +31,11 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     return {n, w, raw, rows};
   }
   function status() {
-    const base = {version: 2, jewelPreservation: 1, instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
+    const base = {version: 2, jewelPreservation: 1, gearSourceTiers: [...sourceTiers], instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
     try {
       const {rows} = inventory(); lastSnapshot = Date.now();
       const counts = {};
-      for (const tier of [1, 2, 3, 4]) for (const type of [1, 2]) {
+      for (const tier of sourceTiers) for (const type of [1, 2]) {
         const matches = rows.filter(i => i.rating === tier && i.type === type);
         counts[tier + ':' + type] = {bag: matches.filter(i => i.location === 1).length, storage: matches.filter(i => i.location === 2).length};
       }
@@ -74,7 +75,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     if (seen.has(cmd.requestId)) return {...receipt, success: false, reason: 'Duplicate request; no action repeated'};
     if (seen.size >= 10000) return {...receipt, success: false, reason: 'Session request limit reached'};
     seen.set(cmd.requestId, true);
-    if (busy || blocked || cmd.instance !== instance || (![1, 2].includes(cmd.contentType) || ![1, 2, 3, 4].includes(cmd.sourceTier)) || Date.now() - lastSnapshot > 10000) return {...receipt, success: false, reason: 'Unavailable, stale or busy fusion session'};
+    if (busy || blocked || cmd.instance !== instance || (![1, 2].includes(cmd.contentType) || !sourceTiers.includes(cmd.sourceTier)) || Date.now() - lastSnapshot > 10000) return {...receipt, success: false, reason: 'Unavailable, stale or busy fusion session'};
     if (gameBusy()) return deferred(receipt);
     busy = true;
     let sent = false, timer, responseInfo, diagnostics = {phase:'selection', contentType:cmd.contentType, sourceTier:cmd.sourceTier};

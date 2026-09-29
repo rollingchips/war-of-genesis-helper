@@ -50,7 +50,7 @@ function patchFrontend(html) {
   const autoStart = html.indexOf('    // Auto-fuse T3 checks');
   const autoEnd = html.indexOf('    // Log any fusion events', autoStart);
   if (autoStart < 0 || autoEnd < 0) throw Error('Legacy automatic scheduler missing');
-  html = html.slice(0, autoStart) + '    // Unified rating 1-4 scheduler owns automatic gear fusion.\n\n' + html.slice(autoEnd);
+  html = html.slice(0, autoStart) + '    // Unified rating 1-5 scheduler owns automatic gear fusion.\n\n' + html.slice(autoEnd);
 
   html = once(html, 'function applyLiveGameData(data) {', 'function applyLiveGameData(data) {\n  if (window.wogGearFusionTick) window.wogGearFusionTick(data && data.jewelsData);');
   const marker = 'if (data && data.action) {';

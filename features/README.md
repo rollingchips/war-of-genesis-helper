@@ -1,13 +1,13 @@
-# T4-and-below fusion and jewel preservation
+# T5-and-below fusion and jewel preservation
 
-One automatic switch consumes **six equipment items** or **three accessories** per batch, accepting ratings 1 through 4. Each batch contains one tier and one category. T5+ items are never consumed. Equipment levels may differ.
+One automatic switch consumes **six equipment items** or **three accessories** per batch, accepting ratings 1 through 5. Each batch contains one tier and one category. T6+ items are never consumed. Equipment levels may differ.
 
 ## Update
 
 1. Exit the game normally and close the old Helper/LiveSync bridge first.
 2. Extract the updated `LiveSync_1Click.zip` into a separate folder, keeping all four files together. Keep the old package as a backup.
 3. Run the included `cai_dat_livesync.bat` using the existing LiveSync setup process. This installs the updated game hook; replacing the HTML alone is insufficient. The existing launcher can restart the game and the bridge.
-4. Use the bundled `wog-helper.html`. In **寶石熔爐與倉庫**, find **T4 及以下裝備／飾品** inside the existing **自動化設定** card, at the former T3 switch position.
+4. Use the bundled `wog-helper.html`. In **寶石熔爐與倉庫**, find **T5 及以下裝備／飾品** inside the existing **自動化設定** card, at the former T3 switch position.
 5. Wait for live capability data. Enable the single automatic switch explicitly. It starts off every time the page opens. The old T3-only automatic controls/scheduler have been replaced. The same-level checkbox is removed and its saved preference is ignored. The existing storage setting applies to every batch. Review those settings before enabling. No duplicate controls or separate fusion card are added.
 
 The engine excludes locked, equipped and market-staged items, checks the game's recipe/material validator and submits one batch at a time. Missing safety APIs or a missing recipe stop execution. Uncertain results stop automation rather than automatically retrying. Check actual inventory in game before re-enabling/restarting after an uncertain result. Turning the switch off does not cancel an already-submitted batch.
@@ -37,3 +37,5 @@ A blocked or uncertain fusion pauses gear fusion, jewel fusion and both automati
 The matched hook now respects the game's own busy flag for every workshop action. Direct equipment calls do not change workshop tabs/settings or clear staging. The selected recipe is re-read and protected materials are revalidated immediately before the API call. The capability includes `preflight: 1` for support diagnostics.
 
 An API-entered fault stores bounded call-time recipe/busy/validation diagnostics in the same first-error panel and session storage. This does not prove a network request was sent. Null, exceptions and timeout still block subsequent operations; no automatic unlock is introduced. Offline coverage includes the operator-supplied native service body but does not establish the cause of the historical null or a successful live game run.
+
+The gear scheduler requires the hook to advertise T5 in `gearSourceTiers`. Older hooks cannot enable the new switch. The equipment/accessory ceiling does not alter jewel tier selection or preservation.
