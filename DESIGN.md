@@ -1,5 +1,12 @@
 # Traditional Chinese Frontend Contract
 
+## T3–T5 automation and confirmed activity logs (2026-09-30)
+
+- Only the physical switch hit area toggles automation; clicking its title, description, status or surrounding row does nothing. Keep keyboard focus/Space operation and accessible labels.
+- Supersedes automatic T1–T5 scope: both minute-round switches consume only T3, T4 and T5. T1/T2 are left to the game. Enforce scope in scheduler and hook, preserve bag-only and jewel protection. Explicit manual jewel commands retain their existing scope.
+- Remove the complete forge-header manual action row (fusion, deposit/withdraw, storage selector and support button) and its automatic-detection explanation. Retain preservation, inventory display, two automatic switches and activity log.
+- Log each correlated, confirmed fusion batch with category/tier and round time in the existing activity log. This ensures every productive round is visible, including batches confirmed after toggle-off. Empty rounds do not log success; duplicates, unknown or failed receipts never log success. Confirmation is completed consumption, not a guarantee of a rarity upgrade.
+
 ## Top-bar level-up ETA (2026-09-30, operator 27648)
 
 - Replace the top EXP pill remaining-experience number with estimated time to the next level. Reuse the recent completed-run EXP-rate calculation with an observed-only mode (no synthetic 125 EXP/s or estimated-stage fallback). Ignore invalid samples in this mode.

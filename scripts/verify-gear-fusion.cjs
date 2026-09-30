@@ -71,7 +71,7 @@ test('tiers never mix and out-of-range tiers are rejected',async()=>{
  for(const tier of [0,6,7]) { const x=setup();x.items.forEach(i=>x.db.get(i.itemTid).RatingType=tier);await x.engine.execute(x.command({sourceTier:tier}));assert.equal(x.calls,0); }
 });
 
-test('all five tiers supported independently',async()=>{for(const tier of [1,2,3,4,5]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).fusedCount,1);}});
+test('T3 to T5 supported independently',async()=>{for(const tier of [3,4,5]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).fusedCount,1);}});
 test('rejected head finds alternate six; unchanged rejected inventory is not retried',async()=>{
  const f=setup({count:7});f.w.validateFusionMaterials=(_,ms)=>ms.length===6&&!ms.some(i=>i.itemId===1);
  assert.equal((await f.engine.execute(f.command())).fusedCount,1);assert(!f.selected.some(i=>i.itemId===1));
@@ -203,7 +203,7 @@ test('protection changed during preflight never submits and network throws remai
 test('T5 equipment and accessories consume only protected-filtered T5 batches, never T6 or mixed T4/T5',async()=>{
  for(const [type,count] of [[1,6],[2,3]]) {
   const f=setup({type,count:count+1});f.items.forEach(i=>f.db.get(i.itemTid).RatingType=5);f.db.get(count+1).RatingType=6;
-  const cap=f.engine.status();assert.deepEqual(Array.from(cap.gearSourceTiers),[1,2,3,4,5]);assert.equal(cap.counts['5:'+type].bag,count);assert.equal(cap.counts['6:'+type],undefined);
+  const cap=f.engine.status();assert.deepEqual(Array.from(cap.gearSourceTiers),[3,4,5]);assert.equal(cap.counts['5:'+type].bag,count);assert.equal(cap.counts['6:'+type],undefined);
   assert.equal((await f.engine.execute(f.command({sourceTier:5}))).fusedCount,1);assert.equal(f.selected.length,count);assert.equal(f.items.length,1);assert.equal(f.db.get(f.items[0].itemTid).RatingType,6);
   for(const protect of [x=>x.items[0].isLock=true,x=>x.equipped.add(1),x=>x.staged.add(1),x=>x.db.get(1).RatingType=4]) {
    const x=setup({type,count});x.items.forEach(i=>x.db.get(i.itemTid).RatingType=5);protect(x);
@@ -232,3 +232,7 @@ test('legacy manual T3 hook no longer hardcodes warehouse materials',()=>{
  const manual=hook.slice(hook.indexOf("      if (cmd.action === 'fuseT3') {"),hook.indexOf("      return JSON.stringify({ success: false, reason: 'Unknown action: '"));
  assert(manual.includes("setAutoRegisterIncludeStorage('Fusion', false)"));assert(!manual.includes('it.location === 2'));
 });
+
+test("T1 and T2 gear are rejected before game calls",async()=>{for(const tier of [1,2]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).success,false);assert.equal(f.calls,0);}});
+
+test('automatic T1/T2 jewels cannot consume items',async()=>{for(const tier of [1,2]){const x=jewels();x.f.items.forEach(i=>i.itemTid=195100+tier);assert.equal((await x.f.engine.executeJewel(x.cmd({automaticRound:true,allowedTiers:[tier]}))).success,false);assert.equal(x.sent.length,0);}});

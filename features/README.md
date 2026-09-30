@@ -7,7 +7,7 @@ One automatic switch consumes **six equipment items** or **three accessories** p
 1. Exit the game normally and close the old Helper/LiveSync bridge first.
 2. Update the repository, keeping root-level `index.html`, `cai_dat_livesync.bat`, `install_game_hook_v2.js` and `livesync_bridge.js` together. ZIP delivery is retired.
 3. Run the included `cai_dat_livesync.bat` using the existing LiveSync setup process. This installs the updated game hook; replacing the HTML alone is insufficient. The existing launcher can restart the game and the bridge.
-4. Use the root `index.html`. In **寶石熔爐與倉庫**, find **T5 及以下裝備／飾品** inside the existing **自動化設定** card, at the former T3 switch position.
+4. Use the root `index.html`. In **寶石熔爐與倉庫**, find **T3～T5 裝備／飾品** inside the existing **自動化設定** card, at the former T3 switch position.
 5. Wait for live capability data. Enable the single automatic switch explicitly. It starts off every time the page opens. The old T3-only automatic controls/scheduler have been replaced. The same-level checkbox is removed and its saved preference is ignored. The existing storage setting applies to every batch. Review those settings before enabling. No duplicate controls or separate fusion card are added.
 
 The engine excludes locked, equipped and market-staged items, checks the game's recipe/material validator and submits one batch at a time. Missing safety APIs or a missing recipe stop execution. Uncertain results stop automation rather than automatically retrying. Check actual inventory in game before re-enabling/restarting after an uncertain result. Turning the switch off does not cancel an already-submitted batch.

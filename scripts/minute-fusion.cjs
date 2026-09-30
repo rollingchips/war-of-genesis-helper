@@ -20,7 +20,7 @@ function patchMinuteFrontend(html){
   html=html.replace(old,`window.${name} = false; // Retired stored preferences never activate automation.`);
  }
  const tiersStart='let autoFuseAllowedTiers = [1, 2]; // SAFEGUARD: Default only Tier 1 & 2 jewels';
- html=span(html,tiersStart,'function toggleJewelTierFuse(tier)', 'const autoFuseAllowedTiers = Object.freeze([1,2,3,4,5]);\n\n');
+ html=span(html,tiersStart,'function toggleJewelTierFuse(tier)', 'const autoFuseAllowedTiers = Object.freeze([3,4,5]);\n\n');
  const noop=new Set(['toggleAutoFuseJewels','toggleIncludeStorageJewels','toggleAutoDepositJewels','setAutoDepositJewelTargetStorage','toggleAutoDepositT3','setAutoDepositT3TargetStorage','toggleJewelTierFuse','selectAllJewelTiers','renderJewelTierCheckboxes']);
  html=html.replace(/(<script[^>]*>)([\s\S]*?)(<\/script>)/gi,(_,open,js,close)=>{
   const edits=[];
@@ -39,7 +39,7 @@ function patchMinuteFrontend(html){
  });
  html=html.replaceAll("sWorkshop.setAutoRegisterIncludeStorage('Fusion', true)","sWorkshop.setAutoRegisterIncludeStorage('Fusion', false)");
  html=html.replaceAll('(it.location === 1 || it.location === 2)', 'it.location === 1');
- html=html.replaceAll("if (typeof addJewelLog === 'function') {", "if (typeof addJewelLog === 'function' && !(data.requestId?.startsWith('round-') && data.success === true && data.fusedCount === 0)) {");
+ html=html.replaceAll("if (typeof addJewelLog === 'function') {", "if (typeof addJewelLog === 'function' && !data.requestId?.startsWith('round-')) {");
  // The overview now describes actual eligible inventory, not retired warehouse use.
  html=html.replace('Gom cả Balo & Kho (trừ ngọc đang khảm trên người)','僅使用背包材料；排除鎖定、穿戴與保留寶石');
  return html;

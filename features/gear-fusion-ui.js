@@ -30,6 +30,10 @@
     if(data.code==='WORKSHOP_BUSY'){if(state.round)state.round=null;note(pending.kind,'遊戲忙碌，本輪結束；等待下次排程。');return;}
     if(data.success!==true){stop(data.reason||'Fusion stopped; check the game.');return;}
     if(!Number.isInteger(data.fusedCount)||![0,1].includes(data.fusedCount)){uncertain('Fusion response was unsuccessful or uncertain');return;}
+    if(data.fusedCount===1 && typeof addJewelLog==='function') {
+      const category=pending.kind==='jewel'?'寶石':pending.contentType===1?'裝備':'飾品';
+      addJewelLog('✅ ['+new Date(pending.roundAt).toLocaleTimeString('zh-TW',{hour12:false})+' 本輪 #'+pending.batch+'] T'+pending.tier+' '+category+'合成已確認完成 1 批', 'success');
+    }
     if(state.round){
       if(data.fusedCount===0)state.round.index++;
       else state.round.fused++;
@@ -60,8 +64,8 @@
       const jobs=[];
       for(const kind of kinds){
         state.due[kind]=now+PERIOD;
-        if(kind==='gear')for(const contentType of [1,2])for(const tier of [1,2,3,4,5])jobs.push({kind,epoch:state.epoch[kind],action:'fuseGearTiers',contentType,sourceTier:tier});
-        else for(const tier of [1,2,3,4,5])jobs.push({kind,epoch:state.epoch[kind],action:'fuse',tier,allowedTiers:[tier]});
+        if(kind==='gear')for(const contentType of [1,2])for(const tier of [3,4,5])jobs.push({kind,epoch:state.epoch[kind],action:'fuseGearTiers',contentType,sourceTier:tier});
+        else for(const tier of [3,4,5])jobs.push({kind,epoch:state.epoch[kind],action:'fuse',tier,allowedTiers:[tier]});
       }
       state.round={kinds,jobs,index:0,started:now,commands:0,fused:0};
     }
@@ -73,7 +77,7 @@
     }
     const {kind,epoch,...job}=round.jobs[round.index];
     const requestId='round-'+crypto.randomUUID();
-    state.pending={kind,action:job.action,requestId};window.wogFusionPending=requestId;
+    state.pending={kind,action:job.action,requestId,tier:job.sourceTier??job.tier,contentType:job.contentType,roundAt:round.started,batch:round.commands+1};window.wogFusionPending=requestId;
     note(kind,'本輪合成處理中，等待遊戲確認。');
     receiptTimer=setTimeout(()=>{
       if(state.pending?.requestId!==requestId)return;
@@ -98,7 +102,7 @@
     #gearFusionControls input:focus-visible+.jewel-switch{outline:2px solid #58a6ff;outline-offset:3px}
     </style>`+['gear','jewel'].map(kind=>{
       const gear=kind==='gear',id=gear?'autoGearFusion':'autoJewelFusion',label=gear?'gearFusionLabel':'jewelFusionLabel',status=gear?'gearFusionStatus':'jewelFusionStatus';
-      return `<label class="jewel-switch-wrap" style="margin:0 0 10px"><span class="fusion-toggle"><input id="${id}" type="checkbox" role="switch" aria-labelledby="${label}" aria-describedby="${status}" disabled><span class="jewel-switch" aria-hidden="true"></span></span><span style="flex:1;min-width:0"><span id="${label}" style="display:block;font-weight:bold;color:#58a6ff">${gear?'T5 及以下裝備／飾品':'T5 及以下寶石'}</span><span style="display:block;font-size:11.5px;color:#8b949e">每分鐘一輪，僅背包 T1～T5；${gear?'每批 6 件裝備／3 件飾品，不混階、不限等級。':'每批 6 顆同階寶石，保留設定持續生效。'}</span><span id="${status}" role="status" style="display:block;font-size:11.5px;color:#8b949e">連線後可啟用；預設關閉。</span></span></label>`;
+      return `<div class="jewel-switch-wrap" style="margin:0 0 10px;cursor:default"><label class="fusion-toggle"><input id="${id}" type="checkbox" role="switch" aria-labelledby="${label}" aria-describedby="${status}" disabled><span class="jewel-switch" aria-hidden="true"></span></label><span style="flex:1;min-width:0"><span id="${label}" style="display:block;font-weight:bold;color:#58a6ff">${gear?'T3～T5 裝備／飾品':'T3～T5 寶石'}</span><span style="display:block;font-size:11.5px;color:#8b949e">每分鐘一輪，僅背包 T3～T5；${gear?'每批 6 件裝備／3 件飾品，不混階、不限等級。':'每批 6 顆同階寶石，保留設定持續生效。'}</span><span id="${status}" role="status" style="display:block;font-size:11.5px;color:#8b949e">連線後可啟用；預設關閉。</span></span></div>`;
     }).join('');
     for(const kind of ['gear','jewel'])el(kind==='gear'?'autoGearFusion':'autoJewelFusion').addEventListener('change',e=>{
       if(e.target.checked&&(!fresh()||state.uncertain)){e.target.checked=false;return;}

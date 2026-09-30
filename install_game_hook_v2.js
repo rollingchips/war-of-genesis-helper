@@ -29,7 +29,7 @@ const hook = `
   } catch(e) {}
 
   globalThis.__wogGearFusion = (function createGearFusion(getGame, timeoutMs = 10000) {
-  const sourceTiers = Object.freeze([1, 2, 3, 4, 5]);
+  const sourceTiers = Object.freeze([3, 4, 5]);
   let busy = false, blocked = false, lastSnapshot = 0, fault = null;
   const responseShape = r => ({kind:Array.isArray(r)?"array":r===null?"null":typeof r, code: typeof r?.NetResult === "number" || typeof r?.NetResult === "string" ? String(r.NetResult).slice(0,40) : null, length:Array.isArray(r)?r.length:null});
   const seen = new Map();
@@ -152,7 +152,7 @@ const hook = `
       const {n,w}=inventory();
       if (!['clearFusionStaging','setFusionContentType','setAutoRegisterIncludeStorage','stageFusionItem','isFusionStagingFull','reqFusionStagedAsync'].every(k=>typeof w[k]==='function')) throw Error('Required jewel preservation checks are unavailable');
       const tiers=cmd.tier!=null?[cmd.tier]:cmd.allowedTiers;
-      if (!Array.isArray(tiers)||!tiers.length||tiers.some(t=>!Number.isInteger(t)||t<1||t>(cmd.automaticRound===true?5:6))) throw Error('No allowed tiers configured');
+      if (!Array.isArray(tiers)||!tiers.length||tiers.some(t=>!Number.isInteger(t)||t<(cmd.automaticRound===true?3:1)||t>(cmd.automaticRound===true?5:6))) throw Error('No allowed tiers configured');
       // Upstream d09f5f8: a base TID preserves all tiers; an exact TID preserves one.
       const preserved=tid=>cmd.preservedTypes.includes(Math.floor(Number(tid)/100)*100)||cmd.preservedTypes.includes(Number(tid));
       const eligible=()=>{

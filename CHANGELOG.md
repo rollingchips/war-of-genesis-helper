@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-09-30 — T3–T5 rounds and activity logs
+
+- Only the physical switch hit area toggles automation; clicking its title, description, status or surrounding row does nothing. Keep keyboard focus/Space operation and accessible labels.
+- Restrict both automatic fusion switches to T3–T5; preserve timer, bag-only selection and jewel protection.
+- Remove the entire manual-action header row and automatic-detection explanation.
+- Record every correlated confirmed batch in the existing log with round time, category and source tier; suppress empty-round noise and duplicate/uncertain successes.
+
+- Verified 46 offline regressions, actual desktop/mobile switch hit areas and activity logs, language checks and byte-identical rebuild. No live game or installer execution.
+
 ## 2026-09-30 — Top-bar level-up ETA
 
 - Show estimated remaining time instead of remaining EXP in the top level bar, based on recent completed runs. Display 估算中 when progress/rate evidence is unavailable; do not substitute demo rates.

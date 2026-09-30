@@ -8,6 +8,15 @@ function removeDiv(html,id){
 }
 function personalUI(html){
  html=require('./level-eta.cjs').patchLevelEta(html);
+ const desc=html.indexOf('Tự động nhận diện & ghép ngọc khi đủ <b>');
+ if(desc<0)throw Error('Missing forge explanation');
+ const start=html.lastIndexOf('<div',desc),end=html.indexOf('</div>',desc)+6;
+ html=html.slice(0,start).replace(/[ \t]+$/,'')+html.slice(end);
+ const button=html.indexOf('onclick="triggerManualJewelFuse()"');
+ if(button<0)throw Error('Missing manual forge toolbar');
+ const rowStart=html.lastIndexOf('<div',button);
+ html=html.slice(0,rowStart)+html.slice(rowStart).replace('<div ', '<div id="retiredForgeActions" ');
+ html=removeDiv(html,'retiredForgeActions');
  for(const id of ['liveSyncDownloadCallout','jewelUpdateNoticeBanner','watchdogModal','updateNoticeModal'])html=removeDiv(html,id);
  // Remove help/update buttons but retain the connection status badge itself.
  html=html.replace(/^[ \t]*<button\b[^>]*onclick="(?:openLiveSyncHelpModal|openWatchdogModal|openUpdateNoticeModal)\([^"\n]*"[^>]*>[\s\S]*?<\/button>/gm,'');
