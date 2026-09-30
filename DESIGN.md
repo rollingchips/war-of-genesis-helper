@@ -1,5 +1,10 @@
 # Traditional Chinese Frontend Contract
 
+## Top-bar level-up ETA (2026-09-30, operator 27648)
+
+- Replace the top EXP pill remaining-experience number with estimated time to the next level. Reuse the recent completed-run EXP-rate calculation with an observed-only mode (no synthetic 125 EXP/s or estimated-stage fallback). Ignore invalid samples in this mode.
+- Require valid current/max EXP from the profile or actual currency/level-table data. Missing progress or measured speed displays 估算中; zero remaining EXP displays 可升級. Use Traditional Chinese duration units and mark positive durations as approximate. Refresh on profile updates, not a fabricated countdown. Fusion, hook and launcher behavior remain unchanged.
+
 ## Minute-based bag-only fusion rounds (2026-09-30, operator 27645)
 
 - Supersedes profile/count-driven automation and optional storage inclusion. Provide exactly two fusion switches in the original automation card: T5 及以下裝備／飾品 and T5 及以下寶石. Both start OFF on load and after disconnect/fault; old saved auto/deposit/storage preferences cannot enable them. Source tiers are T1–T5 inclusive; T6+ never consumed by these automatic rounds.

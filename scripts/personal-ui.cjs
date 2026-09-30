@@ -7,6 +7,7 @@ function removeDiv(html,id){
  throw Error('Unclosed UI block '+id);
 }
 function personalUI(html){
+ html=require('./level-eta.cjs').patchLevelEta(html);
  for(const id of ['liveSyncDownloadCallout','jewelUpdateNoticeBanner','watchdogModal','updateNoticeModal'])html=removeDiv(html,id);
  // Remove help/update buttons but retain the connection status badge itself.
  html=html.replace(/^[ \t]*<button\b[^>]*onclick="(?:openLiveSyncHelpModal|openWatchdogModal|openUpdateNoticeModal)\([^"\n]*"[^>]*>[\s\S]*?<\/button>/gm,'');

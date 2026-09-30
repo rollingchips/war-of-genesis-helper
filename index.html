@@ -966,7 +966,7 @@ body {
     <div class="stat-pill exp" id="barExpPill" title="Tiến độ cấp độ hiện tại">
       <div class="exp-pill-header">
         <span>📈 EXP Cấp <span id="barExpLv">32</span>: <b id="barExpPct">30.7%</b></span>
-        <span style="color:#8b949e;">(Còn <b id="barExpRem">2.12M</b>)</span>
+        <span style="color:#8b949e;">(Còn <b id="barExpRem">估算中</b>)</span>
       </div>
       <div class="exp-mini-bar-bg">
         <div class="exp-mini-bar-fill" id="barExpFill" style="width: 30.7%;"></div>
@@ -18252,6 +18252,28 @@ function getItemIconHtml(iconName, fallbackEmoji, imgClass, tier) {
     '</div>';
 }
 
+function levelUpEta(data, rate) {
+  let current = data.expInfo?.curExp, max = data.expInfo?.maxExp;
+  if (!data.expInfo) {
+    const raw = data.currencies?.['2000']?.count;
+    const levels = typeof userLevelsData !== 'undefined' ? userLevelsData : null;
+    const prev = levels?.[data.level - 1]?.req_exp, next = levels?.[data.level]?.req_exp;
+    if (raw != null && raw !== '' && Number.isFinite(Number(raw)) && Number.isFinite(prev) && Number.isFinite(next)) {
+      current = Number(raw) - prev; max = next - prev;
+    }
+  }
+  if (!Number.isFinite(current) || !Number.isFinite(max) || current < 0 || max <= 0) return '估算中';
+  if (current >= max) return '可升級';
+  if (!Number.isFinite(rate) || rate <= 0) return '估算中';
+  const seconds = Math.ceil((max-current)/rate);
+  if (!Number.isSafeInteger(seconds)) return '估算中';
+  const days = Math.floor(seconds/86400), hours = Math.floor(seconds/3600)%24;
+  const minutes = Math.floor(seconds/60)%60, secs = seconds%60;
+  if (days) return '約 ' + days + ' 天 ' + hours + ' 小時';
+  if (hours) return '約 ' + hours + ' 小時 ' + minutes + ' 分鐘';
+  if (minutes) return '約 ' + minutes + ' 分鐘 ' + secs + ' 秒';
+  return '約 ' + secs + ' 秒';
+}
 function formatEtaTime(seconds) {
   if (!seconds || seconds <= 0) return 'Đã sẵn sàng lên cấp';
   const h = Math.floor(seconds / 3600);
@@ -20899,9 +20921,17 @@ function sendQuickPrompt() {}
 function generateAiResponse() { return ''; }
 
 
-function calculateRecentFarmExpPerSec(limit = 20) {
+function calculateRecentFarmExpPerSec(limit = 20, observedOnly = false) {
   const history = getStageHistory();
   const validRuns = (history || []).filter(r => r && r.status === 'success' && !r.isPartial && r.duration >= 6.0);
+  if (observedOnly) {
+    const rates = validRuns.map(r => {
+      const stage = (typeof stageData !== 'undefined' ? stageData : window.stageData || []).find(s => s.stage_id == r.stage_id);
+      const exp = r.total_exp ?? stage?.total_exp;
+      return typeof exp === 'number' && Number.isFinite(exp) && exp > 0 && Number.isFinite(r.duration) ? exp / r.duration : NaN;
+    }).filter(rate => Number.isFinite(rate) && rate > 0).slice(0, limit);
+    return rates.length ? rates.reduce((a,b) => a+b, 0) / rates.length : null;
+  }
   if (validRuns.length === 0) {
     return (window.__currentEps && window.__currentEps > 0) ? window.__currentEps : 125;
   }
@@ -20961,7 +20991,7 @@ function applyUserData(data) {
   // Top pill update
   document.getElementById('barExpLv').innerText = pLv;
   document.getElementById('barExpPct').innerText = expRatePct + '%';
-  document.getElementById('barExpRem').innerText = (expRemaining > 1000000 ? (expRemaining / 1000000).toFixed(2) + 'M' : Number(expRemaining).toLocaleString());
+  document.getElementById('barExpRem').innerText = levelUpEta(data, calculateRecentFarmExpPerSec(20, true));
   document.getElementById('barExpFill').style.width = expRatePct + '%';
 
   // Profile section update

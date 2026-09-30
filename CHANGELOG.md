@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-30 — Top-bar level-up ETA
+
+- Show estimated remaining time instead of remaining EXP in the top level bar, based on recent completed runs. Display 估算中 when progress/rate evidence is unavailable; do not substitute demo rates.
+- UI-only change; fusion and direct-file runtime components are unchanged. ETA boundary checks, 43 offline regressions, desktop/mobile localization and deterministic rebuild passed; no live game execution.
+
 ## 2026-09-30 — Minute-based fusion rounds
 
 - Replace inventory-driven auto fusion with two default-off, 60-second round switches for T1–T5 equipment/accessories and jewels. Drain eligible batches sequentially; preserve jewel exclusions and receipt safeguards.
