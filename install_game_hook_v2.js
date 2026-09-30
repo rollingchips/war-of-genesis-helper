@@ -61,7 +61,7 @@ const hook = `
     return {n, w, raw, rows};
   }
   function status() {
-    const base = {version: 2, jewelPreservation: 1, gearSourceTiers: [...sourceTiers], instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
+    const base = {version: 2, jewelPreservation: 1, bagOnlyRounds: 1, gearSourceTiers: [...sourceTiers], instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
     try {
       const {rows} = inventory(); lastSnapshot = Date.now();
       const counts = {};
@@ -73,9 +73,9 @@ const hook = `
     } catch (e) { return {...base, available: false, reason: e.message}; }
   }
   function select(data, cmd) {
-    const rows = data.rows.filter(i => i.type === cmd.contentType && i.rating === cmd.sourceTier && (i.location === 1 || cmd.includeStorage === true)).sort((a,b) => a.id.localeCompare(b.id));
+    const rows = data.rows.filter(i => i.type === cmd.contentType && i.rating === cmd.sourceTier && i.location === 1).sort((a,b) => a.id.localeCompare(b.id));
     const count = cmd.contentType === 1 ? 6 : 3;
-    const key = cmd.sourceTier + ':' + cmd.contentType + ':' + (cmd.includeStorage === true);
+    const key = cmd.sourceTier + ':' + cmd.contentType;
     const fingerprint = JSON.stringify(rows.map(i => [i.id,i.itemTid,i.level,i.location]));
     if (rows.length < count) return {reason: 'Insufficient eligible materials', availableCount: rows.length, requiredCount: count};
     if (rejected.get(key)?.fingerprint === fingerprint) return rejected.get(key).result;
@@ -120,7 +120,7 @@ const hook = `
       diagnostics = {...diagnostics, phase:'preflight', requesting:fresh.w._bRequesting, fusionId:plan.table.FusionID, groupId:recipe?.GroupID ?? null, recipeFound:!!recipe, materialCount:plan.materials.length, recipeContentType:recipe?.ContentType ?? null, recipeRating:recipe?.MaterialRating ?? null, recipeCount:recipe?.MaterialRatingCnt ?? null};
       if (gameBusy()) return deferred(receipt);
       if (!recipe || recipe.FusionID !== plan.table.FusionID || recipe.ContentType !== cmd.contentType || recipe.MaterialRating !== cmd.sourceTier || recipe.MaterialRatingCnt !== plan.materials.length) throw Error('Game recipe changed before submission');
-      if (!plan.items.every(i => fresh.rows.some(x => x.id === i.id && x.itemTid === i.itemTid && x.type === i.type && x.rating === i.rating && x.level === i.level && (x.location === 1 || cmd.includeStorage === true))) ||
+      if (!plan.items.every(i => fresh.rows.some(x => x.id === i.id && x.itemTid === i.itemTid && x.type === i.type && x.rating === i.rating && x.level === i.level && x.location === 1)) ||
           (diagnostics.materialsValid = fresh.w.validateFusionMaterials(recipe, plan.materials) === true) !== true) throw Error('Materials changed before submission');
       diagnostics.requesting = fresh.w._bRequesting;
       if (gameBusy()) return deferred(receipt);
@@ -152,7 +152,7 @@ const hook = `
       const {n,w}=inventory();
       if (!['clearFusionStaging','setFusionContentType','setAutoRegisterIncludeStorage','stageFusionItem','isFusionStagingFull','reqFusionStagedAsync'].every(k=>typeof w[k]==='function')) throw Error('Required jewel preservation checks are unavailable');
       const tiers=cmd.tier!=null?[cmd.tier]:cmd.allowedTiers;
-      if (!Array.isArray(tiers)||!tiers.length||tiers.some(t=>!Number.isInteger(t)||t<1||t>6)) throw Error('No allowed tiers configured');
+      if (!Array.isArray(tiers)||!tiers.length||tiers.some(t=>!Number.isInteger(t)||t<1||t>(cmd.automaticRound===true?5:6))) throw Error('No allowed tiers configured');
       // Upstream d09f5f8: a base TID preserves all tiers; an exact TID preserves one.
       const preserved=tid=>cmd.preservedTypes.includes(Math.floor(Number(tid)/100)*100)||cmd.preservedTypes.includes(Number(tid));
       const eligible=()=>{
@@ -160,7 +160,7 @@ const hook = `
         if(!Array.isArray(raw)||raw.length>5000)throw Error('Unsupported inventory');
         const ids=new Set();for(const i of raw){if(!i||i.itemId==null)continue;const id=String(i.itemId);if(ids.has(id))throw Error('Duplicate inventory identity');ids.add(id);}
         return raw.filter(i=>{
-        if (!i || i.itemId==null || (typeof i.isLock!=='boolean'&&typeof i._isLock!=='boolean') || i.isLock||i._isLock||!(i.location===1||(cmd.includeStorage===true&&i.location===2))||preserved(i.itemTid))return false;
+        if (!i || i.itemId==null || (typeof i.isLock!=='boolean'&&typeof i._isLock!=='boolean') || i.isLock||i._isLock||i.location!==1||preserved(i.itemTid))return false;
         if(n.services.itemMove.isEquippedItemId(i.itemId)||n.services.steamMarket.staging.isStaged(i.itemId))return false;
         const db=n.db.item.get(i.itemTid);return db?.ItemType===6&&tiers.includes(db.RatingType);
       });};
@@ -170,7 +170,7 @@ const hook = `
       if(!selected.length)return {...receipt,success:true,fusedCount:0,reason:'Insufficient unpreserved jewels'};
       const fresh=eligible();if(!selected.every(i=>fresh.some(x=>String(x.itemId)===String(i.itemId)&&x.itemTid===i.itemTid)))throw Error('Materials changed before submission');
       if (gameBusy()) return deferred(receipt);
-      w.clearFusionStaging();w.setFusionContentType(20);w.setAutoRegisterIncludeStorage('Fusion',cmd.includeStorage===true);
+      w.clearFusionStaging();w.setFusionContentType(20);w.setAutoRegisterIncludeStorage('Fusion',false);
       for(const i of selected)w.stageFusionItem(i.itemTid,i.itemId);
       if(w.isFusionStagingFull()!==true){w.clearFusionStaging();return {...receipt,success:true,fusedCount:0,reason:'Game rejected candidate materials'};}
       if (gameBusy()) return deferred(receipt);
@@ -963,13 +963,13 @@ const hook = `
       if (cmd.action === 'fuseT3') {
         const ws = nn.services.workshop;
         if (!ws) return JSON.stringify({ error: 'Workshop service not found' });
-        ws.setAutoRegisterIncludeStorage('Fusion', true);
+        ws.setAutoRegisterIncludeStorage('Fusion', false);
 
         const collectT3Candidates = (targetContentType) => {
           const allItems = nn.net.data.item.getAllItemNotStack();
           const candidates = [];
           for (let it of allItems) {
-            if (!it.isLock && !it._isLock && (it.location === 1 || it.location === 2)) {
+            if (!it.isLock && !it._isLock && it.location === 1) {
               if (nn.services.itemMove && nn.services.itemMove.isEquippedItemId && nn.services.itemMove.isEquippedItemId(it.itemId)) continue;
               if (nn.services.steamMarket && nn.services.steamMarket.staging && nn.services.steamMarket.staging.isStaged && nn.services.steamMarket.staging.isStaged(it.itemId)) continue;
 
@@ -1103,6 +1103,7 @@ const hook = `
   const originalJewelAction = globalThis.__runJewelAction;
   let workshopActionBusy = false;
   globalThis.__runJewelAction = async function(cmd) {
+    if (['fuse','fuseT3','fuseGearTiers','toggleStorage'].includes(cmd.action)) cmd = {...cmd, includeStorage:false};
     if (workshopActionBusy || globalThis.__wogGearFusion.locked()) {
       const state=globalThis.__wogGearFusion.status();
       return JSON.stringify({action:cmd.action,requestId:cmd.requestId,success:!state.blocked && cmd.action==='fuseGearTiers',fusedCount:0,code:state.blocked?'WORKSHOP_BLOCKED':'WORKSHOP_BUSY',uncertain:state.blocked,reason:state.blocked?(state.fault?.reason||'Workshop blocked; check the game.'):'Workshop busy; wait for the current action.',response:state.fault?.response,diagnostics:state.fault?.diagnostics});

@@ -18,10 +18,16 @@ function patchHook(source) {
   if(fuseStart<0||fuseEnd<0)throw Error('Jewel dispatch anchors missing');
   source=source.slice(0,fuseStart)+"      if (cmd.action === 'fuse') {\n        const result = await globalThis.__wogGearFusion.executeJewel(cmd);\n        dumpEnrichedProfile();\n        return JSON.stringify(result);\n      }\n"+source.slice(fuseEnd);
   source = once(source, "const isSameLv = (cmd.sameLevelOnly !== false);", "const isSameLv = false;");
+  const legacyStart=source.indexOf("      if (cmd.action === 'fuseT3') {");
+  const legacyEnd=source.indexOf("      return JSON.stringify({ success: false, reason: 'Unknown action: '",legacyStart);
+  if(legacyStart<0||legacyEnd<0)throw Error('Legacy manual fusion anchors missing');
+  const bagOnly=source.slice(legacyStart,legacyEnd).replace("setAutoRegisterIncludeStorage('Fusion', true)","setAutoRegisterIncludeStorage('Fusion', false)").replaceAll('(it.location === 1 || it.location === 2)','it.location === 1');
+  source=source.slice(0,legacyStart)+bagOnly+source.slice(legacyEnd);
   const guard = `  // Serialize all workshop actions with automatic gear fusion. Uncertain fusion submissions stay blocked.
   const originalJewelAction = globalThis.__runJewelAction;
   let workshopActionBusy = false;
   globalThis.__runJewelAction = async function(cmd) {
+    if (['fuse','fuseT3','fuseGearTiers','toggleStorage'].includes(cmd.action)) cmd = {...cmd, includeStorage:false};
     if (workshopActionBusy || globalThis.__wogGearFusion.locked()) {
       const state=globalThis.__wogGearFusion.status();
       return JSON.stringify({action:cmd.action,requestId:cmd.requestId,success:!state.blocked && cmd.action==='fuseGearTiers',fusedCount:0,code:state.blocked?'WORKSHOP_BLOCKED':'WORKSHOP_BUSY',uncertain:state.blocked,reason:state.blocked?(state.fault?.reason||'Workshop blocked; check the game.'):'Workshop busy; wait for the current action.',response:state.fault?.response,diagnostics:state.fault?.diagnostics});
@@ -60,6 +66,7 @@ function patchFrontend(html) {
   html=html.replaceAll('if (!j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2)))', 'if (!j.isLock && !window.isJewelPreserved(j) && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2)))');
   html=html.replaceAll('jewels.filter(j => !j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2))', 'jewels.filter(j => !j.isLock && !window.isJewelPreserved(j) && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2))');
   html=html.replaceAll('const isSameLv = cmd.sameLevelOnly !== undefined ? cmd.sameLevelOnly : (cfg && cfg.sameLevelOnly);','const isSameLv = false;');
+  html = require('./minute-fusion.cjs').patchMinuteFrontend(html);
   return once(html, '</body>', '<script>\n'+workshopUI+'\n</script>\n<script>\n' + ui + '\n</script>\n<script>\n'+jewelUI+'\n</script>\n</body>');
 }
 module.exports = {patchHook, patchFrontend};

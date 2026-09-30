@@ -23,8 +23,9 @@
   };
   const send=queueJewelCmd;
   queueJewelCmd=function(cmd){
-    if(paused||cap?.blocked){pause(cap?.fault?.reason||fault?.reason);return;}
-    if(cap?.busy)return;
+    if(paused||cap?.blocked){pause(cap?.fault?.reason||fault?.reason);return false;}
+    if(window.wogFusionPending && cmd?.requestId!==window.wogFusionPending)return false;
+    if(cap?.busy)return false;
     return send(cmd);
   };
   function mount(){

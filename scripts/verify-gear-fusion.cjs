@@ -30,7 +30,7 @@ test('locked, equipped, staged, other tier, storage and unknown level never cons
  for(const mutation of [f=>f.items[0].isLock=true,f=>f.items[0]._isLock=true,f=>delete f.items[0].isLock,f=>f.equipped.add(1),f=>f.staged.add(1),f=>f.db.get(1).RatingType=6,f=>f.items[0].location=2,f=>f.w.getTableInfo=()=>({contentType:1})]){
  const f=setup(); if(mutation.toString().includes('getTableInfo'))f.db.get(1).LimitLevel=undefined;
  mutation(f);assert.equal((await f.engine.execute(f.command())).fusedCount,0);assert.equal(f.calls,0);}
- const f=setup();f.items[0].location=2;assert.equal((await f.engine.execute(f.command({includeStorage:true}))).fusedCount,1);
+ const f=setup();f.items[0].location=2;assert.equal((await f.engine.execute(f.command({includeStorage:true}))).fusedCount,0);assert.equal(f.calls,0);
 });
 test('retired same-level flag cannot restrict mixed levels; categories remain separate',async()=>{
  const f=setup();f.w.getTableInfo=(tid)=>({contentType:1,baseLimitLevel:tid===1?19:20});
@@ -62,72 +62,6 @@ test('built installer parses, injects executable engine and routes action withou
  const f=setup(),context={nn:f.n,setInterval(){},setTimeout,clearTimeout,console};vm.createContext(context);vm.runInContext(hook,context);
  const cap=context.__wogGearFusion.status();const result=JSON.parse(await context.__runJewelAction({...f.command(),instance:cap.instance}));
  assert.equal(result.fusedCount,1);assert.equal(f.calls,1);
-});
-test('one offline UI switch schedules all ten tier/category combinations without legacy auto controls',async()=>{
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
- try {for(const width of [1440,390]){
-  const context=await browser.newContext({viewport:{width,height:1000}});
-  await context.route('**/*',r=>/^https?:/.test(r.request().url())&&!r.request().url().startsWith(testUrl)?r.abort():r.continue());
-  await context.addInitScript(()=>{
-    localStorage.setItem('genesis_update_notice_dismissed_v20260920','true');
-    localStorage.setItem('genesis_auto_fuse_gear_t3','true');localStorage.setItem('genesis_auto_fuse_acc_t3','true');
-    if(localStorage.getItem('genesis_include_storage_jewel')===null) localStorage.setItem('genesis_include_storage_jewel','false');
-    if(localStorage.getItem('genesis_fuse_t3_same_level_only')===null) localStorage.setItem('genesis_fuse_t3_same_level_only','true');
-    window.WebSocket=class{static OPEN=1;constructor(){this.readyState=0}close(){}send(){throw Error('Real game calls prohibited')}};
-  });
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(testUrl);
-  await page.evaluate(()=>switchMainTab('jewel'));
-  assert.equal(await page.locator('#autoGearFusion').isChecked(),false);assert(await page.locator('#autoGearFusion').isDisabled());
-  assert.equal(await page.locator('#switchAutoFuseGearT3, #switchAutoFuseAccT3, #autoT4Gear, #autoT4Acc').count(),0);
-  assert.equal(await page.locator('#gearFusionPanel, #gearFusionSameLevel, #gearFusionStorage').count(),0);
-  assert.equal(await page.locator('.jewel-control-card #autoGearFusion').count(),1);
-  assert.equal(await page.locator('#chkFuseT3SameLevelOnly').count(),0);
-  assert.equal(await page.evaluate(()=>{
-    const row=document.getElementById('gearFusionControls');
-    return row.previousElementSibling.contains(document.getElementById('switchAutoFuse')) && row.nextElementSibling.contains(document.getElementById('switchIncludeStorage'));
-  }),true,'Unified row must replace the original T3 rows, not add a card');
-  await page.evaluate(()=>{
-    window.__commands=[];liveWs=new EventTarget();liveWs.readyState=1;liveWs.send=()=>{};queueJewelCmd=c=>window.__commands.push(c);
-    window.__cap={version:2,jewelPreservation:1,gearSourceTiers:[1,2,3,4,5],instance:'test',available:true,counts:Object.fromEntries([1,2,3,4,5].flatMap(t=>[1,2].map(c=>[t+':'+c,{bag:c===1?6:3,storage:0}]))),generatedAt:Date.now()};
-    wogGearFusionTick({gearFusion:__cap});
-  });
-  assert.equal(await page.evaluate(()=>__commands.length),0);
-  assert.equal(await page.locator('#gearFusionLabel').innerText(),'T5 及以下裝備／飾品');
-  await page.evaluate(()=>wogGearFusionTick({gearFusion:{...__cap,gearSourceTiers:undefined}}));
-  assert(await page.locator('#autoGearFusion').isDisabled());
-  assert.equal(await page.evaluate(()=>__commands.length),0);
-  await page.evaluate(()=>wogGearFusionTick({gearFusion:__cap}));
-  await page.locator('#autoGearFusion').check();await page.evaluate(()=>wogGearFusionTick({gearFusion:__cap}));
-  let commands=await page.evaluate(()=>window.__commands);assert.equal(commands.length,1);assert.equal(commands[0].sameLevelOnly,false);assert.equal(commands[0].includeStorage,false);
-  await page.evaluate(()=>{wogGearFusionTick({gearFusion:__cap});wogGearFusionReply({action:'fuseGearTiers',requestId:'wrong',success:true});wogGearFusionTick({gearFusion:__cap});});assert.equal(await page.evaluate(()=>__commands.length),1);
-  for(let i=0;i<9;i++)await page.evaluate(()=>{
-    wogGearFusionReply({action:'fuseGearTiers',requestId:__commands.at(-1).requestId,success:true,fusedCount:1});
-    const previous=Date.now;Date.now=()=>previous()+5001;__cap.generatedAt=Date.now();wogGearFusionTick({gearFusion:__cap});
-  });
-  commands=await page.evaluate(()=>__commands);assert.deepEqual(commands.map(c=>[c.sourceTier,c.contentType]),[[1,1],[2,1],[3,1],[4,1],[5,1],[1,2],[2,2],[3,2],[4,2],[5,2]]);
-  await page.locator('#switchIncludeStorage').click();
-  await page.evaluate(()=>{
-    const prior=__commands.findLast(c=>c.action==='fuseGearTiers');
-    wogGearFusionReply({action:'fuseGearTiers',requestId:prior.requestId,success:true,fusedCount:1});
-    const previous=Date.now;Date.now=()=>previous()+5001;__cap.generatedAt=Date.now();wogGearFusionTick({gearFusion:__cap});
-  });
-  commands=await page.evaluate(()=>__commands);
-  assert.equal(commands.at(-1).action,'fuseGearTiers');
-  assert.equal(commands.at(-1).sameLevelOnly,false,'Retired preference stays disabled');
-  assert.equal(commands.at(-1).includeStorage,true,'Existing storage control governs the next batch');
-  await page.evaluate(()=>wogGearFusionReply({action:'fuseGearTiers',requestId:__commands.at(-1).requestId,success:false,reason:'Uncertain test result'}));assert.equal(await page.locator('#autoGearFusion').isChecked(),false);
-  await page.locator('#autoGearFusion').check();await page.evaluate(()=>liveWs.dispatchEvent(new Event('close')));assert.equal(await page.locator('#autoGearFusion').isChecked(),false);
-  await page.evaluate(()=>wogGearFusionTick({gearFusion:{...__cap,generatedAt:1}}));assert(await page.locator('#autoGearFusion').isDisabled());
-  await page.screenshot({path:'/var/tmp/wog-gear-fusion-'+width+'.png',fullPage:true});
-  await page.locator('#gearFusionControls').locator('..').screenshot({path:'/var/tmp/wog-automation-card-'+width+'.png'});
-  await page.reload();await page.evaluate(()=>switchMainTab('jewel'));
-  assert.equal(await page.locator('#autoGearFusion').isChecked(),false,'Reload never enables automatic fusion');
-  assert.equal(await page.locator('#chkFuseT3SameLevelOnly').count(),0);
-  assert.equal(await page.evaluate(()=>isFuseT3SameLevelOnlyActive),false);
-  assert.equal(await page.evaluate(()=>isIncludeStorageJewelActive),true,'Existing storage preference survives reload');
-  assert.deepEqual(errors,[]);await context.close();
- }}finally{await browser.close()}
 });
 test('tiers never mix and out-of-range tiers are rejected',async()=>{
  const f=setup();f.items.forEach((i,n)=>f.db.get(i.itemTid).RatingType=n<3?3:4);
@@ -176,7 +110,7 @@ test('jewel preservation UI persists, sends policy and rejects old hooks offline
  await page.locator('#jewelPreserveControls summary').click();const first=page.locator('#jewelPreserveOptions button').first();const base=Number(await first.getAttribute('data-tid'));await first.click();assert.equal(await first.getAttribute('aria-pressed'),'true');
  assert.equal(await page.evaluate(id=>isJewelPreserved({itemTid:id+1}),base),true);
  await page.evaluate(()=>{window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(JSON.parse(s))};window.wogWorkshopCapability={version:1,available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});assert.equal(await page.evaluate(()=>__sent.length),0);
- await page.evaluate(()=>{window.wogWorkshopCapability={version:2,jewelPreservation:1,instance:'test',available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});
+ await page.evaluate(()=>{window.wogWorkshopCapability={version:2,jewelPreservation:1,bagOnlyRounds:1,instance:'test',available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});
  const sent=await page.evaluate(()=>__sent);assert(sent.length>0);assert(JSON.stringify(sent).includes(String(base)));
  await page.locator('#jewelPreserveControls').screenshot({path:'/var/tmp/wog-preserve-390.png'});
  await page.reload();assert.equal(await page.evaluate(id=>isJewelPreserved({itemTid:id+1}),base),true);assert.deepEqual(errors,[]);await context.close();
@@ -205,7 +139,7 @@ test('blocked workshop stops all producers and retains first error outside rolli
  const page=await context.newPage();await page.goto(testUrl);
  const result=await page.evaluate(()=>{
   window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(s)};
-  const cap={version:2,jewelPreservation:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null},diagnostics:{phase:'workshop-call',fusionId:10603,requesting:false,materialsValid:true}},generatedAt:Date.now()};
+  const cap={version:2,jewelPreservation:1,bagOnlyRounds:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null},diagnostics:{phase:'workshop-call',fusionId:10603,requesting:false,materialsValid:true}},generatedAt:Date.now()};
   wogWorkshopStatus(cap);
   for(let n=0;n<100;n++){for(const action of ['fuse','fuseGearTiers','deposit','depositT3','withdraw','toggleStorage'])queueJewelCmd({action});wogWorkshopStatus(cap);}
   wogWorkshopReceipt({uncertain:true,reason:'later error'});
@@ -276,4 +210,25 @@ test('T5 equipment and accessories consume only protected-filtered T5 batches, n
    assert.equal((await x.engine.execute(x.command({sourceTier:5}))).fusedCount,0);assert.equal(x.calls,0);
   }
  }
+});
+
+
+test('T5 automatic jewels exclude preserved, locked and warehouse jewels; T6 remains outside automatic scope',async()=>{
+ const j=jewels();j.f.items.forEach((i,n)=>i.itemTid=n<6?195105:195205);
+ assert.equal((await j.f.engine.executeJewel(j.cmd({automaticRound:true,allowedTiers:[5],preservedTypes:[195105],includeStorage:true}))).fusedCount,1);
+ assert(j.sent.every(i=>i.tid===195205));assert.equal(j.f.items.length,6);
+ for(const modify of [x=>x.f.items.forEach(i=>i.location=2),x=>x.f.items[0].isLock=true]){
+  const x=jewels();x.f.items=x.f.items.slice(0,6);x.f.items.forEach(i=>i.itemTid=195105);modify(x);
+  assert.equal((await x.f.engine.executeJewel(x.cmd({automaticRound:true,allowedTiers:[5],includeStorage:true}))).fusedCount,0);assert.equal(x.sent.length,0);
+ }
+ const x=jewels();x.f.items.forEach(i=>i.itemTid=195106);
+ assert.equal((await x.f.engine.executeJewel(x.cmd({automaticRound:true,allowedTiers:[6]}))).success,false);assert.equal(x.sent.length,0);
+ // Explicit manual T6 requests retain their prior scope; the two toggles never send them.
+ assert.equal((await x.f.engine.executeJewel(x.cmd({allowedTiers:[6]}))).fusedCount,1);
+});
+
+test('legacy manual T3 hook no longer hardcodes warehouse materials',()=>{
+ const hook=fs.readFileSync('install_game_hook_v2.js','utf8');
+ const manual=hook.slice(hook.indexOf("      if (cmd.action === 'fuseT3') {"),hook.indexOf("      return JSON.stringify({ success: false, reason: 'Unknown action: '"));
+ assert(manual.includes("setAutoRegisterIncludeStorage('Fusion', false)"));assert(!manual.includes('it.location === 2'));
 });

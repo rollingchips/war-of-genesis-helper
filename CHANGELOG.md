@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-30 — Minute-based fusion rounds
+
+- Replace inventory-driven auto fusion with two default-off, 60-second round switches for T1–T5 equipment/accessories and jewels. Drain eligible batches sequentially; preserve jewel exclusions and receipt safeguards.
+- Remove storage-material permission and both automatic deposit controls/producers. Enforce bag-only selection in the hook; retain manual storage management.
+- 43 offline regressions passed, including timer/drain/stop/receipt cases, live-policy propagation, T5 jewels and forced warehouse exclusion. Full desktop/mobile localization and direct-file checks passed. No installer or live-game execution.
+
 ## 2026-09-29 — Direct files and personal interface
 
 - Replace ZIP delivery with root-level BAT, hook, Bridge and index.html; launcher opens index.html.

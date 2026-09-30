@@ -1,87 +1,110 @@
+// One clock and one in-flight operation for both bag-only fusion round switches.
 (() => {
-  const state = {enabled: false, pending: null, nextIndex: 0, nextAt: 0, lastAt: 0, capability: null, uncertain: false};
-  let timer;
+  const PERIOD = 60000, ROUND_LIMIT = 300000;
+  const state = {gear:false, jewel:false, due:{gear:Infinity,jewel:Infinity}, epoch:{gear:0,jewel:0}, round:null, pending:null, cap:null, uncertain:false};
   const watched = new WeakSet();
+  let receiptTimer;
   const el = id => document.getElementById(id);
-  function note(text) { const node = el('gearFusionStatus'); if (node) node.textContent = window.zhText(text); }
-  function stop(text) {
-    state.enabled = false;
-    if (el('autoGearFusion')) el('autoGearFusion').checked = false;
-    note(text);
+  const note = (kind,text) => {const node=el(kind==='gear'?'gearFusionStatus':'jewelFusionStatus');if(node)node.textContent=window.zhText(text);};
+  const socket = () => (typeof liveWs!=='undefined' && liveWs?.readyState===1)?liveWs:window.GenesisGameBridge?.ws;
+  const fresh = () => socket()?.readyState===1 && state.cap?.version===2 && state.cap?.bagOnlyRounds===1 && state.cap?.jewelPreservation===1 && state.cap?.gearSourceTiers?.includes(5) && state.cap?.available && Number.isFinite(state.cap.generatedAt) && Date.now()-state.cap.generatedAt<8000 && state.cap.generatedAt<=Date.now()+1000;
+  function setEnabled(kind,on) {
+    state.epoch[kind]++;state[kind]=on;state.due[kind]=on?Date.now()+PERIOD:Infinity;
+    const input=el(kind==='gear'?'autoGearFusion':'autoJewelFusion');if(input)input.checked=on;
+    if(kind==='jewel'){isAutoFuseJewelActive=on;window.isAutoFuseJewelActive=on;updateJewelSwitches();}
+    note(kind,on?'已啟用；每分鐘開始一輪，只使用背包材料。':'已關閉；不再送出後續合成。');
   }
-  window.wogGearFusionPause = stop;
-  function socket() {
-    return (typeof liveWs !== 'undefined' && liveWs?.readyState === 1) ? liveWs : window.GenesisGameBridge?.ws;
+  function stop(reason) {
+    for(const kind of ['gear','jewel']){setEnabled(kind,false);note(kind,reason);}
+    // Keep pending receipt/timeout: turning a toggle off is not cancellation.
+    state.round=null;
   }
-  function connected() { return socket()?.readyState === 1; }
-  function available() { return !state.uncertain && connected() && state.capability?.available && Date.now() - state.lastAt < 8000; }
-  window.wogGearFusionReply = data => {
-    if (data.action !== 'fuseGearTiers' || !state.pending || data.requestId !== state.pending) return;
-    clearTimeout(timer); state.pending = null; state.nextAt = Date.now() + 5000;
-    if (data.success !== true) stop(data.reason || 'Fusion stopped; check the game.');
-    else note(data.fusedCount === 1 ? 'Fusion completed; materials reconciled.' : (data.reason || 'Waiting for a game-validated batch.'));
+  window.wogGearFusionPause=stop;
+  function uncertain(reason) {state.uncertain=true;window.wogWorkshopReceipt?.({uncertain:true,reason});stop(reason);}
+  window.wogGearFusionReply=data=>{
+    const pending=state.pending;
+    if(!pending || data.action!==pending.action || data.requestId!==pending.requestId)return;
+    clearTimeout(receiptTimer);state.pending=null;window.wogFusionPending=null;
+    if(window.__pendingJewelCmd?.requestId===data.requestId)window.__pendingJewelCmd=null;
+    if(data.uncertain){uncertain(data.reason||'No fusion receipt. Check the game before enabling again.');return;}
+    if(data.code==='WORKSHOP_BUSY'){if(state.round)state.round=null;note(pending.kind,'遊戲忙碌，本輪結束；等待下次排程。');return;}
+    if(data.success!==true){stop(data.reason||'Fusion stopped; check the game.');return;}
+    if(!Number.isInteger(data.fusedCount)||![0,1].includes(data.fusedCount)){uncertain('Fusion response was unsuccessful or uncertain');return;}
+    if(state.round){
+      if(data.fusedCount===0)state.round.index++;
+      else state.round.fused++;
+    }
+    note(pending.kind,data.fusedCount===1?'本批合成已確認，繼續處理本輪。':'此階目前無可合成材料，跳過。');
   };
-  window.wogGearFusionTick = data => {
-    const cap = data?.gearFusion;
-    window.wogWorkshopStatus?.(cap);
-    window.wogWorkshopCapability = cap;
-    if (!cap || cap.version !== 2 || !Array.isArray(cap.gearSourceTiers) || !cap.gearSourceTiers.includes(5) || !connected() || !Number.isFinite(cap.generatedAt) || Date.now() - cap.generatedAt > 8000 || cap.generatedAt > Date.now() + 1000) {
-      state.capability = null; window.wogWorkshopCapability = null; if (el('autoGearFusion')) el('autoGearFusion').disabled = true;
-      stop('Updated LiveSync connection required.'); return;
-    }
-    const tiers = [...new Set(cap.gearSourceTiers)].filter(t => Number.isInteger(t) && t >= 1 && t <= 5).sort((a,b) => a-b);
-    const combinations = [1,2].flatMap(type => tiers.map(tier => [tier,type]));
-    const ws = socket();
-    if (!watched.has(ws)) {
-      watched.add(ws);
-      ws.addEventListener?.('close', () => { state.capability = null; window.wogWorkshopCapability = null; stop('Disconnected. Re-enable fusion only after reconnecting.'); }, {once: true});
-    }
-    state.capability = cap; state.lastAt = Date.now();
-    if (el('autoGearFusion')) el('autoGearFusion').disabled = !cap.available || state.uncertain;
-    if (state.uncertain) { stop('Uncertain previous command. Reconcile in game, then reload this page.'); return; }
-    if (!cap.available) { stop(cap.reason || 'Fusion blocked; check the game.'); return; }
-    if (el('gearFusionCounts')) el('gearFusionCounts').textContent = combinations.map(([tier,type]) => {
-      const count = cap.counts?.[tier + ':' + type];
-      return 'T' + tier + (type === 1 ? ' 裝備：' : ' 飾品：') + (count ? '背包 ' + count.bag + '／倉庫 ' + count.storage : '未知');
-    }).join(' · ');
-    if (!state.enabled || state.pending || window.wogJewelPending || window.__pendingJewelCmd || cap.busy || Date.now() < state.nextAt) return;
-    const includeStorage = isIncludeStorageJewelActive;
-    let chosen = null;
-    for (let i = 0; i < combinations.length; i++) {
-      const index = (state.nextIndex + i) % combinations.length, [tier,type] = combinations[index];
-      const count = cap.counts?.[tier + ':' + type];
-      if (count && Number.isInteger(count.bag) && Number.isInteger(count.storage) && count.bag + (includeStorage ? count.storage : 0) >= (type === 1 ? 6 : 3)) { chosen = {index,tier,type}; break; }
-    }
-    if (!chosen) return;
-    const requestId = 'gear-' + crypto.randomUUID(); state.pending = requestId; state.nextIndex = (chosen.index + 1) % combinations.length;
-    timer = setTimeout(() => { if (state.pending === requestId) { state.uncertain = true; state.pending = null; window.wogWorkshopReceipt?.({uncertain:true,reason:'No fusion receipt. Check the game before enabling again.'}); stop('No fusion receipt. Check the game before enabling again.'); } }, 15000);
-    queueJewelCmd({action: 'fuseGearTiers', requestId, instance: cap.instance, contentType: chosen.type, sourceTier: chosen.tier, includeStorage, sameLevelOnly: false});
+  window.wogGearFusionTick=data=>{
+    const cap=data?.gearFusion;state.cap=cap||null;window.wogWorkshopCapability=state.cap;
+    window.wogWorkshopStatus?.(state.cap);
+    const ws=socket();
+    if(ws&&!watched.has(ws)){watched.add(ws);ws.addEventListener?.('close',()=>{state.cap=null;window.wogWorkshopCapability=null;stop('Disconnected. Re-enable fusion only after reconnecting.');},{once:true});}
+    for(const id of ['autoGearFusion','autoJewelFusion'])if(el(id))el(id).disabled=!fresh()||state.uncertain;
+    if(!fresh()){stop(cap?.blocked?(cap.reason||'Fusion blocked; check the game.'):'Updated LiveSync connection required.');}
+    // A profile is health data only. It never starts or advances a round.
   };
-  function mount() {
-    const box = el('gearFusionControls'); if (!box) return;
-    box.innerHTML = `<style>
-      #gearFusionControls .gear-fusion-toggle { position:relative; display:block; flex-shrink:0; width:44px; height:22px; }
-      #autoGearFusion { position:absolute; inset:0; width:44px; height:22px; margin:0; opacity:0; z-index:1; cursor:pointer; }
-      #autoGearFusion + .jewel-switch { display:block; box-sizing:border-box; }
-      #autoGearFusion:checked + .jewel-switch { background:#238636; border-color:#2ea043; }
-      #autoGearFusion:checked + .jewel-switch::after { transform:translateX(20px); background:#fff; }
-      #autoGearFusion:disabled { cursor:not-allowed; }
-      #autoGearFusion:disabled + .jewel-switch { opacity:0.5; }
-      #autoGearFusion:focus-visible + .jewel-switch { outline:2px solid #58a6ff; outline-offset:3px; }
-    </style>
-    <label class="jewel-switch-wrap" style="margin:0 0 10px;">
-      <span class="gear-fusion-toggle"><input id="autoGearFusion" type="checkbox" role="switch" aria-labelledby="gearFusionLabel" aria-describedby="gearFusionStatus" disabled><span class="jewel-switch" aria-hidden="true"></span></span>
-      <span style="flex:1;min-width:0;">
-        <span id="gearFusionLabel" style="display:block;font-weight:bold;font-size:13.5px;color:#58a6ff;">T5 及以下裝備／飾品</span>
-        <span style="display:block;font-size:11.5px;color:#8b949e;">T1～T5，每批 6 件裝備或 3 件飾品；不混階、不限等級。</span>
-        <span id="gearFusionCounts" style="display:block;font-size:11.5px;color:#8b949e;"></span>
-        <span id="gearFusionStatus" role="status" style="display:block;font-size:11.5px;color:#8b949e;">Updated LiveSync connection required. Automation starts off.</span>
-      </span>
-    </label>`;
-    el('autoGearFusion').addEventListener('change', e => {
-      if (e.target.checked && !available()) {e.target.checked = false; stop('Fresh LiveSync data required.'); return;}
-      state.enabled = e.target.checked; note(state.enabled ? '已啟用 T5 及以下自動合成。' : '已關閉 T5 及以下自動合成。');
+  function pump() {
+    if(state.pending || state.uncertain)return;
+    const now=Date.now();
+    if(state.round && (now-state.round.started>=ROUND_LIMIT||state.round.commands>=1000)){
+      for(const kind of state.round.kinds)note(kind,'本輪已達時間或批次上限，等待下次排程。');state.round=null;
+      for(const kind of ['gear','jewel'])if(state[kind])state.due[kind]=now+PERIOD;
+      return;
+    }
+    if(!fresh()){if(state.gear||state.jewel)stop('Fresh LiveSync data required.');return;}
+    if(state.cap.busy||state.cap.gameBusy||window.wogJewelPending||window.__pendingJewelCmd)return;
+    if(!state.round){
+      const kinds=['gear','jewel'].filter(k=>state[k]&&now>=state.due[k]);if(!kinds.length)return;
+      const jobs=[];
+      for(const kind of kinds){
+        state.due[kind]=now+PERIOD;
+        if(kind==='gear')for(const contentType of [1,2])for(const tier of [1,2,3,4,5])jobs.push({kind,epoch:state.epoch[kind],action:'fuseGearTiers',contentType,sourceTier:tier});
+        else for(const tier of [1,2,3,4,5])jobs.push({kind,epoch:state.epoch[kind],action:'fuse',tier,allowedTiers:[tier]});
+      }
+      state.round={kinds,jobs,index:0,started:now,commands:0,fused:0};
+    }
+    const round=state.round;
+    while(round.index<round.jobs.length && (!state[round.jobs[round.index].kind] || round.jobs[round.index].epoch!==state.epoch[round.jobs[round.index].kind]))round.index++;
+    if(round.index>=round.jobs.length){
+      for(const kind of round.kinds){if(state[kind]){note(kind,'本輪完成，等待下一分鐘。');if(state.due[kind]<=now)state.due[kind]=now+PERIOD;}}
+      state.round=null;return;
+    }
+    const {kind,epoch,...job}=round.jobs[round.index];
+    const requestId='round-'+crypto.randomUUID();
+    state.pending={kind,action:job.action,requestId};window.wogFusionPending=requestId;
+    note(kind,'本輪合成處理中，等待遊戲確認。');
+    receiptTimer=setTimeout(()=>{
+      if(state.pending?.requestId!==requestId)return;
+      state.pending=null;window.wogFusionPending=null;
+      uncertain('No fusion receipt. Check the game before enabling again.');
+    },15000);
+    try{
+      const accepted=queueJewelCmd({...job,automaticRound:true,requestId,instance:state.cap.instance,includeStorage:false,sameLevelOnly:false});
+      if(accepted===false){clearTimeout(receiptTimer);state.pending=null;window.wogFusionPending=null;state.round=null;note(kind,'尚未送出，等待下一分鐘。');}
+      else round.commands++;
+    }catch(_){clearTimeout(receiptTimer);state.pending=null;window.wogFusionPending=null;uncertain('No fusion receipt. Check the game before enabling again.');}
+  }
+  function mount(){
+    const box=el('gearFusionControls');if(!box)return;
+    box.innerHTML=`<style>
+    #gearFusionControls .fusion-toggle{position:relative;display:block;flex-shrink:0;width:44px;height:22px}
+    #gearFusionControls input{position:absolute;inset:0;width:44px;height:22px;margin:0;opacity:0;z-index:1;cursor:pointer}
+    #gearFusionControls input+.jewel-switch{display:block;box-sizing:border-box}
+    #gearFusionControls input:checked+.jewel-switch{background:#238636;border-color:#2ea043}
+    #gearFusionControls input:checked+.jewel-switch::after{transform:translateX(20px);background:#fff}
+    #gearFusionControls input:disabled+.jewel-switch{opacity:0.5}
+    #gearFusionControls input:focus-visible+.jewel-switch{outline:2px solid #58a6ff;outline-offset:3px}
+    </style>`+['gear','jewel'].map(kind=>{
+      const gear=kind==='gear',id=gear?'autoGearFusion':'autoJewelFusion',label=gear?'gearFusionLabel':'jewelFusionLabel',status=gear?'gearFusionStatus':'jewelFusionStatus';
+      return `<label class="jewel-switch-wrap" style="margin:0 0 10px"><span class="fusion-toggle"><input id="${id}" type="checkbox" role="switch" aria-labelledby="${label}" aria-describedby="${status}" disabled><span class="jewel-switch" aria-hidden="true"></span></span><span style="flex:1;min-width:0"><span id="${label}" style="display:block;font-weight:bold;color:#58a6ff">${gear?'T5 及以下裝備／飾品':'T5 及以下寶石'}</span><span style="display:block;font-size:11.5px;color:#8b949e">每分鐘一輪，僅背包 T1～T5；${gear?'每批 6 件裝備／3 件飾品，不混階、不限等級。':'每批 6 顆同階寶石，保留設定持續生效。'}</span><span id="${status}" role="status" style="display:block;font-size:11.5px;color:#8b949e">連線後可啟用；預設關閉。</span></span></label>`;
+    }).join('');
+    for(const kind of ['gear','jewel'])el(kind==='gear'?'autoGearFusion':'autoJewelFusion').addEventListener('change',e=>{
+      if(e.target.checked&&(!fresh()||state.uncertain)){e.target.checked=false;return;}
+      setEnabled(kind,e.target.checked);
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
+  setInterval(pump,1000);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 })();
