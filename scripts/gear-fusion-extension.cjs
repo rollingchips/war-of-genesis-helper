@@ -62,6 +62,8 @@ function patchFrontend(html) {
   const marker = 'if (data && data.action) {';
   if (html.split(marker).length !== 3) throw Error('Expected both LiveSync action handlers');
   html = html.replaceAll(marker, marker + '\n            if (window.wogWorkshopReceipt) window.wogWorkshopReceipt(data);\n            if (window.wogGearFusionReply) window.wogGearFusionReply(data);\n            if (window.wogJewelPreservationReply) window.wogJewelPreservationReply(data);');
+  html=html.replace(/(if \(window.wogJewelPreservationReply\) window.wogJewelPreservationReply\(data\);\s*)window.__pendingJewelCmd = null;/g,
+    '$1if(window.__pendingJewelCmd?.requestId===data.requestId)window.__pendingJewelCmd = null;');
   // Upstream preservation semantics applied to both manual and automatic counts.
   html=html.replaceAll('if (!j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2)))', 'if (!j.isLock && !window.isJewelPreserved(j) && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2)))');
   html=html.replaceAll('jewels.filter(j => !j.isLock && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2))', 'jewels.filter(j => !j.isLock && !window.isJewelPreserved(j) && (j.location === 1 || (isIncludeStorageJewelActive && j.location === 2))');

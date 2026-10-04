@@ -457,5 +457,7 @@
   "Game action returned no usable receipt. Check the game before restarting LiveSync.": "遊戲未傳回可用的操作回覆；重啟 LiveSync 前請先確認遊戲。",
   "Bridge action timed out. Check the game before restarting LiveSync.": "Bridge 等待操作回覆逾時；重啟 LiveSync 前請先確認遊戲。",
   "Bridge receipt read failed. Check the game before restarting LiveSync.": "Bridge 讀取操作回覆失敗；重啟 LiveSync 前請先確認遊戲。",
-  "Bridge action dispatch failed. Check the game before restarting LiveSync.": "Bridge 傳送操作指令發生錯誤；重啟 LiveSync 前請先確認遊戲。"
+  "Bridge action dispatch failed. Check the game before restarting LiveSync.": "Bridge 傳送操作指令發生錯誤；重啟 LiveSync 前請先確認遊戲。",
+  "Fusion reply unavailable; next round will continue automatically.": "未收到有效回覆，本輪結束；一分鐘後自動繼續。",
+  "Fusion command expired; next round will continue automatically.": "合成指令已過期，等待下一輪自動執行。"
 }

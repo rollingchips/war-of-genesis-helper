@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Recover missing automatic-fusion replies
+
+- Fix the remaining browser/jewel timeout and Bridge permanent interlocks after dispatch-only fusion. Preserve toggles, end the round and wait sixty seconds.
+- Add expiring automatic commands, matching hook capability, correlated retryable Bridge errors and stale-reply isolation; retain material protections and non-fusion interlocks.
+- Verified 54 offline regressions and full language/direct-file checks. Actual desktop/mobile generated pages retain switches and dispatch the next round after both missing replies and correlated Bridge errors. Edge-case, late-ID/expiry causality and protected-material state checks pass; no live game or installer execution.
+
 ## 2026-10-04 — Execute fusion without result-confirmation blocking
 
 - Acknowledge protected gear/jewel API invocation immediately; do not require result shape or immediate inventory consumption. Log actions, not confirmed fusion success.

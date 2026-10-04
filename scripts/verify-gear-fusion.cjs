@@ -17,7 +17,7 @@ function setup({count=6,type=1,reply=1000,consume=true}={}) {
     validateFusionMaterials:(_,ms)=>ms.length===(type===1?6:3),clearFusionStaging(){},reqFusionAsync:async(_,ms)=>{calls++;selected=ms;if(consume)items=items.filter(i=>!ms.some(m=>m.itemId===i.itemId));return {NetResult:reply,Data:{}};}};
   const n={services:{workshop:w,itemMove:{isEquippedItemId:id=>equipped.has(id)},steamMarket:{staging:{isStaged:id=>staged.has(id)}}},net:{data:{item:{getAllItemNotStack:()=>items}}},db:{equip:{get:id=>db.get(id)},fusion:{get:id=>id===404?w.findFusionTable(type,db.values().next().value.RatingType,20):null}},msgBroker:{publish(){}}};
   const engine=factory(()=>n,30);let seq=0;
-  const command=extra=>({action:'fuseGearTiers',instance:engine.status().instance,requestId:'test-'+(++seq),contentType:type,sourceTier:4,sameLevelOnly:true,includeStorage:false,...extra});
+  const command=extra=>({action:'fuseGearTiers',expiresAt:Date.now()+15000,instance:engine.status().instance,requestId:'test-'+(++seq),contentType:type,sourceTier:4,sameLevelOnly:true,includeStorage:false,...extra});
   return {engine,n,w,db,equipped,staged,command,get items(){return items},set items(v){items=v},get calls(){return calls},get selected(){return selected}};
 }
 test('operator-confirmed quantities are fixed and still checked by the game validator',async()=>{
@@ -119,7 +119,7 @@ test('jewel preservation UI persists, sends policy and rejects old hooks offline
  await page.locator('#jewelPreserveControls summary').click();const first=page.locator('#jewelPreserveOptions button').first();const base=Number(await first.getAttribute('data-tid'));await first.click();assert.equal(await first.getAttribute('aria-pressed'),'true');
  assert.equal(await page.evaluate(id=>isJewelPreserved({itemTid:id+1}),base),true);
  await page.evaluate(()=>{window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(JSON.parse(s))};window.wogWorkshopCapability={version:1,available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});assert.equal(await page.evaluate(()=>__sent.length),0);
- await page.evaluate(()=>{window.wogWorkshopCapability={version:2,jewelPreservation:1,dispatchOnlyFusion:1,bagOnlyRounds:1,instance:'test',available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});
+ await page.evaluate(()=>{window.wogWorkshopCapability={version:2,jewelPreservation:1,boundedFusionCommands:1,dispatchOnlyFusion:1,bagOnlyRounds:1,instance:'test',available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});
  const sent=await page.evaluate(()=>__sent);assert(sent.length>0);assert(JSON.stringify(sent).includes(String(base)));
  await page.locator('#jewelPreserveControls').screenshot({path:'/var/tmp/wog-preserve-390.png'});
  await page.reload();assert.equal(await page.evaluate(id=>isJewelPreserved({itemTid:id+1}),base),true);assert.deepEqual(errors,[]);await context.close();
@@ -147,7 +147,7 @@ test('blocked workshop stops all producers and retains first error outside rolli
  const page=await context.newPage();await page.goto(testUrl);
  const result=await page.evaluate(()=>{
   window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(s)};
-  const cap={version:2,jewelPreservation:1,dispatchOnlyFusion:1,bagOnlyRounds:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null},diagnostics:{phase:'workshop-call',fusionId:10603,requesting:false,materialsValid:true}},generatedAt:Date.now()};
+  const cap={version:2,jewelPreservation:1,boundedFusionCommands:1,dispatchOnlyFusion:1,bagOnlyRounds:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null},diagnostics:{phase:'workshop-call',fusionId:10603,requesting:false,materialsValid:true}},generatedAt:Date.now()};
   wogWorkshopStatus(cap);
   for(let n=0;n<100;n++){for(const action of ['fuse','fuseGearTiers','deposit','depositT3','withdraw','toggleStorage'])queueJewelCmd({action});wogWorkshopStatus(cap);}
   wogWorkshopReceipt({uncertain:true,reason:'later error'});
@@ -258,4 +258,12 @@ test('late completion cannot release the next operation busy lease',async()=>{
  await f.engine.execute(f.command());await new Promise(r=>setTimeout(r,40));
  await f.engine.execute(f.command());assert.equal(calls,2);resolveFirst(null);await new Promise(r=>setImmediate(r));assert(f.engine.locked());
  await new Promise(r=>setTimeout(r,40));assert(!f.engine.locked());
+});
+
+test('expired automatic gear and jewel commands perform zero mutations',async()=>{
+ for(const expiresAt of [undefined,NaN,Date.now()-1,Date.now()+60000]){
+ const f=setup();const result=await f.engine.execute(f.command({automaticRound:true,expiresAt}));assert.equal(result.code,'FUSION_COMMAND_EXPIRED');assert.equal(f.calls,0);
+ const j=jewels();let stages=0;j.f.w.clearFusionStaging=()=>stages++;
+ assert.equal((await j.f.engine.executeJewel(j.cmd({automaticRound:true,expiresAt}))).code,'FUSION_COMMAND_EXPIRED');assert.equal(stages,0);
+ }
 });

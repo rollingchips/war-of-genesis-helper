@@ -29,7 +29,7 @@ function patchMinuteFrontend(html){
    if(n.type==='FunctionDeclaration'&&n.id.name==='queueJewelCmd'){
     let raw=js.slice(n.start,n.end).replace('if (!cmd) return;','if (!cmd) return false;');
     raw=raw.replace('      }));\n    } catch(e) {','      }));\n      return true;\n    } catch(e) {');
-    raw=raw.replace('      window.__pendingJewelCmd = null;\n    }','      window.__pendingJewelCmd = null;\n      window.wogWorkshopReceipt?.({uncertain:true,reason:"No fusion receipt. Check the game before enabling again."});\n      throw e;\n    }');
+    raw=raw.replace('      window.__pendingJewelCmd = null;\n    }','      window.__pendingJewelCmd = null;\n      window.wogWorkshopReceipt?.({action:cmd.action,requestId:cmd.requestId,retryable:cmd.automaticRound===true,uncertain:true,reason:"No fusion receipt. Check the game before enabling again."});\n      throw e;\n    }');
     raw=raw.replace(/\n}$/, '\n  return false;\n}');
     edits.push([n.start,n.end,raw]);
    }

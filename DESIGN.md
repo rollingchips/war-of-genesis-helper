@@ -1,5 +1,15 @@
 # Traditional Chinese Frontend Contract
 
+## Recoverable automatic-fusion transport loss (2026-10-04, operator 27868)
+
+- Supersedes permanent transport interlocks for automatic fusion only. A missing, malformed or uncertain automatic-fusion reply ends the current shared round, preserves enabled switches and all preservation settings, clears correlated pending state, and schedules the next round no earlier than sixty seconds later. It never logs success or immediate replay. Disconnect, old hook and unavailable safety checks retain existing fail-closed behavior.
+- Automatic commands carry a fifteen-second expiry checked in the hook before selection or mutation. A new boundedFusionCommands capability prevents using recovery with an old hook. Request identity and material reservation checks remain.
+- Bridge recognizes only the structured automatic-fusion invocation produced by this page, returns correlated retryable errors, drops queued work and cools down sixty seconds after transport failure; it does not latch actionBlocked for these commands. Non-fusion/manual uncertain operations retain their interlock. Expired queued automatic calls never dispatch. Hook expiry prevents delayed file delivery from executing an old round.
+- Browser timeout, jewel pending timeout, send exceptions, unknown receipts and Bridge errors must all follow the same non-latching recovery policy. Late or unrelated IDs cannot clear a newer pending operation.
+- Offline tests must exercise the generated page and real patched Bridge, not only mocked successful result callbacks. No live game/installer execution.
+
+Verification: 54 offline regressions plus language/direct-file checks pass; generated desktop/mobile pages cover lost replies and Bridge retry recovery. No live game verification.
+
 ## Dispatch-only fusion (2026-10-04, operator 27861)
 
 - Supersedes result-confirmation gates for gear and jewel fusion. After protected fresh selection and native validation, invoke the game workshop API once and acknowledge the call immediately. Null, unknown response shapes, delayed inventory updates and rejected result promises must not permanently disable automatic fusion. A dispatch is not evidence of successful consumption or an upgrade.

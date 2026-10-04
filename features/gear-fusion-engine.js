@@ -45,7 +45,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
     return {n, w, raw, rows};
   }
   function status() {
-    const base = {version: 2, jewelPreservation: 1, bagOnlyRounds: 1, dispatchOnlyFusion: 1, gearSourceTiers: [...sourceTiers], instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
+    const base = {version: 2, jewelPreservation: 1, bagOnlyRounds: 1, dispatchOnlyFusion: 1, boundedFusionCommands: 1, gearSourceTiers: [...sourceTiers], instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
     try {
       const {rows} = inventory(); lastSnapshot = Date.now();
       const counts = {};
@@ -85,6 +85,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
   }
   async function execute(cmd) {
     const receipt = {action: 'fuseGearTiers', requestId: cmd.requestId};
+    if (cmd.automaticRound===true && (!Number.isFinite(cmd.expiresAt) || cmd.expiresAt <= Date.now() || cmd.expiresAt > Date.now()+15000)) return {...receipt,success:false,retryable:true,code:'FUSION_COMMAND_EXPIRED',reason:'Fusion command expired; next round will continue automatically.'};
     if (typeof cmd.requestId !== 'string' || !/^[a-zA-Z0-9-]{1,96}$/.test(cmd.requestId)) return {...receipt, success: false, reason: 'Invalid request identity'};
     if (seen.has(cmd.requestId)) return {...receipt, success: false, reason: 'Duplicate request; no action repeated'};
     if (seen.size >= 10000) return {...receipt, success: false, reason: 'Session request limit reached'};
@@ -118,6 +119,7 @@ function createGearFusion(getGame, timeoutMs = 10000) {
   }
   async function executeJewel(cmd) {
     const receipt={action:'fuse',requestId:cmd.requestId};
+    if (cmd.automaticRound===true && (!Number.isFinite(cmd.expiresAt) || cmd.expiresAt <= Date.now() || cmd.expiresAt > Date.now()+15000)) return {...receipt,success:false,retryable:true,code:'FUSION_COMMAND_EXPIRED',reason:'Fusion command expired; next round will continue automatically.'};
     if (typeof cmd.requestId !== 'string' || !/^[a-zA-Z0-9-]{1,96}$/.test(cmd.requestId) || seen.has(cmd.requestId)) return {...receipt,success:false,reason:'Invalid or duplicate request identity'};
     if (seen.size>=10000) return {...receipt,success:false,reason:'Session request limit reached'};
     seen.set(cmd.requestId,true);

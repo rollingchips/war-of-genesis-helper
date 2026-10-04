@@ -15,7 +15,7 @@ function harness(){
    setTimeout(fn,ms){const id=++seq;timers.set(id,{fn,at:now+ms});return id},clearTimeout(id){timers.delete(id)}};
  c.window=c;c.wogWorkshopReceipt=r=>{if(r.uncertain){faults.push(r);c.wogGearFusionPause(r.reason)}};
  vm.createContext(c);vm.runInContext(ui,c);
- const cap={version:2,dispatchOnlyFusion:1,bagOnlyRounds:1,jewelPreservation:1,gearSourceTiers:[1,2,3,4,5],available:true,busy:false,gameBusy:false,instance:'fixture',generatedAt:now,counts:{}};
+ const cap={version:2,boundedFusionCommands:1,dispatchOnlyFusion:1,bagOnlyRounds:1,jewelPreservation:1,gearSourceTiers:[1,2,3,4,5],available:true,busy:false,gameBusy:false,instance:'fixture',generatedAt:now,counts:{}};
  function refresh(){cap.generatedAt=now;c.wogGearFusionTick({gearFusion:cap})}refresh();
  function run(ms,healthy=true){const end=now+ms;while(true){let next=[...timers].filter(([,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at)[0];if(!next)break;const[id,t]=next;now=t.at;if(t.ms)t.at+=t.ms;else timers.delete(id);if(healthy)refresh();t.fn();}now=end;}
  function toggle(kind,on){const n=nodes.get(kind==='gear'?'autoGearFusion':'autoJewelFusion');n.checked=on;n.change({target:n})}
@@ -43,11 +43,14 @@ test('toggle off while pending stops following batches; reenable does not resume
  assert.equal(f.sent.at(-1).action,'fuse');assert.equal(f.sent.filter(x=>x.action==='fuseGearTiers').length,1);
  f.toggle('jewel',false);f.reply(1);f.run(1000);assert.equal(f.sent.length,2);
 });
-test('wrong receipt cannot release a pending command; timeout pauses both categories with healthy profiles',()=>{
- const f=harness();f.toggle('gear',true);f.toggle('jewel',true);f.run(60000);
- f.c.wogGearFusionReply({action:'fuseGearTiers',requestId:'wrong',success:true,fusedCount:1});f.run(14000);assert.equal(f.sent.length,1);
- f.run(1000);assert.equal(f.faults.length,1);assert.equal(f.nodes.get('autoGearFusion').checked,false);assert.equal(f.nodes.get('autoJewelFusion').checked,false);
- f.run(120000);assert.equal(f.sent.length,1);
+test('lost reply ends round but retains both switches; late replies cannot settle a new command',()=>{
+ const f=harness();f.toggle('gear',true);f.toggle('jewel',true);f.run(60000);const first=f.sent[0];
+ f.c.wogGearFusionReply({action:first.action,requestId:'wrong',success:true,fusedCount:1});f.run(15000);
+ assert.equal(f.faults.length,0);assert(f.nodes.get('autoGearFusion').checked);assert(f.nodes.get('autoJewelFusion').checked);
+ f.run(59000);assert.equal(f.sent.length,1);f.run(1000);assert.equal(f.sent.length,2);
+ f.c.wogGearFusionReply({action:first.action,requestId:first.requestId,success:true,dispatchedCount:1});
+ assert.equal(f.c.wogFusionPending,f.sent[1].requestId);assert.equal(f.logs.length,0);
+ f.reply(0,{dispatchedCount:1});assert.equal(f.logs.length,1);
 });
 test('native busy and manual pending actions serialize the timer; busy receipt ends without a retry burst',()=>{
  const f=harness();f.toggle('gear',true);f.cap.busy=true;f.run(60000);assert.equal(f.sent.length,0);
@@ -56,7 +59,7 @@ test('native busy and manual pending actions serialize the timer; busy receipt e
  f.reply(0,{code:'WORKSHOP_BUSY'});f.run(59000);assert.equal(f.sent.length,1);f.run(1000);assert.equal(f.sent.length,2);
 });
 test('old hooks, stale profiles and disconnect cannot dispatch; lost connection never re-enables switches',()=>{
- for(const change of [f=>delete f.cap.bagOnlyRounds,f=>delete f.cap.dispatchOnlyFusion,f=>f.cap.gearSourceTiers=[1,2,3,4]]){
+ for(const change of [f=>delete f.cap.bagOnlyRounds,f=>delete f.cap.dispatchOnlyFusion,f=>delete f.cap.boundedFusionCommands,f=>f.cap.gearSourceTiers=[1,2,3,4]]){
   const f=harness();change(f);f.refresh();assert.equal(f.nodes.get('autoJewelFusion').disabled,true);f.toggle('jewel',true);f.run(60000);assert.equal(f.sent.length,0);
  }
  const f=harness();f.toggle('gear',true);f.run(60000,false);assert.equal(f.sent.length,0);assert.equal(f.nodes.get('autoGearFusion').checked,false);
@@ -67,9 +70,9 @@ test('long productive round has a finite budget and no catch-up queue',()=>{
  for(let i=0;i<301;i++){f.reply(1);f.run(1000)}
  assert.equal(f.sent.length,300);f.run(58000);assert.equal(f.sent.length,300);f.run(1000);assert.equal(f.sent.length,301);
 });
-test('transport refusal schedules no retry until next minute, unknown receipt stops instead of draining',()=>{
+test('transport refusal schedules no retry until next minute, unknown receipt waits a minute instead of disabling',()=>{
  const f=harness();let attempts=0;f.c.queueJewelCmd=()=>{attempts++;return false};f.toggle('gear',true);f.run(119000);assert.equal(attempts,1);f.run(1000);assert.equal(attempts,2);
- const x=harness();x.toggle('gear',true);x.run(60000);x.reply(undefined,{fusedCount:undefined});assert.equal(x.faults.length,1);x.run(60000);assert.equal(x.sent.length,1);
+ const x=harness();x.toggle('gear',true);x.run(60000);x.reply(undefined,{fusedCount:undefined});assert.equal(x.faults.length,0);assert(x.nodes.get('autoGearFusion').checked);x.run(60000);assert.equal(x.sent.length,2);
 });
 test('direct UI has two default-off fusion toggles; old storage/deposit settings cannot dispatch; preservation persists',async()=>{
  const server=require('node:http').createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync('index.html'))});
@@ -87,7 +90,7 @@ test('direct UI has two default-off fusion toggles; old storage/deposit settings
   await page.locator('#jewelPreserveControls summary').click();const preserve=page.locator('#jewelPreserveOptions button').first(),base=Number(await preserve.getAttribute('data-tid'));await preserve.click();
   await page.evaluate(()=>{
     window.__sent=[];liveWs=new EventTarget();liveWs.readyState=1;liveWs.send=s=>{const m=JSON.parse(s);if(m.params?.expression?.startsWith('(async () => { if (typeof globalThis.__runJewelAction'))__sent.push(m)};
-    const profile=()=>wogGearFusionTick({gearFusion:{version:2,jewelPreservation:1,dispatchOnlyFusion:1,bagOnlyRounds:1,gearSourceTiers:[1,2,3,4,5],instance:'test',available:true,generatedAt:Date.now(),counts:{}}});profile();setInterval(profile,500);
+    const profile=()=>wogGearFusionTick({gearFusion:{version:2,jewelPreservation:1,boundedFusionCommands:1,dispatchOnlyFusion:1,bagOnlyRounds:1,gearSourceTiers:[1,2,3,4,5],instance:'test',available:true,generatedAt:Date.now(),counts:{}}});profile();setInterval(profile,500);
   });
   for(const id of ['gearFusionLabel','jewelFusionLabel','gearFusionStatus','jewelFusionStatus'])await page.locator('#'+id).click();
   assert.equal(await page.locator('#autoGearFusion').isChecked(),false);
@@ -103,7 +106,20 @@ await page.clock.runFor(59000);assert.equal(await page.evaluate(()=>__sent.lengt
   assert.equal(await page.evaluate(()=>jewelActivityLogs.filter(x=>x.viText.includes('本輪 #1')&&x.viText.includes('T3 寶石')).length),1);
   await page.clock.runFor(2000);assert.equal(await page.evaluate(()=>__sent.length),2);
   const updated=await page.evaluate(()=>__sent.at(-1).params.expression);assert(updated.includes('"preservedTypes":['+base+','+secondBase+']'));assert(updated.includes('"automaticRound":true'));
-  await page.locator('#autoJewelFusion').uncheck();await page.clock.runFor(16000);assert.equal(await page.evaluate(()=>__sent.length),2,'No command after toggle off, even on timeout');
+  await page.clock.runFor(15000);
+  assert.equal(await page.locator('#autoJewelFusion').isChecked(),true);
+  assert.equal(await page.evaluate(()=>window.wogJewelPending),null);
+  await page.clock.runFor(61000);assert.equal(await page.evaluate(()=>__sent.length),3,'Missing reply must not latch either pending layer');
+  await page.evaluate(()=>{
+    const current=window.wogFusionPending;
+    wogWorkshopReceipt({action:'fuse',requestId:'round-old',uncertain:true});
+    if(window.wogFusionPending!==current)throw Error('Old fault cleared new pending operation');
+    const r={action:'fuse',requestId:current,success:false,retryable:true,code:'FUSION_TRANSPORT_RETRY'};
+    wogWorkshopReceipt(r);wogGearFusionReply(r);wogJewelPreservationReply(r);
+  });
+  assert.equal(await page.locator('#autoJewelFusion').isChecked(),true);
+  await page.clock.runFor(61000);assert.equal(await page.evaluate(()=>__sent.length),4,'Bridge retry must not latch shared workshop gate');
+  await page.locator('#autoJewelFusion').uncheck();await page.clock.runFor(16000);assert.equal(await page.evaluate(()=>__sent.length),4,'No command after toggle off, even on timeout');
   await page.locator('#gearFusionControls').locator('..').screenshot({path:'/var/tmp/wog-minute-'+width+'.png'});
   await page.reload();assert.equal(await page.evaluate(t=>isJewelPreserved({itemTid:t+1}),base),true);assert.equal(await page.locator('#autoJewelFusion').isChecked(),false);assert.deepEqual(errors,[]);await context.close();
  }}finally{await browser.close();await new Promise(r=>server.close(r))}
@@ -122,4 +138,9 @@ test('dispatch-only receipts advance rounds and log actions, never confirmed suc
  f.reply(0,{dispatchedCount:1});assert.equal(f.logs.length,1);assert.match(f.logs[0][0],/已執行合成動作/);assert(!f.logs[0][0].includes('確認'));
  f.reply(0,{dispatchedCount:1});assert.equal(f.logs.length,1);
  f.run(1000);assert.equal(f.sent.length,2);assert.equal(f.faults.length,0);
+});
+
+test('send exceptions and correlated retryable Bridge errors retain switches without rapid retry',()=>{
+ const f=harness();f.c.queueJewelCmd=()=>{throw Error('offline send')};f.toggle('gear',true);f.run(60000);assert(f.nodes.get('autoGearFusion').checked);assert.equal(f.faults.length,0);
+ const g=harness();g.toggle('gear',true);g.run(60000);g.reply(0,{success:false,retryable:true});assert(g.nodes.get('autoGearFusion').checked);g.run(59000);assert.equal(g.sent.length,1);g.run(1000);assert.equal(g.sent.length,2);
 });

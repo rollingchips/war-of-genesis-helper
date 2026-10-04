@@ -7,7 +7,7 @@
   const el = id => document.getElementById(id);
   const note = (kind,text) => {const node=el(kind==='gear'?'gearFusionStatus':'jewelFusionStatus');if(node)node.textContent=window.zhText(text);};
   const socket = () => (typeof liveWs!=='undefined' && liveWs?.readyState===1)?liveWs:window.GenesisGameBridge?.ws;
-  const fresh = () => socket()?.readyState===1 && state.cap?.dispatchOnlyFusion===1 && state.cap?.version===2 && state.cap?.bagOnlyRounds===1 && state.cap?.jewelPreservation===1 && state.cap?.gearSourceTiers?.includes(5) && state.cap?.available && Number.isFinite(state.cap.generatedAt) && Date.now()-state.cap.generatedAt<8000 && state.cap.generatedAt<=Date.now()+1000;
+  const fresh = () => socket()?.readyState===1 && state.cap?.boundedFusionCommands===1 && state.cap?.dispatchOnlyFusion===1 && state.cap?.version===2 && state.cap?.bagOnlyRounds===1 && state.cap?.jewelPreservation===1 && state.cap?.gearSourceTiers?.includes(5) && state.cap?.available && Number.isFinite(state.cap.generatedAt) && Date.now()-state.cap.generatedAt<8000 && state.cap.generatedAt<=Date.now()+1000;
   function setEnabled(kind,on) {
     state.epoch[kind]++;state[kind]=on;state.due[kind]=on?Date.now()+PERIOD:Infinity;
     const input=el(kind==='gear'?'autoGearFusion':'autoJewelFusion');if(input)input.checked=on;
@@ -20,13 +20,23 @@
     state.round=null;
   }
   window.wogGearFusionPause=stop;
-  function uncertain(reason) {state.uncertain=true;window.wogWorkshopReceipt?.({uncertain:true,reason});stop(reason);}
+  function retryRound() {
+    const id=state.pending?.requestId;
+    clearTimeout(receiptTimer);state.pending=null;window.wogFusionPending=null;
+    if(id){window.wogJewelRelease?.(id);if(window.__pendingJewelCmd?.requestId===id)window.__pendingJewelCmd=null;}
+    state.round=null;
+    for(const kind of ['gear','jewel'])if(state[kind]){state.due[kind]=Date.now()+PERIOD;note(kind,'未收到有效回覆，本輪結束；一分鐘後自動繼續。');}
+  }
+  window.wogFusionTransportRetry=data=>{
+    if(!state.pending||data.requestId!==state.pending.requestId)return false;
+    retryRound();return true;
+  };
   window.wogGearFusionReply=data=>{
     const pending=state.pending;
     if(!pending || data.action!==pending.action || data.requestId!==pending.requestId)return;
+    if(data.uncertain||data.retryable){retryRound();return;}
     clearTimeout(receiptTimer);state.pending=null;window.wogFusionPending=null;
     if(window.__pendingJewelCmd?.requestId===data.requestId)window.__pendingJewelCmd=null;
-    if(data.uncertain){uncertain(data.reason||'No fusion receipt. Check the game before enabling again.');return;}
     if(data.code==='WORKSHOP_BUSY'){if(state.round)state.round=null;note(pending.kind,'遊戲忙碌，本輪結束；等待下次排程。');return;}
     if(data.success!==true){stop(data.reason||'Fusion stopped; check the game.');return;}
     if(data.dispatchedCount===1){
@@ -38,7 +48,7 @@
       note(pending.kind,'已執行合成動作，繼續處理本輪。');
       return;
     }
-    if(!Number.isInteger(data.fusedCount)||![0,1].includes(data.fusedCount)){uncertain('Fusion response was unsuccessful or uncertain');return;}
+    if(!Number.isInteger(data.fusedCount)||![0,1].includes(data.fusedCount)){retryRound();return;}
     if(data.fusedCount===1 && typeof addJewelLog==='function') {
       const category=pending.kind==='jewel'?'寶石':pending.contentType===1?'裝備':'飾品';
       addJewelLog('✅ ['+new Date(pending.roundAt).toLocaleTimeString('zh-TW',{hour12:false})+' 本輪 #'+pending.batch+'] T'+pending.tier+' '+category+'合成已確認完成 1 批', 'success');
@@ -90,14 +100,13 @@
     note(kind,'正在送出合成動作。');
     receiptTimer=setTimeout(()=>{
       if(state.pending?.requestId!==requestId)return;
-      state.pending=null;window.wogFusionPending=null;
-      uncertain('No fusion receipt. Check the game before enabling again.');
+      retryRound();
     },15000);
     try{
-      const accepted=queueJewelCmd({...job,automaticRound:true,requestId,instance:state.cap.instance,includeStorage:false,sameLevelOnly:false});
+      const accepted=queueJewelCmd({...job,automaticRound:true,expiresAt:Date.now()+15000,requestId,instance:state.cap.instance,includeStorage:false,sameLevelOnly:false});
       if(accepted===false){clearTimeout(receiptTimer);state.pending=null;window.wogFusionPending=null;state.round=null;note(kind,'尚未送出，等待下一分鐘。');}
       else round.commands++;
-    }catch(_){clearTimeout(receiptTimer);state.pending=null;window.wogFusionPending=null;uncertain('No fusion receipt. Check the game before enabling again.');}
+    }catch(_){retryRound();}
   }
   function mount(){
     const box=el('gearFusionControls');if(!box)return;

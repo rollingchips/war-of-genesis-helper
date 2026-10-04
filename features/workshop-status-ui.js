@@ -19,6 +19,10 @@
     if(cap.blocked)pause(cap.fault?.reason||cap.reason,cap.fault?.response,cap.fault?.diagnostics);
   };
   window.wogWorkshopReceipt=data=>{
+    if(data.code!=='WORKSHOP_BLOCKED' && (data.retryable||data.uncertain) &&
+       ['fuse','fuseGearTiers'].includes(data.action) && data.requestId?.startsWith('round-')){
+      window.wogFusionTransportRetry?.(data);return;
+    }
     if(data.uncertain||data.code==='WORKSHOP_BLOCKED')pause(data.reason,data.response,data.diagnostics);
   };
   const send=queueJewelCmd;
