@@ -15,7 +15,7 @@ function harness(){
    setTimeout(fn,ms){const id=++seq;timers.set(id,{fn,at:now+ms});return id},clearTimeout(id){timers.delete(id)}};
  c.window=c;c.wogWorkshopReceipt=r=>{if(r.uncertain){faults.push(r);c.wogGearFusionPause(r.reason)}};
  vm.createContext(c);vm.runInContext(ui,c);
- const cap={version:2,bagOnlyRounds:1,jewelPreservation:1,gearSourceTiers:[1,2,3,4,5],available:true,busy:false,gameBusy:false,instance:'fixture',generatedAt:now,counts:{}};
+ const cap={version:2,dispatchOnlyFusion:1,bagOnlyRounds:1,jewelPreservation:1,gearSourceTiers:[1,2,3,4,5],available:true,busy:false,gameBusy:false,instance:'fixture',generatedAt:now,counts:{}};
  function refresh(){cap.generatedAt=now;c.wogGearFusionTick({gearFusion:cap})}refresh();
  function run(ms,healthy=true){const end=now+ms;while(true){let next=[...timers].filter(([,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at)[0];if(!next)break;const[id,t]=next;now=t.at;if(t.ms)t.at+=t.ms;else timers.delete(id);if(healthy)refresh();t.fn();}now=end;}
  function toggle(kind,on){const n=nodes.get(kind==='gear'?'autoGearFusion':'autoJewelFusion');n.checked=on;n.change({target:n})}
@@ -56,7 +56,7 @@ test('native busy and manual pending actions serialize the timer; busy receipt e
  f.reply(0,{code:'WORKSHOP_BUSY'});f.run(59000);assert.equal(f.sent.length,1);f.run(1000);assert.equal(f.sent.length,2);
 });
 test('old hooks, stale profiles and disconnect cannot dispatch; lost connection never re-enables switches',()=>{
- for(const change of [f=>delete f.cap.bagOnlyRounds,f=>f.cap.gearSourceTiers=[1,2,3,4]]){
+ for(const change of [f=>delete f.cap.bagOnlyRounds,f=>delete f.cap.dispatchOnlyFusion,f=>f.cap.gearSourceTiers=[1,2,3,4]]){
   const f=harness();change(f);f.refresh();assert.equal(f.nodes.get('autoJewelFusion').disabled,true);f.toggle('jewel',true);f.run(60000);assert.equal(f.sent.length,0);
  }
  const f=harness();f.toggle('gear',true);f.run(60000,false);assert.equal(f.sent.length,0);assert.equal(f.nodes.get('autoGearFusion').checked,false);
@@ -87,7 +87,7 @@ test('direct UI has two default-off fusion toggles; old storage/deposit settings
   await page.locator('#jewelPreserveControls summary').click();const preserve=page.locator('#jewelPreserveOptions button').first(),base=Number(await preserve.getAttribute('data-tid'));await preserve.click();
   await page.evaluate(()=>{
     window.__sent=[];liveWs=new EventTarget();liveWs.readyState=1;liveWs.send=s=>{const m=JSON.parse(s);if(m.params?.expression?.startsWith('(async () => { if (typeof globalThis.__runJewelAction'))__sent.push(m)};
-    const profile=()=>wogGearFusionTick({gearFusion:{version:2,jewelPreservation:1,bagOnlyRounds:1,gearSourceTiers:[1,2,3,4,5],instance:'test',available:true,generatedAt:Date.now(),counts:{}}});profile();setInterval(profile,500);
+    const profile=()=>wogGearFusionTick({gearFusion:{version:2,jewelPreservation:1,dispatchOnlyFusion:1,bagOnlyRounds:1,gearSourceTiers:[1,2,3,4,5],instance:'test',available:true,generatedAt:Date.now(),counts:{}}});profile();setInterval(profile,500);
   });
   for(const id of ['gearFusionLabel','jewelFusionLabel','gearFusionStatus','jewelFusionStatus'])await page.locator('#'+id).click();
   assert.equal(await page.locator('#autoGearFusion').isChecked(),false);
@@ -99,7 +99,7 @@ await page.clock.runFor(59000);assert.equal(await page.evaluate(()=>__sent.lengt
   const sent=await page.evaluate(()=>__sent);assert.equal(sent.length,1);assert(sent[0].params.expression.includes('"preservedTypes":['+base+']'));assert(sent[0].params.expression.includes('"includeStorage":false'));assert(sent[0].params.expression.includes('"tier":3'));
   // Changing preservation affects the next batch of this same round.
   const another=page.locator('#jewelPreserveOptions button').nth(7);const secondBase=Number(await another.getAttribute('data-tid'));await another.click();
-  await page.evaluate(()=>{const r={action:'fuse',requestId:window.wogFusionPending,success:true,fusedCount:1};wogWorkshopReceipt(r);wogGearFusionReply(r);wogJewelPreservationReply(r);});
+  await page.evaluate(()=>{const r={action:'fuse',requestId:window.wogFusionPending,success:true,fusedCount:0,dispatchedCount:1};wogWorkshopReceipt(r);wogGearFusionReply(r);wogJewelPreservationReply(r);});
   assert.equal(await page.evaluate(()=>jewelActivityLogs.filter(x=>x.viText.includes('本輪 #1')&&x.viText.includes('T3 寶石')).length),1);
   await page.clock.runFor(2000);assert.equal(await page.evaluate(()=>__sent.length),2);
   const updated=await page.evaluate(()=>__sent.at(-1).params.expression);assert(updated.includes('"preservedTypes":['+base+','+secondBase+']'));assert(updated.includes('"automaticRound":true'));
@@ -115,4 +115,11 @@ test('confirmed batches log once even after switch off; empty and wrong receipts
  f.reply(1);f.reply(1);assert.equal(f.logs.length,1);assert(f.logs[0][0].includes('T3 裝備'));f.run(1000);
  f.reply(0);assert.equal(f.logs.length,1);f.run(1000);f.toggle('gear',false);f.reply(1);
  assert.equal(f.logs.length,2);assert(f.logs[1][0].includes('T4 裝備'));
+});
+
+test('dispatch-only receipts advance rounds and log actions, never confirmed success',()=>{
+ const f=harness();f.toggle('gear',true);f.run(60000);
+ f.reply(0,{dispatchedCount:1});assert.equal(f.logs.length,1);assert.match(f.logs[0][0],/已執行合成動作/);assert(!f.logs[0][0].includes('確認'));
+ f.reply(0,{dispatchedCount:1});assert.equal(f.logs.length,1);
+ f.run(1000);assert.equal(f.sent.length,2);assert.equal(f.faults.length,0);
 });

@@ -21,7 +21,7 @@ function setup({count=6,type=1,reply=1000,consume=true}={}) {
   return {engine,n,w,db,equipped,staged,command,get items(){return items},set items(v){items=v},get calls(){return calls},get selected(){return selected}};
 }
 test('operator-confirmed quantities are fixed and still checked by the game validator',async()=>{
- for(const [type,count]of [[1,6],[2,3]]){const f=setup({type,count}),cmd=f.command();assert.equal((await f.engine.execute(cmd)).fusedCount,1);assert.equal(f.selected.length,count);assert.equal(f.calls,1);await f.engine.execute(cmd);assert.equal(f.calls,1);}
+ for(const [type,count]of [[1,6],[2,3]]){const f=setup({type,count}),cmd=f.command();assert.equal((await f.engine.execute(cmd)).dispatchedCount,1);assert.equal(f.selected.length,count);assert.equal(f.calls,1);await f.engine.execute(cmd);assert.equal(f.calls,1);}
 });
 test('validator accepting undersized batches cannot change the fixed quantity',async()=>{
  const f=setup({count:5});f.w.validateFusionMaterials=()=>true;assert.equal((await f.engine.execute(f.command())).fusedCount,0);assert.equal(f.calls,0);
@@ -35,21 +35,27 @@ test('locked, equipped, staged, other tier, storage and unknown level never cons
 test('retired same-level flag cannot restrict mixed levels; categories remain separate',async()=>{
  const f=setup();f.w.getTableInfo=(tid)=>({contentType:1,baseLimitLevel:tid===1?19:20});
  assert.equal((await f.engine.execute(f.command({contentType:2}))).fusedCount,0);
- assert.equal((await f.engine.execute(f.command({sameLevelOnly:true}))).fusedCount,1);
+ assert.equal((await f.engine.execute(f.command({sameLevelOnly:true}))).dispatchedCount,1);
 });
 test('absent checks, recipes and duplicate inventory fail closed',async()=>{
  for(const mutate of [f=>delete f.n.services.itemMove.isEquippedItemId,f=>f.w.findFusionTable=()=>null,f=>f.items.push({...f.items[0]})]){
  const f=setup();mutate(f);await f.engine.execute(f.command());assert.equal(f.calls,0);}
 });
-test('bad response with Data is not success; unreconciled inventory blocks repeats',async()=>{
- for(const args of [{reply:999},{reply:undefined},{consume:false}]){
- const f=setup(args);if(args.reply===undefined&&!('consume'in args))f.w.reqFusionAsync=async()=>({Data:{}});
- assert.equal((await f.engine.execute(f.command())).success,false);assert(f.engine.locked());await f.engine.execute(f.command());assert(f.calls<=1);}
+test('null, unknown results and delayed inventory acknowledge calls without blocking',async()=>{
+ for(const response of [null,undefined,{Data:{}},{NetResult:999}]){
+ const f=setup();let calls=0;f.w.reqFusionAsync=async()=>{calls++;return response};
+ const result=await f.engine.execute(f.command());assert.equal(result.dispatchedCount,1);assert.equal(result.fusedCount,0);assert.equal(f.engine.status().blocked,false);
+ await f.engine.execute(f.command());assert.equal(calls,1);
+ f.items.forEach(i=>i.itemId+=100);await f.engine.execute(f.command());assert.equal(calls,2);
+ }
 });
-test('timeout and overlapping requests cannot submit a second batch',async()=>{
- const f=setup();let submissions=0;f.w.reqFusionAsync=()=>{submissions++;return new Promise(()=>{})};
- const pending=f.engine.execute(f.command());assert.equal((await f.engine.execute(f.command())).success,false);
- const result=await pending;assert.equal(result.uncertain,true);assert(f.engine.locked());await f.engine.execute(f.command());assert.equal(submissions,1);
+test('pending result acknowledges immediately; busy lease and material reservations prevent duplicates',async()=>{
+ const f=setup();let calls=0;f.w.reqFusionAsync=()=>{calls++;return new Promise(()=>{})};
+ assert.equal((await f.engine.execute(f.command())).dispatchedCount,1);
+ assert(f.engine.locked());await f.engine.execute(f.command());assert.equal(calls,1);
+ await new Promise(r=>setTimeout(r,40));assert.equal(f.engine.status().blocked,false);
+ await f.engine.execute(f.command());assert.equal(calls,1);
+ f.w._bRequesting=true;assert(f.engine.locked());
 });
 test('stale hook identity rejects before any action',async()=>{
  const f=setup();assert.equal((await f.engine.execute(f.command({instance:'old-hook'}))).success,false);assert.equal(f.calls,0);
@@ -61,20 +67,20 @@ test('built installer parses, injects executable engine and routes action withou
  const hook=vm.runInNewContext(source.slice(decl.init.start,decl.init.end));require('acorn').parse(hook,{ecmaVersion:'latest'});
  const f=setup(),context={nn:f.n,setInterval(){},setTimeout,clearTimeout,console};vm.createContext(context);vm.runInContext(hook,context);
  const cap=context.__wogGearFusion.status();const result=JSON.parse(await context.__runJewelAction({...f.command(),instance:cap.instance}));
- assert.equal(result.fusedCount,1);assert.equal(f.calls,1);
+ assert.equal(result.dispatchedCount,1);assert.equal(f.calls,1);
 });
 test('tiers never mix and out-of-range tiers are rejected',async()=>{
  const f=setup();f.items.forEach((i,n)=>f.db.get(i.itemTid).RatingType=n<3?3:4);
  assert.equal((await f.engine.execute(f.command({sourceTier:3}))).fusedCount,0);
  assert.equal((await f.engine.execute(f.command({sourceTier:4}))).fusedCount,0);assert.equal(f.calls,0);
- f.items.forEach(i=>f.db.get(i.itemTid).RatingType=3);assert.equal((await f.engine.execute(f.command({sourceTier:3}))).fusedCount,1);
+ f.items.forEach(i=>f.db.get(i.itemTid).RatingType=3);assert.equal((await f.engine.execute(f.command({sourceTier:3}))).dispatchedCount,1);
  for(const tier of [0,6,7]) { const x=setup();x.items.forEach(i=>x.db.get(i.itemTid).RatingType=tier);await x.engine.execute(x.command({sourceTier:tier}));assert.equal(x.calls,0); }
 });
 
-test('T3 to T5 supported independently',async()=>{for(const tier of [3,4,5]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).fusedCount,1);}});
+test('T3 to T5 supported independently',async()=>{for(const tier of [3,4,5]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).dispatchedCount,1);}});
 test('rejected head finds alternate six; unchanged rejected inventory is not retried',async()=>{
  const f=setup({count:7});f.w.validateFusionMaterials=(_,ms)=>ms.length===6&&!ms.some(i=>i.itemId===1);
- assert.equal((await f.engine.execute(f.command())).fusedCount,1);assert(!f.selected.some(i=>i.itemId===1));
+ assert.equal((await f.engine.execute(f.command())).dispatchedCount,1);assert(!f.selected.some(i=>i.itemId===1));
  const x=setup({count:7});let checks=0;x.w.validateFusionMaterials=()=>{checks++;return false};
  assert.equal((await x.engine.execute(x.command())).reason,'Game rejected candidate materials');const before=checks;
  await x.engine.execute(x.command());assert.equal(checks,before);x.items[0].itemId=99;await x.engine.execute(x.command());assert(checks>before);assert.equal(x.calls,0);
@@ -89,7 +95,7 @@ function jewels(){
 }
 test('base or exact jewel preservation keeps protected items; sends only six eligible',async()=>{
  for(const preserved of [195100,195101]){const j=jewels();const cmd=j.cmd({preservedTypes:[preserved]});
- assert.equal((await j.f.engine.executeJewel(cmd)).fusedCount,1);assert.equal(j.sent.length,6);assert(j.sent.every(i=>i.tid===195201));assert.equal(j.f.items.length,6);assert(j.f.items.every(i=>i.itemTid===195101));
+ assert.equal((await j.f.engine.executeJewel(cmd)).dispatchedCount,1);assert.equal(j.sent.length,6);assert(j.sent.every(i=>i.tid===195201));assert.equal(j.f.items.length,6);assert(j.f.items.every(i=>i.itemTid===195101));
  assert.equal((await j.f.engine.executeJewel(cmd)).success,false);}
 });
 test('jewel exclusions, undersized batches, invalid policy and stale hooks fail closed',async()=>{
@@ -97,10 +103,13 @@ test('jewel exclusions, undersized batches, invalid policy and stale hooks fail 
  const j=jewels();mutate(j);assert.equal((await j.f.engine.executeJewel(j.cmd({preservedTypes:[195100]}))).fusedCount,0);assert.equal(j.sent.length,0);}
  for(const extra of [{preservedTypes:null},{instance:'old'},{allowedTiers:[7]}]){const j=jewels();assert.equal((await j.f.engine.executeJewel(j.cmd(extra))).success,false);assert.equal(j.sent.length,0);}
 });
-test('jewel timeout blocks all later equipment actions and never reports success',async()=>{
+test('jewel pending result acknowledges immediately and reserves selected materials',async()=>{
  const j=jewels();let calls=0;j.f.w.reqFusionStagedAsync=()=>{calls++;return new Promise(()=>{})};
- const pending=j.f.engine.executeJewel(j.cmd());assert.equal((await j.f.engine.execute(j.f.command())).success,false);
- assert.equal((await pending).uncertain,true);assert(j.f.engine.locked());assert.equal((await j.f.engine.executeJewel(j.cmd())).success,false);assert.equal(calls,1);
+ assert.equal((await j.f.engine.executeJewel(j.cmd())).dispatchedCount,1);assert(j.f.engine.locked());
+ await j.f.engine.executeJewel(j.cmd());assert.equal(calls,1);
+ await new Promise(r=>setTimeout(r,40));assert.equal(j.f.engine.status().blocked,false);
+ await j.f.engine.executeJewel(j.cmd());assert.equal(calls,2); // Different six jewels.
+ await new Promise(r=>setTimeout(r,40));await j.f.engine.executeJewel(j.cmd());assert.equal(calls,2);
 });
 test('jewel preservation UI persists, sends policy and rejects old hooks offline',async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{
@@ -110,7 +119,7 @@ test('jewel preservation UI persists, sends policy and rejects old hooks offline
  await page.locator('#jewelPreserveControls summary').click();const first=page.locator('#jewelPreserveOptions button').first();const base=Number(await first.getAttribute('data-tid'));await first.click();assert.equal(await first.getAttribute('aria-pressed'),'true');
  assert.equal(await page.evaluate(id=>isJewelPreserved({itemTid:id+1}),base),true);
  await page.evaluate(()=>{window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(JSON.parse(s))};window.wogWorkshopCapability={version:1,available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});assert.equal(await page.evaluate(()=>__sent.length),0);
- await page.evaluate(()=>{window.wogWorkshopCapability={version:2,jewelPreservation:1,bagOnlyRounds:1,instance:'test',available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});
+ await page.evaluate(()=>{window.wogWorkshopCapability={version:2,jewelPreservation:1,dispatchOnlyFusion:1,bagOnlyRounds:1,instance:'test',available:true,generatedAt:Date.now()};queueJewelCmd({action:'fuse',allowedTiers:[1]});});
  const sent=await page.evaluate(()=>__sent);assert(sent.length>0);assert(JSON.stringify(sent).includes(String(base)));
  await page.locator('#jewelPreserveControls').screenshot({path:'/var/tmp/wog-preserve-390.png'});
  await page.reload();assert.equal(await page.evaluate(id=>isJewelPreserved({itemTid:id+1}),base),true);assert.deepEqual(errors,[]);await context.close();
@@ -121,16 +130,15 @@ test('built hook routes jewel preservation without the legacy unfiltered fallbac
  const ast=require('acorn').parse(source,{ecmaVersion:'latest'});const decl=ast.body.find(n=>n.type==='VariableDeclaration'&&n.declarations.some(d=>d.id.name==='hook')).declarations.find(d=>d.id.name==='hook');
  const hook=vm.runInNewContext(source.slice(decl.init.start,decl.init.end));const j=jewels(),context={nn:j.f.n,setInterval(){},setTimeout,clearTimeout,console};vm.createContext(context);vm.runInContext(hook,context);
  const cap=context.__wogGearFusion.status();const result=JSON.parse(await context.__runJewelAction({...j.cmd({preservedTypes:[195100]}),instance:cap.instance}));
- assert.equal(result.fusedCount,1);assert(j.sent.every(i=>i.tid===195201));assert.equal(j.f.items.length,6);
+ assert.equal(result.dispatchedCount,1);assert(j.sent.every(i=>i.tid===195201));assert.equal(j.f.items.length,6);
 });
 test('exact jewel tier preservation does not protect unrelated tiers of that type',async()=>{
- const j=jewels();j.f.items.forEach(i=>i.itemTid=195102);const result=await j.f.engine.executeJewel(j.cmd({allowedTiers:[2],preservedTypes:[195101]}));assert.equal(result.fusedCount,1);assert.equal(j.sent.length,6);
+ const j=jewels();j.f.items.forEach(i=>i.itemTid=195102);const result=await j.f.engine.executeJewel(j.cmd({allowedTiers:[2],preservedTypes:[195101]}));assert.equal(result.dispatchedCount,1);assert.equal(j.sent.length,6);
 });
-test('first post-submission fault survives capability polling and rejected later commands',async()=>{
- const f=setup({reply:999});const receipt=await f.engine.execute(f.command());assert.equal(receipt.uncertain,true);
- const first=JSON.stringify(f.engine.status().fault);assert.equal(f.engine.status().fault.response.code,'999');
- await f.engine.execute(f.command());assert.equal(JSON.stringify(f.engine.status().fault),first);
- assert.equal(f.engine.status().reason,receipt.reason);
+test('rejected result promise does not disable future actions or report a confirmed fill',async()=>{
+ const f=setup();f.w.reqFusionAsync=()=>Promise.reject(Error('result unavailable'));
+ const result=await f.engine.execute(f.command());assert.equal(result.dispatchedCount,1);assert.equal(result.fusedCount,0);
+ assert.equal(f.engine.status().blocked,false);assert.equal(f.engine.status().fault,null);
 });
 test('blocked workshop stops all producers and retains first error outside rolling logs',async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{
@@ -139,7 +147,7 @@ test('blocked workshop stops all producers and retains first error outside rolli
  const page=await context.newPage();await page.goto(testUrl);
  const result=await page.evaluate(()=>{
   window.__sent=[];liveWs={readyState:1,send:s=>__sent.push(s)};
-  const cap={version:2,jewelPreservation:1,bagOnlyRounds:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null},diagnostics:{phase:'workshop-call',fusionId:10603,requesting:false,materialsValid:true}},generatedAt:Date.now()};
+  const cap={version:2,jewelPreservation:1,dispatchOnlyFusion:1,bagOnlyRounds:1,instance:'session-a',available:false,blocked:true,fault:{reason:'Fusion response was unsuccessful or uncertain',response:{kind:'object',code:'999',length:null},diagnostics:{phase:'workshop-call',fusionId:10603,requesting:false,materialsValid:true}},generatedAt:Date.now()};
   wogWorkshopStatus(cap);
   for(let n=0;n<100;n++){for(const action of ['fuse','fuseGearTiers','deposit','depositT3','withdraw','toggleStorage'])queueJewelCmd({action});wogWorkshopStatus(cap);}
   wogWorkshopReceipt({uncertain:true,reason:'later error'});
@@ -157,7 +165,7 @@ test('native busy defers gear and jewels without mutation or a persistent fault'
  const f=setup();let mutations=0;for(const k of ['clearFusionStaging','setFusionContentType','setAutoRegisterRating','setAutoRegisterIncludeStorage'])f.w[k]=()=>{mutations++};
  f.w._bRequesting=true;assert.equal(f.engine.status().busy,true);assert.equal(f.engine.status().available,true);
  const receipt=await f.engine.execute(f.command());assert.equal(receipt.code,'WORKSHOP_BUSY');assert.equal(receipt.fusedCount,0);assert.equal(f.calls,0);assert.equal(mutations,0);assert.equal(f.engine.status().blocked,false);
- f.w._bRequesting=false;assert.equal((await f.engine.execute(f.command())).fusedCount,1);assert.equal(mutations,0);
+ f.w._bRequesting=false;assert.equal((await f.engine.execute(f.command())).dispatchedCount,1);assert.equal(mutations,0);
  const j=jewels();j.f.w._bRequesting=true;assert.equal((await j.f.engine.executeJewel(j.cmd())).code,'WORKSHOP_BUSY');assert.equal(j.sent.length,0);
 });
 test('fresh authoritative recipe and native busy are checked immediately before the call',async()=>{
@@ -175,12 +183,12 @@ test('operator-provided native service body succeeds without staging or settings
  // Exact operator-provided service logic: the busy flag is set synchronously.
  f.w.reqFusionAsync=vm.runInNewContext(`(async function(fusionTid,materials){if(this._bRequesting)return E_LogPort.Service,null;this._bRequesting=!0;try{var sendMaterials,fusion=nn.db.fusion.get(fusionTid);return fusion?(sendMaterials=materials??this.collectFusionMaterials(fusionTid),this.validateFusionMaterials(fusion,sendMaterials)?await nn.net.manager.gameSession.reqItemFusion(fusion.GroupID,sendMaterials):(E_LogPort.Service,sendMaterials.length,null)):(E_LogPort.Service,null)}finally{this._bRequesting=!1}})`,{nn:f.n,E_LogPort:{Service:0}});
  for(const k of ['clearFusionStaging','setFusionContentType','setAutoRegisterRating','setAutoRegisterIncludeStorage'])f.w[k]=()=>{throw Error('Unexpected game UI mutation')};
- const receipt=await f.engine.execute(f.command());assert.equal(receipt.fusedCount,1);assert.equal(networkCalls,1);assert.equal(f.w._bRequesting,false);
+ const receipt=await f.engine.execute(f.command());assert.equal(receipt.dispatchedCount,1);assert.equal(networkCalls,1);await new Promise(r=>setImmediate(r));assert.equal(f.w._bRequesting,false);
 });
-test('null after passing preflight retains bounded call-time evidence and blocks retry',async()=>{
+test('dispatch retains preflight evidence without requiring any result',async()=>{
  const f=setup();let calls=0;f.w.reqFusionAsync=async()=>{calls++;return null};
- const receipt=await f.engine.execute(f.command());assert.equal(receipt.uncertain,true);assert.equal(receipt.response.kind,'null');assert.equal(receipt.diagnostics.phase,'workshop-call');assert.equal(receipt.diagnostics.materialsValid,true);assert.equal(receipt.diagnostics.requesting,false);assert.equal(receipt.diagnostics.fusionId,404);
- assert(!JSON.stringify(receipt.diagnostics).includes('itemId'));assert.equal(f.engine.status().fault.diagnostics.fusionId,404);
+ const receipt=await f.engine.execute(f.command());assert.equal(receipt.dispatchedCount,1);assert.equal(receipt.diagnostics.materialsValid,true);assert.equal(receipt.diagnostics.fusionId,404);
+ assert(!JSON.stringify(receipt.diagnostics).includes('itemId'));assert.equal(f.engine.status().fault,null);
  await f.engine.execute(f.command());assert.equal(calls,1);
 });
 test('packaged hook blocks deposits while native workshop is busy and defers gear',async()=>{
@@ -192,19 +200,19 @@ test('packaged hook blocks deposits while native workshop is busy and defers gea
  assert.equal(f.calls,0);assert.equal(context.__wogGearFusion.status().blocked,false);
 });
 
-test('protection changed during preflight never submits and network throws remain uncertain',async()=>{
+test('protection changed during preflight never submits and network result throws do not create a permanent result lock',async()=>{
  const f=setup();const read=f.n.net.data.item.getAllItemNotStack;let reads=0;
  f.n.net.data.item.getAllItemNotStack=()=>{if(++reads===3)f.items[0].isLock=true;return read()};
  const result=await f.engine.execute(f.command());assert.equal(result.success,false);assert.equal(result.uncertain,false);assert.equal(f.calls,0);assert.equal(f.engine.status().blocked,false);
  const x=setup();let calls=0;x.w.reqFusionAsync=async()=>{calls++;throw Error('Network response interrupted')};
- const failed=await x.engine.execute(x.command());assert.equal(failed.uncertain,true);assert.equal(failed.diagnostics.materialsValid,true);await x.engine.execute(x.command());assert.equal(calls,1);
+ const failed=await x.engine.execute(x.command());assert.equal(failed.dispatchedCount,1);assert.equal(failed.diagnostics.materialsValid,true);await x.engine.execute(x.command());assert.equal(calls,1);
 });
 
 test('T5 equipment and accessories consume only protected-filtered T5 batches, never T6 or mixed T4/T5',async()=>{
  for(const [type,count] of [[1,6],[2,3]]) {
   const f=setup({type,count:count+1});f.items.forEach(i=>f.db.get(i.itemTid).RatingType=5);f.db.get(count+1).RatingType=6;
   const cap=f.engine.status();assert.deepEqual(Array.from(cap.gearSourceTiers),[3,4,5]);assert.equal(cap.counts['5:'+type].bag,count);assert.equal(cap.counts['6:'+type],undefined);
-  assert.equal((await f.engine.execute(f.command({sourceTier:5}))).fusedCount,1);assert.equal(f.selected.length,count);assert.equal(f.items.length,1);assert.equal(f.db.get(f.items[0].itemTid).RatingType,6);
+  assert.equal((await f.engine.execute(f.command({sourceTier:5}))).dispatchedCount,1);assert.equal(f.selected.length,count);assert.equal(f.items.length,1);assert.equal(f.db.get(f.items[0].itemTid).RatingType,6);
   for(const protect of [x=>x.items[0].isLock=true,x=>x.equipped.add(1),x=>x.staged.add(1),x=>x.db.get(1).RatingType=4]) {
    const x=setup({type,count});x.items.forEach(i=>x.db.get(i.itemTid).RatingType=5);protect(x);
    assert.equal((await x.engine.execute(x.command({sourceTier:5}))).fusedCount,0);assert.equal(x.calls,0);
@@ -215,7 +223,7 @@ test('T5 equipment and accessories consume only protected-filtered T5 batches, n
 
 test('T5 automatic jewels exclude preserved, locked and warehouse jewels; T6 remains outside automatic scope',async()=>{
  const j=jewels();j.f.items.forEach((i,n)=>i.itemTid=n<6?195105:195205);
- assert.equal((await j.f.engine.executeJewel(j.cmd({automaticRound:true,allowedTiers:[5],preservedTypes:[195105],includeStorage:true}))).fusedCount,1);
+ assert.equal((await j.f.engine.executeJewel(j.cmd({automaticRound:true,allowedTiers:[5],preservedTypes:[195105],includeStorage:true}))).dispatchedCount,1);
  assert(j.sent.every(i=>i.tid===195205));assert.equal(j.f.items.length,6);
  for(const modify of [x=>x.f.items.forEach(i=>i.location=2),x=>x.f.items[0].isLock=true]){
   const x=jewels();x.f.items=x.f.items.slice(0,6);x.f.items.forEach(i=>i.itemTid=195105);modify(x);
@@ -224,7 +232,7 @@ test('T5 automatic jewels exclude preserved, locked and warehouse jewels; T6 rem
  const x=jewels();x.f.items.forEach(i=>i.itemTid=195106);
  assert.equal((await x.f.engine.executeJewel(x.cmd({automaticRound:true,allowedTiers:[6]}))).success,false);assert.equal(x.sent.length,0);
  // Explicit manual T6 requests retain their prior scope; the two toggles never send them.
- assert.equal((await x.f.engine.executeJewel(x.cmd({allowedTiers:[6]}))).fusedCount,1);
+ assert.equal((await x.f.engine.executeJewel(x.cmd({allowedTiers:[6]}))).dispatchedCount,1);
 });
 
 test('legacy manual T3 hook no longer hardcodes warehouse materials',()=>{
@@ -236,3 +244,18 @@ test('legacy manual T3 hook no longer hardcodes warehouse materials',()=>{
 test("T1 and T2 gear are rejected before game calls",async()=>{for(const tier of [1,2]){const f=setup();f.items.forEach(i=>f.db.get(i.itemTid).RatingType=tier);assert.equal((await f.engine.execute(f.command({sourceTier:tier}))).success,false);assert.equal(f.calls,0);}});
 
 test('automatic T1/T2 jewels cannot consume items',async()=>{for(const tier of [1,2]){const x=jewels();x.f.items.forEach(i=>i.itemTid=195100+tier);assert.equal((await x.f.engine.executeJewel(x.cmd({automaticRound:true,allowedTiers:[tier]}))).success,false);assert.equal(x.sent.length,0);}});
+
+test('unchanged materials become eligible next minute without result confirmation',async()=>{
+ let now=100000;const clockFactory=vm.runInNewContext('('+engineSource+')',{setTimeout,clearTimeout,Date:class extends Date{static now(){return now}}});
+ const f=setup({consume:false});const engine=clockFactory(()=>f.n,30);let seq=0;
+ const cmd=()=>({...f.command(),instance:engine.status().instance,requestId:'clock-'+(++seq)});
+ await engine.execute(cmd());await engine.execute(cmd());assert.equal(f.calls,1);
+ now+=60000;assert.equal((await engine.execute(cmd())).dispatchedCount,1);assert.equal(f.calls,2);
+});
+test('late completion cannot release the next operation busy lease',async()=>{
+ const f=setup({count:12});let resolveFirst;let calls=0;
+ f.w.reqFusionAsync=()=>{calls++;return new Promise(r=>{if(calls===1)resolveFirst=r})};
+ await f.engine.execute(f.command());await new Promise(r=>setTimeout(r,40));
+ await f.engine.execute(f.command());assert.equal(calls,2);resolveFirst(null);await new Promise(r=>setImmediate(r));assert(f.engine.locked());
+ await new Promise(r=>setTimeout(r,40));assert(!f.engine.locked());
+});

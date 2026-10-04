@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Execute fusion without result-confirmation blocking
+
+- Acknowledge protected gear/jewel API invocation immediately; do not require result shape or immediate inventory consumption. Log actions, not confirmed fusion success.
+- Retain native busy serialization and prevent duplicate material submissions from unchanged inventory. Require the matching dispatch-only hook.
+- Verified 49 offline regressions, native-method fixture, desktop/mobile generated-page scheduling, localization and direct-file consistency. Audited missing/delayed returns, late-completion causality, protected material selection and sixty-second reservation expiry. No installer or live game execution.
+
 ## 2026-09-30 — T3–T5 rounds and activity logs
 
 - Only the physical switch hit area toggles automation; clicking its title, description, status or surrounding row does nothing. Keep keyboard focus/Space operation and accessible labels.

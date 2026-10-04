@@ -1,5 +1,14 @@
 # Traditional Chinese Frontend Contract
 
+## Dispatch-only fusion (2026-10-04, operator 27861)
+
+- Supersedes result-confirmation gates for gear and jewel fusion. After protected fresh selection and native validation, invoke the game workshop API once and acknowledge the call immediately. Null, unknown response shapes, delayed inventory updates and rejected result promises must not permanently disable automatic fusion. A dispatch is not evidence of successful consumption or an upgrade.
+- Expose `dispatchedCount: 1`, `fusedCount: 0`; log 已執行合成動作, never confirmed success. Keep no-action receipts and request correlation. A new dispatch-only hook capability is mandatory for the updated UI.
+- Serialize calls while the native operation is pending, with a bounded ten-second local busy lease plus the native `_bRequesting` guard. No result-confirmation wait is required by the scheduler. Exclude attempted item IDs for sixty seconds (or until they disappear), preventing unchanged snapshots from immediately resending the same materials. The next minute may re-read and validate them again; no material requires outcome confirmation to become eligible. No result is fabricated.
+- Preserve T3–T5, bag-only, quantities, lock/equipped/market protections and jewel preservation. Genuine missing transport replies retain their existing transport controls; dispatch acknowledgments are immediate and independent of game result promises. No live game operation is part of verification.
+
+Verification: 49 offline regressions and full desktop/mobile language/direct-file checks pass. Edge cases (null/rejection/delay), causal busy-lease ownership and protected-material state were reviewed. Live game behavior remains unverified.
+
 ## T3–T5 automation and confirmed activity logs (2026-09-30)
 
 - Only the physical switch hit area toggles automation; clicking its title, description, status or surrounding row does nothing. Keep keyboard focus/Space operation and accessible labels.

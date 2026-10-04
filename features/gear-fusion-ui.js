@@ -7,7 +7,7 @@
   const el = id => document.getElementById(id);
   const note = (kind,text) => {const node=el(kind==='gear'?'gearFusionStatus':'jewelFusionStatus');if(node)node.textContent=window.zhText(text);};
   const socket = () => (typeof liveWs!=='undefined' && liveWs?.readyState===1)?liveWs:window.GenesisGameBridge?.ws;
-  const fresh = () => socket()?.readyState===1 && state.cap?.version===2 && state.cap?.bagOnlyRounds===1 && state.cap?.jewelPreservation===1 && state.cap?.gearSourceTiers?.includes(5) && state.cap?.available && Number.isFinite(state.cap.generatedAt) && Date.now()-state.cap.generatedAt<8000 && state.cap.generatedAt<=Date.now()+1000;
+  const fresh = () => socket()?.readyState===1 && state.cap?.dispatchOnlyFusion===1 && state.cap?.version===2 && state.cap?.bagOnlyRounds===1 && state.cap?.jewelPreservation===1 && state.cap?.gearSourceTiers?.includes(5) && state.cap?.available && Number.isFinite(state.cap.generatedAt) && Date.now()-state.cap.generatedAt<8000 && state.cap.generatedAt<=Date.now()+1000;
   function setEnabled(kind,on) {
     state.epoch[kind]++;state[kind]=on;state.due[kind]=on?Date.now()+PERIOD:Infinity;
     const input=el(kind==='gear'?'autoGearFusion':'autoJewelFusion');if(input)input.checked=on;
@@ -29,6 +29,15 @@
     if(data.uncertain){uncertain(data.reason||'No fusion receipt. Check the game before enabling again.');return;}
     if(data.code==='WORKSHOP_BUSY'){if(state.round)state.round=null;note(pending.kind,'遊戲忙碌，本輪結束；等待下次排程。');return;}
     if(data.success!==true){stop(data.reason||'Fusion stopped; check the game.');return;}
+    if(data.dispatchedCount===1){
+      if(typeof addJewelLog==='function'){
+        const category=pending.kind==='jewel'?'寶石':pending.contentType===1?'裝備':'飾品';
+        addJewelLog('▶ ['+new Date(pending.roundAt).toLocaleTimeString('zh-TW',{hour12:false})+' 本輪 #'+pending.batch+'] T'+pending.tier+' '+category+'已執行合成動作 1 次', 'info');
+      }
+      if(state.round)state.round.fused++;
+      note(pending.kind,'已執行合成動作，繼續處理本輪。');
+      return;
+    }
     if(!Number.isInteger(data.fusedCount)||![0,1].includes(data.fusedCount)){uncertain('Fusion response was unsuccessful or uncertain');return;}
     if(data.fusedCount===1 && typeof addJewelLog==='function') {
       const category=pending.kind==='jewel'?'寶石':pending.contentType===1?'裝備':'飾品';
@@ -78,7 +87,7 @@
     const {kind,epoch,...job}=round.jobs[round.index];
     const requestId='round-'+crypto.randomUUID();
     state.pending={kind,action:job.action,requestId,tier:job.sourceTier??job.tier,contentType:job.contentType,roundAt:round.started,batch:round.commands+1};window.wogFusionPending=requestId;
-    note(kind,'本輪合成處理中，等待遊戲確認。');
+    note(kind,'正在送出合成動作。');
     receiptTimer=setTimeout(()=>{
       if(state.pending?.requestId!==requestId)return;
       state.pending=null;window.wogFusionPending=null;

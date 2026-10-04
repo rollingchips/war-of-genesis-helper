@@ -46,7 +46,7 @@
     if(pending){status('寶石合成處理中，等待確認結果。');return false;}
     if(cmd.action!=='fuse')return original(cmd);
     const cap=window.wogWorkshopCapability;
-    if(invalid||uncertain||!cap||cap.version!==2||cap.jewelPreservation!==1||cap.bagOnlyRounds!==1||!cap.available||cap.busy||!Number.isFinite(cap.generatedAt)||Date.now()-cap.generatedAt>8000||cap.generatedAt>Date.now()+1000){status('請更新並連接 LiveSync；結果不明時請先確認遊戲，再重新載入。');return false;}
+    if(invalid||uncertain||!cap||cap.dispatchOnlyFusion!==1||cap.version!==2||cap.jewelPreservation!==1||cap.bagOnlyRounds!==1||!cap.available||cap.busy||!Number.isFinite(cap.generatedAt)||Date.now()-cap.generatedAt>8000||cap.generatedAt>Date.now()+1000){status('請更新並連接 LiveSync；結果不明時請先確認遊戲，再重新載入。');return false;}
     pending=cmd.requestId||'jewel-'+crypto.randomUUID();window.wogJewelPending=pending;
     const id=pending;
     timer=setTimeout(()=>{if(pending===id){uncertain=true;pending=null;window.wogJewelPending=null;window.wogWorkshopReceipt?.({uncertain:true,reason:'No fusion receipt. Check the game before enabling again.'});status('未收到寶石合成結果；請先確認遊戲，再重新載入。');}},15000);
@@ -57,6 +57,7 @@
   window.wogJewelPreservationReply=data=>{
     if(data.action!=='fuse'||!pending||data.requestId!==pending)return;
     clearTimeout(timer);pending=null;window.wogJewelPending=null;
+    if(data.dispatchedCount===1){status('已執行寶石合成動作。');return;}
     if(data.uncertain)uncertain=true;
     status(data.success===true?(data.fusedCount?'寶石合成完成，已確認材料消耗。':window.zhText(data.reason||'Insufficient unpreserved jewels')):window.zhText(data.reason||'Fusion stopped; check the game.'));
   };

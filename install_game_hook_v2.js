@@ -31,7 +31,19 @@ const hook = `
   globalThis.__wogGearFusion = (function createGearFusion(getGame, timeoutMs = 10000) {
   const sourceTiers = Object.freeze([3, 4, 5]);
   let busy = false, blocked = false, lastSnapshot = 0, fault = null;
-  const responseShape = r => ({kind:Array.isArray(r)?"array":r===null?"null":typeof r, code: typeof r?.NetResult === "number" || typeof r?.NetResult === "string" ? String(r.NetResult).slice(0,40) : null, length:Array.isArray(r)?r.length:null});
+  const attempted = new Map();
+  let lease = 0;
+  function dispatch(invoke, ids, receipt, diagnostics) {
+    for (const id of ids) attempted.set(String(id), Date.now() + 60000);
+    const generation = ++lease;
+    const release = () => {if (lease === generation) busy = false;};
+    const timer = setTimeout(release, timeoutMs);
+    // The call, not its return value or inventory update, is the requested action.
+    try {
+      Promise.resolve(invoke()).then(release, release).finally(() => clearTimeout(timer));
+    } catch (_) {clearTimeout(timer); release();}
+    return {...receipt, success:true, dispatchedCount:1, fusedCount:0, diagnostics};
+  }
   const seen = new Map();
   const rejected = new Map();
   const instance = 't4-' + Date.now() + '-' + Math.random().toString(36).slice(2);
@@ -44,6 +56,8 @@ const hook = `
     if (typeof w._bRequesting !== 'boolean' || typeof n.db.fusion?.get !== 'function') throw Error('Required workshop preflight checks are unavailable');
     const raw = n.net.data.item.getAllItemNotStack();
     if (!Array.isArray(raw) || raw.length > 5000) throw Error('Unsupported inventory');
+    const present = new Set(raw.filter(i => i?.itemId != null).map(i => String(i.itemId)));
+    for (const [id, until] of attempted) if (!present.has(id) || Date.now() >= until) attempted.delete(id);
     const ids = new Set(), rows = [];
     for (const i of raw) {
       if (i.itemId == null) continue;
@@ -61,7 +75,7 @@ const hook = `
     return {n, w, raw, rows};
   }
   function status() {
-    const base = {version: 2, jewelPreservation: 1, bagOnlyRounds: 1, gearSourceTiers: [...sourceTiers], instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
+    const base = {version: 2, jewelPreservation: 1, bagOnlyRounds: 1, dispatchOnlyFusion: 1, gearSourceTiers: [...sourceTiers], instance, busy:busy || gameBusy(), gameBusy:gameBusy(), preflight:1, blocked, generatedAt: Date.now(), fault, reason:fault?.reason};
     try {
       const {rows} = inventory(); lastSnapshot = Date.now();
       const counts = {};
@@ -73,7 +87,7 @@ const hook = `
     } catch (e) { return {...base, available: false, reason: e.message}; }
   }
   function select(data, cmd) {
-    const rows = data.rows.filter(i => i.type === cmd.contentType && i.rating === cmd.sourceTier && i.location === 1).sort((a,b) => a.id.localeCompare(b.id));
+    const rows = data.rows.filter(i => i.type === cmd.contentType && i.rating === cmd.sourceTier && i.location === 1 && !attempted.has(i.id)).sort((a,b) => a.id.localeCompare(b.id));
     const count = cmd.contentType === 1 ? 6 : 3;
     const key = cmd.sourceTier + ':' + cmd.contentType;
     const fingerprint = JSON.stringify(rows.map(i => [i.id,i.itemTid,i.level,i.location]));
@@ -126,19 +140,11 @@ const hook = `
       if (gameBusy()) return deferred(receipt);
       diagnostics.phase = 'workshop-call';
       sent = true;
-      const pending = Promise.resolve(fresh.w.reqFusionAsync(plan.table.FusionID, plan.materials));
-      const response = await Promise.race([pending, new Promise((_, reject) => {timer = setTimeout(() => reject(Error('Fusion timed out; reconcile in game before restarting LiveSync')), timeoutMs);})]);
-      clearTimeout(timer);
-      responseInfo=responseShape(response);
-      if (!response || ![0, 1000].includes(response.NetResult)) throw Error('Fusion response was unsuccessful or uncertain');
-      const after = fresh.n.net.data.item.getAllItemNotStack();
-      if (!Array.isArray(after) || plan.items.some(i => after.some(x => String(x.itemId) === i.id))) throw Error('Fusion materials are not reconciled; check the game before restarting LiveSync');
-      try { fresh.n.msgBroker.publish('onUpdateWorkShopFusion'); } catch (_) {}
-      return {...receipt, success: true, fusedCount: 1};
+      return dispatch(() => fresh.w.reqFusionAsync(plan.table.FusionID, plan.materials), plan.items.map(i => i.id), receipt, diagnostics);
     } catch (e) {
       if (sent) {blocked = true;if(!fault)fault={reason:e.message,response:responseInfo,requestId:cmd.requestId,diagnostics};}
       return {...receipt, success: false, uncertain: sent, reason: e.message, response:responseInfo, diagnostics};
-    } finally { clearTimeout(timer); busy = false; }
+    } finally { clearTimeout(timer); if (!sent) busy = false; }
   }
   async function executeJewel(cmd) {
     const receipt={action:'fuse',requestId:cmd.requestId};
@@ -160,7 +166,7 @@ const hook = `
         if(!Array.isArray(raw)||raw.length>5000)throw Error('Unsupported inventory');
         const ids=new Set();for(const i of raw){if(!i||i.itemId==null)continue;const id=String(i.itemId);if(ids.has(id))throw Error('Duplicate inventory identity');ids.add(id);}
         return raw.filter(i=>{
-        if (!i || i.itemId==null || (typeof i.isLock!=='boolean'&&typeof i._isLock!=='boolean') || i.isLock||i._isLock||i.location!==1||preserved(i.itemTid))return false;
+        if (!i || i.itemId==null || attempted.has(String(i.itemId)) || (typeof i.isLock!=='boolean'&&typeof i._isLock!=='boolean') || i.isLock||i._isLock||i.location!==1||preserved(i.itemTid))return false;
         if(n.services.itemMove.isEquippedItemId(i.itemId)||n.services.steamMarket.staging.isStaged(i.itemId))return false;
         const db=n.db.item.get(i.itemTid);return db?.ItemType===6&&tiers.includes(db.RatingType);
       });};
@@ -175,17 +181,9 @@ const hook = `
       if(w.isFusionStagingFull()!==true){w.clearFusionStaging();return {...receipt,success:true,fusedCount:0,reason:'Game rejected candidate materials'};}
       if (gameBusy()) return deferred(receipt);
       sent=true;
-      const response=await Promise.race([Promise.resolve(w.reqFusionStagedAsync()),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Fusion timed out; reconcile in game before restarting LiveSync')),timeoutMs);})]);
-      clearTimeout(timer);
-      responseInfo=responseShape(response);
-      // Staged jewel API returns result items, unlike the direct equipment API.
-      if(!Array.isArray(response)||response.length===0)throw Error('Fusion response was unsuccessful or uncertain');
-      const after=n.net.data.item.getAllItemNotStack();
-      if(!Array.isArray(after)||selected.some(i=>after.some(x=>String(x.itemId)===String(i.itemId))))throw Error('Fusion materials are not reconciled; check the game before restarting LiveSync');
-      w.clearFusionStaging();try{n.msgBroker.publish('onUpdateWorkShopFusion');}catch(_){}
-      return {...receipt,success:true,fusedCount:1};
+      return dispatch(() => w.reqFusionStagedAsync(), selected.map(i => i.itemId), receipt);
     }catch(e){if(sent){blocked=true;if(!fault)fault={reason:e.message,response:responseInfo,requestId:cmd.requestId};}return {...receipt,success:false,uncertain:sent,reason:e.message,response:responseInfo};}
-    finally{clearTimeout(timer);busy=false;}
+    finally{clearTimeout(timer);if(!sent)busy=false;}
   }
   return {status, execute, executeJewel, locked: () => busy || blocked || gameBusy()};
 }
